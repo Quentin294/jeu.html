@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mode Chronomètre</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #000;
+      color: white;
+    }
+
+    canvas {
+      display: block;
+      background: url('fond-chrono.jpg') center center / cover no-repeat;
+    }
+
+    #timer {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 32px;
+      background-color: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    #result {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0,0,0,0.8);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      display: none;
+    }
+
+    #result h1 {
+      margin-top: 0;
+    }
+
+    #result button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      font-size: 18px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #result button:hover {
+      background-color: #2ecc71;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <div id="timer">60</div>
+  <div id="result">
+    <h1>Temps écoulé !</h1>
+    <p id="finalScore">Score : 0</p>
+    <p id="rankResult">Rang : Bronze</p>
+    <button onclick="window.location.href='menu.html'">Retour au menu</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const timerDisplay = document.getElementById('timer');
+    const resultDisplay = document.getElementById('result');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    const rankDisplay = document.getElementById('rankResult');
+
+    let player = { x: 100, y: 300, width: 50, height: 50, vy: 0, grounded: false };
+    let gravity = 1;
+    let score = 0;
+    let keys = {};
+    let coins = [];
+    let timeLeft = 60;
+    let dead = false;
+
+    function spawnCoin() {
+      coins.push({
+        x: Math.random() * (canvas.width - 20) + 10,
+        y: Math.random() * (canvas.height - 60) + 30,
+        r: 10
+      });
+    }
+
+    function drawPlayer() {
+      ctx.fillStyle = dead ? "#555" : "cyan";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawCoins() {
+      ctx.fillStyle = "yellow";
+      coins.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score : " + score, 20, 30);
+    }
+
+    function update() {
+      if (dead) return;
+
+      if (keys["ArrowUp"] && player.grounded) {
+        player.vy = -15;
+        player.grounded = false;
+      }
+
+      player.vy += gravity;
+      player.y += player.vy;
+
+      if (player.y + player.height >= canvas.height) {
+        player.y = canvas.height - player.height;
+        player.vy = 0;
+        player.grounded = true;
+      }
+
+      if (keys["ArrowLeft"]) player.x -= 5;
+      if (keys["ArrowRight"]) player.x += 5;
+
+      coins = coins.filter(c => {
+        let dist = Math.hypot(player.x + player.width/2 - c.x, player.y + player.height/2 - c.y);
+        if (dist < player.width/2 + c.r) {
+          score++;
+          return false;
+        }
+        return true;
+      });
+
+      if (coins.length < 5) {
+        spawnCoin();
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      drawCoins();
+      drawScore();
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      if (timeLeft > 0) {
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    function startTimer() {
+      const interval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      resultDisplay.style.display = 'block';
+      finalScoreDisplay.textContent = "Score : " + score;
+
+      let rank = "Bronze";
+      if (score >= 70) rank = "Légendaire";
+      else if (score >= 50) rank = "Or";
+      else if (score >= 30) rank = "Argent";
+      rankDisplay.textContent = "Rang : " + rank;
+
+      // Sauvegarder les succès (optionnel)
+      let achievements = JSON.parse(localStorage.getItem("achievements") || "{}");
+      achievements["chrono_played"] = true;
+      if (score >= 30) achievements["chrono_30"] = true;
+      if (score >= 70) achievements["chrono_70"] = true;
+      localStorage.setItem("achievements", JSON.stringify(achievements));
+    }
+
+    document.addEventListener("keydown", (e) => keys[e.key] = true);
+    document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+    for (let i = 0; i < 5; i++) spawnCoin();
+    startTimer();
+    gameLoop();
+  </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mode Infini</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+    }
+    canvas {
+      display: block;
+      background: linear-gradient(#87ceeb, #ffffff);
+    }
+    #score, #xp-bar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 20px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+    #xp-bar {
+      top: 40px;
+      width: 200px;
+      height: 20px;
+      background: rgba(255,255,255,0.2);
+    }
+    #xp-fill {
+      height: 100%;
+      background: dodgerblue;
+      width: 0%;
+      border-radius: 10px;
+    }
+    #pause-menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      text-align: center;
+    }
+    #pause-menu button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .success-popup {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: gold;
+      color: black;
+      padding: 10px;
+      border-radius: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<div id="score">Score : 0</div>
+<div id="xp-bar"><div id="xp-fill"></div></div>
+<div class="success-popup" id="successPopup"></div>
+
+<div id="pause-menu">
+  <h2>Pause</h2>
+  <button onclick="resumeGame()">Reprendre</button>
+  <button onclick="restartGame()">Recommencer</button>
+  <button onclick="exitToMenu()">Quitter</button>
+</div>
+
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let player = { x: 50, y: 300, width: 40, height: 40, dy: 0, grounded: false };
+  let gravity = 0.8;
+  let jumpForce = -12;
+  let score = 0;
+  let coins = [];
+  let enemies = [];
+  let xp = 0;
+  let paused = false;
+  let gameOver = false;
+  let difficultyTimer = 0;
+
+  function spawnCoin() {
+    coins.push({ x: Math.random() * 760 + 20, y: Math.random() * 360 + 20, radius: 10 });
+  }
+
+  function spawnEnemy() {
+    enemies.push({ x: Math.random() * 760 + 20, y: 370, width: 40, height: 30 });
+  }
+
+  function updateXPBar() {
+    const xpFill = document.getElementById("xp-fill");
+    const levelXP = 100;
+    const progress = Math.min(100, (xp % levelXP));
+    xpFill.style.width = progress + "%";
+  }
+
+  function saveHighScore() {
+    const highScore = parseInt(localStorage.getItem("infini_high_score") || "0", 10);
+    if (score > highScore) {
+      localStorage.setItem("infini_high_score", score);
+      showSuccess("Nouveau record !");
+    }
+  }
+
+  function showSuccess(text) {
+    const popup = document.getElementById("successPopup");
+    popup.textContent = "🏆 " + text;
+    popup.style.display = "block";
+    setTimeout(() => {
+      popup.style.display = "none";
+    }, 3000);
+  }
+
+  function checkAchievements() {
+    if (score >= 100 && !localStorage.getItem("success_100pts")) {
+      localStorage.setItem("success_100pts", "true");
+      showSuccess("Atteindre 100 points");
+    }
+    if (score >= 500 && !localStorage.getItem("success_500pts")) {
+      localStorage.setItem("success_500pts", "true");
+      showSuccess("Atteindre 500 points");
+    }
+    if (score >= 1000 && !localStorage.getItem("success_1000pts")) {
+      localStorage.setItem("success_1000pts", "true");
+      showSuccess("Atteindre 1000 points");
+    }
+  }
+
+  function increaseDifficulty() {
+    difficultyTimer++;
+    if (difficultyTimer % 600 === 0) {
+      spawnEnemy();
+    }
+  }
+
+  function endGame() {
+    gameOver = true;
+    saveHighScore();
+    alert("Game Over! Score : " + score);
+    window.location.href = "menu.html";
+  }
+
+  function pauseGame() {
+    paused = true;
+    document.getElementById("pause-menu").style.display = "block";
+  }
+
+  function resumeGame() {
+    paused = false;
+    document.getElementById("pause-menu").style.display = "none";
+    updateGame();
+  }
+
+  function restartGame() {
+    location.reload();
+  }
+
+  function exitToMenu() {
+    window.location.href = "menu.html";
+  }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.code === "Space") {
+      if (paused) {
+        resumeGame();
+      } else if (player.grounded) {
+        player.dy = jumpForce;
+      }
+    } else if (e.code === "Escape") {
+      pauseGame();
+    }
+  });
+
+  function updateGame() {
+    if (paused || gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Gravité
+    player.dy += gravity;
+    player.y += player.dy;
+
+    if (player.y + player.height > canvas.height) {
+      player.y = canvas.height - player.height;
+      player.dy = 0;
+      player.grounded = true;
+    } else {
+      player.grounded = false;
+    }
+
+    // Joueur
+    ctx.fillStyle = "red";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Pièces
+    for (let i = 0; i < coins.length; i++) {
+      const coin = coins[i];
+      ctx.fillStyle = "yellow";
+      ctx.beginPath();
+      ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (Math.hypot(player.x + player.width / 2 - coin.x, player.y + player.height / 2 - coin.y) < player.width / 2 + coin.radius) {
+        coins.splice(i, 1);
+        score += 10;
+        xp += 10;
+        document.getElementById("score").textContent = "Score : " + score;
+        updateXPBar();
+        checkAchievements();
+        spawnCoin();
+      }
+    }
+
+    // Ennemis
+    for (let i = 0; i < enemies.length; i++) {
+      const e = enemies[i];
+      ctx.fillStyle = "black";
+      ctx.fillRect(e.x, e.y, e.width, e.height);
+
+      if (player.x < e.x + e.width && player.x + player.width > e.x &&
+          player.y < e.y + e.height && player.y + player.height > e.y) {
+        endGame();
+      }
+    }
+
+    increaseDifficulty();
+    requestAnimationFrame(updateGame);
+  }
+
+  // Démarrage
+  spawnCoin();
+  spawnEnemy();
+  updateGame();
+</script>
+
+</body>
+</html>

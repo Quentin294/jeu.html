@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Événement - Festival du Pixel</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('fond-evenement.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+
+    .container {
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 20px;
+      margin-top: 50px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .countdown {
+      font-size: 24px;
+      text-align: center;
+      margin: 20px 0;
+      color: #ffd700;
+    }
+
+    .quest {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 15px;
+      border-radius: 15px;
+      margin: 15px 0;
+    }
+
+    .quest p {
+      margin: 5px 0;
+    }
+
+    .reward {
+      color: #00ffcc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎉 Festival du Pixel</h1>
+    <div class="countdown" id="countdown">Chargement du temps restant...</div>
+
+    <h2>🔥 Quêtes spéciales</h2>
+
+    <div class="quest">
+      <p><strong>🎮 Jouer 10 parties</strong></p>
+      <p class="reward">Récompense : 300 XP</p>
+    </div>
+
+    <div class="quest">
+      <p><strong>💰 Collecter 100 pièces</strong></p>
+      <p class="reward">Récompense : Skin exclusif « PixelOr »</p>
+    </div>
+
+    <div class="quest">
+      <p><strong>🛡️ Terminer 5 parties sans mourir</strong></p>
+      <p class="reward">Récompense : 500 XP + 10 diamants</p>
+    </div>
+  </div>
+
+  <script>
+    const endDate = new Date("2025-07-31T23:59:59");
+
+    function updateCountdown() {
+      const now = new Date();
+      const distance = endDate - now;
+
+      if (distance <= 0) {
+        document.getElementById("countdown").textContent = "L'événement est terminé.";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+      document.getElementById("countdown").textContent =
+        `Temps restant : ${days} jours, ${hours} heures, ${minutes} minutes`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 60000);
+  </script>
+
+</body>
+</html>

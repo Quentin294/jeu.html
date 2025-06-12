@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Calendrier Journalier</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #2c3e50, #4ca1af);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #timer {
+      background: rgba(0,0,0,0.5);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      max-width: 600px;
+      width: 100%;
+      margin: auto;
+    }
+
+    .day {
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 20px 0;
+      text-align: center;
+      position: relative;
+    }
+
+    .day.today {
+      border: 2px solid gold;
+    }
+
+    .day.claimed {
+      background: rgba(46, 204, 113, 0.7);
+    }
+
+    .day span {
+      display: block;
+      font-size: 18px;
+    }
+
+    #claimButton {
+      margin-top: 30px;
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #e67e22;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      display: none;
+    }
+
+    #claimButton:hover {
+      background-color: #d35400;
+    }
+
+    #back {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="menu.html" id="back">← Retour</a>
+  <h1>Calendrier Journalier</h1>
+  <div id="timer">Prochain jour dans : --:--:--</div>
+  <div class="calendar" id="calendar"></div>
+  <button id="claimButton" onclick="claimToday()">Réclamer la récompense d'aujourd'hui</button>
+
+  <script>
+    const DAYS = 7;
+    const REWARD = { xp: 100, diamond: 1 };
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    function initCalendar() {
+      let data = JSON.parse(localStorage.getItem("dailyCalendar")) || {};
+      const now = new Date().setHours(0,0,0,0);
+
+      if (!data.startDay) {
+        data.startDay = now;
+        data.claimed = Array(DAYS).fill(false);
+        localStorage.setItem('dailyCalendar', JSON.stringify(data));
+      }
+
+      const dayIndex = Math.floor((now - data.startDay) / DAY_MS);
+      renderCalendar(data.claimed, dayIndex);
+      updateTimer(now, dayIndex);
+      handleClaimButton(dayIndex, data.claimed);
+    }
+
+    function renderCalendar(claimed, todayIdx) {
+      const cal = document.getElementById("calendar");
+      cal.innerHTML = "";
+      for (let i = 0; i < DAYS; i++) {
+        const day = document.createElement('div');
+        day.className = 'day';
+        if (i === todayIdx) day.classList.add('today');
+        if (claimed[i]) day.classList.add('claimed');
+        day.innerHTML = `<span>Jour ${i+1}</span>`;
+        if (claimed[i]) day.innerHTML += `<span>✅</span>`;
+        cal.appendChild(day);
+      }
+    }
+
+    function updateTimer(now, todayIdx) {
+      const nextDay = now + DAY_MS;
+      function tick() {
+        const diff = nextDay - Date.now();
+        if (diff <= 0) return initCalendar(); 
+        const s = Math.floor(diff / 1000);
+        const h = String(Math.floor(s / 3600)).padStart(2,'0');
+        const m = String(Math.floor((s % 3600)/60)).padStart(2,'0');
+        const sec = String(s % 60).padStart(2,'0');
+        document.getElementById("timer").textContent = `Prochain jour dans : ${h}:${m}:${sec}`;
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    function handleClaimButton(todayIdx, claimed) {
+      const btn = document.getElementById("claimButton");
+      if (todayIdx >= 0 && todayIdx < DAYS && !claimed[todayIdx]) {
+        btn.style.display = 'block';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    function claimToday() {
+      let data = JSON.parse(localStorage.getItem("dailyCalendar"));
+      const now = new Date().setHours(0,0,0,0);
+      const todayIdx = Math.floor((now - data.startDay) / DAY_MS);
+      if (todayIdx < 0 || todayIdx >= DAYS) return;
+      if (data.claimed[todayIdx]) return;
+
+      data.claimed[todayIdx] = true;
+      localStorage.setItem("dailyCalendar", JSON.stringify(data));
+      addXP(REWARD.xp);
+      const d = parseInt(localStorage.getItem('diamonds')||0) + REWARD.diamond;
+      localStorage.setItem('diamonds', d);
+      alert(`Récompense : +${REWARD.xp} XP et +${REWARD.diamond} 💎`);
+      initCalendar();
+    }
+
+    function addXP(amount) {
+      let xp = parseInt(localStorage.getItem("xp") || "0");
+      localStorage.setItem("xp", xp + amount);
+    }
+
+    initCalendar();
+  </script>
+
+</body>
+</html>

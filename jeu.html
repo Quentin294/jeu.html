@@ -2,319 +2,288 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Jeu de Plateforme</title>
+  <title>Mode Classique - Prototype</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #222;
-      color: white;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
+    body { margin:0; background:#1a1d2b; font-family:Arial,sans-serif; overflow:hidden;}
+    #gameArea {
+      position:relative; width:900px; height:600px; margin:40px auto; background:#232b3b;
+      border-radius:20px; box-shadow:0 8px 32px #000a; overflow:hidden;
     }
-    canvas {
-      display: block;
-      background: #4EC0CA;
+    .player, .enemy, .coin, .xp-bubble {
+      position:absolute; border-radius:50%;
+      transition: box-shadow 0.1s;
     }
-    #pauseMenu, #gameOverMenu, #successContainer {
-      position: absolute;
-      display: none;
-      background: rgba(0,0,0,0.8);
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 10;
+    .player {
+      width:48px; height:48px; background:#3a6ee8;
+      border:3px solid #fff; box-shadow:0 0 12px #3a6ee8;
+      z-index:2;
     }
-    #pauseMenu, #gameOverMenu {
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
+    .enemy {
+      width:44px; height:44px; background:#e83a3a;
+      border:3px solid #fff; box-shadow:0 0 12px #e83a3a;
+      z-index:1;
+      animation: enemyMove 1.2s infinite alternate;
     }
-    #successContainer {
-      top: 10px;
-      right: 10px;
+    @keyframes enemyMove { to { filter:brightness(1.2);} }
+    .coin {
+      width:32px; height:32px; background:gold;
+      border:2px solid #fff; box-shadow:0 0 8px #ffe066;
+      background-image: radial-gradient(circle at 60% 40%,#fff7 30%,transparent 70%);
+      z-index:1;
     }
-    .success {
-      margin-bottom: 10px;
-      padding: 5px 10px;
-      border-radius: 5px;
-      background: rgba(255,255,255,0.1);
+    .xp-bubble {
+      width:24px; height:24px; background:#43e86e;
+      border:2px solid #fff; box-shadow:0 0 8px #43e86e;
+      z-index:1;
     }
-    .bronze { color: #cd7f32; }
-    .argent { color: #c0c0c0; }
-    .or { color: #ffd700; }
-    .btn {
-      display: inline-block;
-      background: #555;
-      color: white;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      border-radius: 5px;
+    /* HUD */
+    #hud-left {
+      position:absolute; top:18px; left:24px; color:#fff; z-index:10;
+      font-size:20px; line-height:1.6;
+      text-shadow:0 2px 8px #000a;
     }
-    .btn:hover {
-      background: #777;
+    #rank { font-size:16px; margin-top:8px; color:#ffe066;}
+    #xp-bar-bg {
+      position:absolute; bottom:28px; right:32px; width:260px; height:22px;
+      background:#1a2340; border-radius:12px; border:1.5px solid #fff5;
+      box-shadow:0 2px 8px #0006; z-index:10;
     }
-    #scoreboard {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 8px;
+    #xp-bar {
+      height:100%; border-radius:12px; background:linear-gradient(90deg,#43e86e,#3a6ee8);
+      width:0%;
+      transition:width 0.3s;
     }
-    #xpBar {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      width: 200px;
-      height: 20px;
-      background: #000;
-      border-radius: 10px;
-      overflow: hidden;
+    #xp-label {
+      position:absolute; bottom:54px; right:32px; color:#fff; font-size:15px; z-index:10;
+      text-shadow:0 2px 8px #000a;
     }
-    #xpProgress {
-      height: 100%;
-      width: 0%;
-      background: #00f;
+    /* Succès */
+    #achievements {
+      position:absolute; top:18px; right:28px; z-index:10; display:flex; align-items:center; gap:10px;
     }
-    #pauseBtn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #f90;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 5;
+    .trophy {
+      width:32px; height:32px; border-radius:50%; background:#ccc;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; color:#fff; box-shadow:0 2px 8px #0006;
+      border:2px solid #fff8;
+    }
+    .bronze { background:linear-gradient(135deg,#b87333,#f1c27d);}
+    .argent { background:linear-gradient(135deg,#bfc1c2,#f6f6f6);}
+    .or { background:linear-gradient(135deg,#ffde59,#ffe066);}
+    /* Pause/GameOver Modals */
+    .modal-bg {
+      display:none; position:absolute; left:0;top:0;right:0;bottom:0; background:rgba(0,0,0,0.7);
+      z-index:100; align-items:center; justify-content:center;
+    }
+    .modal-bg.active { display:flex;}
+    .modal {
+      background:#232b3b; border-radius:22px; box-shadow:0 8px 32px #000b;
+      padding:38px 28px 30px 28px; min-width:320px; text-align:center; position:relative;
+      animation:popin 0.2s;
+    }
+    @keyframes popin { from{transform:scale(0.7);} to{transform:scale(1);} }
+    .modal-title { font-size:28px; font-weight:bold; margin-bottom:28px; letter-spacing:1px;}
+    .modal-btn {
+      display:block; width:100%; margin:16px 0; padding:16px 0;
+      font-size:20px; font-weight:bold; border:none; border-radius:10px;
+      background:#3a6ee8; color:#fff; cursor:pointer; transition:background 0.15s;
+    }
+    .modal-btn:hover { background:#254a9c;}
+    .modal-btn.quit { background:#e83a3a;}
+    .modal-btn.quit:hover { background:#a81a1a;}
+    .modal-btn.gold { background:#ffe066; color:#232b3b;}
+    /* Responsive */
+    @media (max-width:1000px) {
+      #gameArea { width:98vw; height:80vw; max-width:98vw; max-height:80vw;}
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="pauseBtn">⏸️</div>
-
-  <div id="scoreboard">
-    Score : <span id="score">0</span><br>
-    Pièces : <span id="coins">0</span><br>
-    Rang : <span id="rank">Débutant</span>
+<div id="gameArea">
+  <!-- HUD -->
+  <div id="hud-left">
+    <div>Score : <span id="score">0</span></div>
+    <div>🪙 Pièces : <span id="coins">0</span></div>
+    <div id="rank">Rang : Débutant</div>
   </div>
-
-  <div id="xpBar"><div id="xpProgress"></div></div>
-
-  <div id="pauseMenu">
-    <div class="btn" onclick="resumeGame()">Reprendre</div>
-    <div class="btn" onclick="restartGame()">Recommencer</div>
-    <div class="btn" onclick="location.href='index.html'">Quitter</div>
+  <div id="achievements">
+    <div class="trophy bronze" id="trophy" title="Difficulté : Bronze">🏆</div>
+    <span id="achv-label">Succès</span>
   </div>
-
-  <div id="gameOverMenu">
-    <h2>Game Over</h2>
-    <div class="btn" onclick="restartGame()">Recommencer</div>
-    <div class="btn" onclick="location.href='index.html'">Quitter</div>
+  <div id="xp-bar-bg">
+    <div id="xp-bar"></div>
   </div>
+  <div id="xp-label">XP : <span id="xp">0</span> / <span id="xp-max">100</span></div>
+  <!-- Modals -->
+  <div class="modal-bg" id="pauseModal">
+    <div class="modal">
+      <div class="modal-title">Pause</div>
+      <button class="modal-btn" onclick="resumeGame()">Reprendre</button>
+      <button class="modal-btn" onclick="restartGame()">Recommencer</button>
+      <button class="modal-btn quit" onclick="quitToMenu()">Quitter</button>
+    </div>
+  </div>
+  <div class="modal-bg" id="gameOverModal">
+    <div class="modal">
+      <div class="modal-title">GAME OVER</div>
+      <button class="modal-btn gold" onclick="restartGame()">Recommencer</button>
+      <button class="modal-btn quit" onclick="quitToMenu()">Quitter</button>
+    </div>
+  </div>
+  <!-- Entities -->
+  <div class="player" id="player"></div>
+  <div class="enemy" id="enemy1"></div>
+  <div class="enemy" id="enemy2"></div>
+  <div class="coin" id="coin"></div>
+  <div class="xp-bubble" id="xpBubble"></div>
+</div>
+<script>
+/* --- Game State --- */
+const area = document.getElementById('gameArea');
+const player = document.getElementById('player');
+const enemies = [document.getElementById('enemy1'), document.getElementById('enemy2')];
+const coin = document.getElementById('coin');
+const xpBubble = document.getElementById('xpBubble');
+const scoreEl = document.getElementById('score');
+const coinsEl = document.getElementById('coins');
+const rankEl = document.getElementById('rank');
+const xpBar = document.getElementById('xp-bar');
+const xpEl = document.getElementById('xp');
+const xpMaxEl = document.getElementById('xp-max');
+const pauseModal = document.getElementById('pauseModal');
+const gameOverModal = document.getElementById('gameOverModal');
+const trophy = document.getElementById('trophy');
+const achvLabel = document.getElementById('achv-label');
 
-  <div id="successContainer"></div>
+let width = area.clientWidth, height = area.clientHeight;
+let px = width/2-24, py = height/2-24, ps = 6;
+let ex = [100, width-100], ey = [100, height-100], evx = [3, -2.5], evy = [2.5, 3];
+let coinPos = [200, 200], xpPos = [400, 400];
+let score = 0, coins = 0, xp = 0, xpMax = 100;
+let paused = false, gameOver = false;
+let difficulty = "bronze"; // bronze, argent, or
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const pauseMenu = document.getElementById("pauseMenu");
-    const gameOverMenu = document.getElementById("gameOverMenu");
-    const successContainer = document.getElementById("successContainer");
-    const scoreEl = document.getElementById("score");
-    const coinsEl = document.getElementById("coins");
-    const rankEl = document.getElementById("rank");
-    const xpProgress = document.getElementById("xpProgress");
-    const pauseBtn = document.getElementById("pauseBtn");
+// Rangs selon le nombre de pièces
+function getRank(n) {
+  if (n >= 30) return "Maître";
+  if (n >= 20) return "Expert";
+  if (n >= 10) return "Pro";
+  if (n >= 5) return "Avancé";
+  return "Débutant";
+}
 
-    let isPaused = false;
-    let isGameOver = false;
-    let score = 0;
-    let coins = 0;
-    let xp = 0;
-    let level = 1;
-    const xpPerLevel = 100;
+// Succès selon la difficulté
+function setDifficulty(diff) {
+  difficulty = diff;
+  if(diff==="bronze") { trophy.className="trophy bronze"; trophy.title="Difficulté : Bronze"; achvLabel.textContent="Succès"; }
+  if(diff==="argent") { trophy.className="trophy argent"; trophy.title="Difficulté : Argent"; achvLabel.textContent="Succès"; }
+  if(diff==="or") { trophy.className="trophy or"; trophy.title="Difficulté : Or"; achvLabel.textContent="Succès"; }
+}
+setDifficulty("bronze"); // Change ici pour tester argent/or
 
-    const player = { x: 100, y: 500, w: 40, h: 40, color: "red", vy: 0, grounded: false };
-    const gravity = 0.5;
-    const keys = {};
+function placeRandom(el, margin=40) {
+  let x = Math.random()*(width-margin*2)+margin;
+  let y = Math.random()*(height-margin*2)+margin;
+  el.style.left = x+"px";
+  el.style.top = y+"px";
+  return [x,y];
+}
+function updateEntities() {
+  player.style.left = px+"px"; player.style.top = py+"px";
+  enemies[0].style.left = ex[0]+"px"; enemies[0].style.top = ey[0]+"px";
+  enemies[1].style.left = ex[1]+"px"; enemies[1].style.top = ey[1]+"px";
+  coin.style.left = coinPos[0]+"px"; coin.style.top = coinPos[1]+"px";
+  xpBubble.style.left = xpPos[0]+"px"; xpBubble.style.top = xpPos[1]+"px";
+}
+function updateHUD() {
+  scoreEl.textContent = score;
+  coinsEl.textContent = coins;
+  rankEl.textContent = "Rang : "+getRank(coins);
+  xpEl.textContent = xp;
+  xpMaxEl.textContent = xpMax;
+  xpBar.style.width = Math.min(100,100*xp/xpMax)+"%";
+}
+function resetGame() {
+  px = width/2-24; py = height/2-24;
+  ex[0]=100; ey[0]=100; ex[1]=width-100; ey[1]=height-100;
+  evx=[3, -2.5]; evy=[2.5, 3];
+  score=0; coins=0; xp=0; xpMax=100;
+  gameOver=false; paused=false;
+  coinPos = placeRandom(coin);
+  xpPos = placeRandom(xpBubble, 30);
+  updateEntities(); updateHUD();
+  pauseModal.classList.remove('active');
+  gameOverModal.classList.remove('active');
+  area.focus();
+}
+function pauseGame() { if(!gameOver){ paused=true; pauseModal.classList.add('active');}}
+function resumeGame() { paused=false; pauseModal.classList.remove('active'); area.focus();}
+function quitToMenu() { location.reload(); /* à remplacer par retour au menu principal */ }
+function restartGame() { resetGame(); }
+function showGameOver() { gameOver=true; gameOverModal.classList.add('active'); }
 
-    let enemies = [];
-    let pieces = [];
-    let xps = [];
+function rectsCollide(ax,ay,aw,ah,bx,by,bw,bh) {
+  return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+}
 
-    let successes = JSON.parse(localStorage.getItem("successes") || "[]");
+/* --- Game Loop --- */
+let keys = {};
+document.addEventListener('keydown', e=>{
+  if(e.code==="Space") { if(!paused && !gameOver) pauseGame(); else if(paused) resumeGame(); }
+  keys[e.code]=true;
+});
+document.addEventListener('keyup', e=>{ keys[e.code]=false; });
 
-    function spawnEnemy() {
-      let x = Math.random() * (canvas.width - 40);
-      enemies.push({ x, y: 560, w: 40, h: 40, dx: Math.random() > 0.5 ? 2 : -2 });
+function gameLoop() {
+  if(!paused && !gameOver) {
+    // Déplacement joueur
+    if(keys["ArrowLeft"]||keys["KeyA"]) px=Math.max(0,px-ps);
+    if(keys["ArrowRight"]||keys["KeyD"]) px=Math.min(width-48,px+ps);
+    if(keys["ArrowUp"]||keys["KeyW"]) py=Math.max(0,py-ps);
+    if(keys["ArrowDown"]||keys["KeyS"]) py=Math.min(height-48,py+ps);
+
+    // Déplacement ennemis (rebondissent)
+    for(let i=0;i<enemies.length;i++) {
+      ex[i]+=evx[i]; ey[i]+=evy[i];
+      if(ex[i]<0||ex[i]>width-44) evx[i]*=-1;
+      if(ey[i]<0||ey[i]>height-44) evy[i]*=-1;
     }
 
-    function spawnCoin() {
-      let x = Math.random() * (canvas.width - 20);
-      pieces.push({ x, y: 560, r: 10 });
-    }
-
-    function spawnXP() {
-      let x = Math.random() * (canvas.width - 20);
-      xps.push({ x, y: 560, r: 8 });
-    }
-
-    function showSuccess(name, level) {
-      if (successes.includes(name)) return;
-      successes.push(name);
-      localStorage.setItem("successes", JSON.stringify(successes));
-      const div = document.createElement("div");
-      div.classList.add("success");
-      if (level === "bronze") div.classList.add("bronze");
-      if (level === "argent") div.classList.add("argent");
-      if (level === "or") div.classList.add("or");
-      div.innerText = `Succès : ${name}`;
-      successContainer.appendChild(div);
-      setTimeout(() => successContainer.removeChild(div), 5000);
-    }
-
-    function updateRank() {
-      if (coins < 10) rankEl.innerText = "Débutant";
-      else if (coins < 20) rankEl.innerText = "Aventurier";
-      else if (coins < 50) rankEl.innerText = "Héros";
-      else rankEl.innerText = "Légende";
-    }
-
-    function gameLoop() {
-      if (isPaused || isGameOver) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Joueur
-      player.vy += gravity;
-      player.y += player.vy;
-      if (player.y + player.h > 600) {
-        player.y = 600 - player.h;
-        player.vy = 0;
-        player.grounded = true;
+    // Collisions joueur/ennemi
+    for(let i=0;i<enemies.length;i++) {
+      if(rectsCollide(px,py,48,48,ex[i],ey[i],44,44)) {
+        showGameOver();
+        return;
       }
-
-      if (keys["ArrowLeft"]) player.x -= 4;
-      if (keys["ArrowRight"]) player.x += 4;
-      if (keys["ArrowUp"] && player.grounded) {
-        player.vy = -10;
-        player.grounded = false;
-      }
-
-      player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
-
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-
-      // Ennemis
-      enemies.forEach(e => {
-        e.x += e.dx;
-        if (e.x < 0 || e.x > canvas.width - e.w) e.dx *= -1;
-        ctx.fillStyle = "black";
-        ctx.fillRect(e.x, e.y, e.w, e.h);
-        if (isColliding(player, e)) endGame();
-      });
-
-      // Pièces
-      pieces.forEach((c, i) => {
-        ctx.fillStyle = "yellow";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-        ctx.fill();
-        if (isCollidingCircle(player, c)) {
-          coins++;
-          score += 10;
-          pieces.splice(i, 1);
-          spawnCoin();
-          updateRank();
-          if (coins === 5) showSuccess("5 pièces", "bronze");
-          if (coins === 20) showSuccess("20 pièces", "argent");
-          if (coins === 50) showSuccess("50 pièces", "or");
-        }
-      });
-
-      // XP
-      xps.forEach((b, i) => {
-        ctx.fillStyle = "blue";
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fill();
-        if (isCollidingCircle(player, b)) {
-          xp += 10;
-          xps.splice(i, 1);
-          spawnXP();
-          if (xp >= xpPerLevel) {
-            xp -= xpPerLevel;
-            level++;
-            localStorage.setItem("passLevel", level);
-          }
-        }
-      });
-
-      xpProgress.style.width = `${(xp / xpPerLevel) * 100}%`;
-
-      scoreEl.innerText = score;
-      coinsEl.innerText = coins;
-
-      requestAnimationFrame(gameLoop);
     }
-
-    function isColliding(a, b) {
-      return a.x < b.x + b.w && a.x + a.w > b.x &&
-             a.y < b.y + b.h && a.y + a.h > b.y;
+    // Collisions joueur/pièce
+    if(rectsCollide(px,py,48,48,coinPos[0],coinPos[1],32,32)) {
+      coins++; score+=10;
+      coinPos = placeRandom(coin);
+      updateHUD();
     }
-
-    function isCollidingCircle(a, b) {
-      const dx = a.x + a.w/2 - b.x;
-      const dy = a.y + a.h/2 - b.y;
-      return Math.sqrt(dx*dx + dy*dy) < b.r + a.w/2;
+    // Collisions joueur/bulle XP
+    if(rectsCollide(px,py,48,48,xpPos[0],xpPos[1],24,24)) {
+      xp+=20; score+=2;
+      if(xp>=xpMax) { xp-=xpMax; xpMax+=50; score+=20; }
+      xpPos = placeRandom(xpBubble, 30);
+      updateHUD();
     }
+    updateEntities();
+  }
+  requestAnimationFrame(gameLoop);
+}
+resetGame();
+gameLoop();
 
-    function pauseGame() {
-      isPaused = true;
-      pauseMenu.style.display = "block";
-    }
+/* --- Resize gestion --- */
+window.addEventListener('resize', ()=>{
+  width = area.clientWidth; height = area.clientHeight;
+});
 
-    function resumeGame() {
-      isPaused = false;
-      pauseMenu.style.display = "none";
-      requestAnimationFrame(gameLoop);
-    }
+/* --- Pour changer la difficulté, appelle setDifficulty("argent") ou "or" --- */
+// setDifficulty("or"); // Décommente pour tester le trophée or
 
-    function restartGame() {
-      location.reload();
-    }
-
-    function endGame() {
-      isGameOver = true;
-      gameOverMenu.style.display = "block";
-    }
-
-    document.addEventListener("keydown", e => {
-      keys[e.key] = true;
-      if (e.key === " " && !isGameOver) {
-        if (!isPaused) pauseGame();
-        else resumeGame();
-      }
-    });
-
-    document.addEventListener("keyup", e => {
-      keys[e.key] = false;
-    });
-
-    pauseBtn.addEventListener("click", () => {
-      if (!isPaused) pauseGame();
-      else resumeGame();
-    });
-
-    // Initialisation
-    for (let i = 0; i < 5; i++) spawnEnemy();
-    for (let i = 0; i < 3; i++) spawnCoin();
-    for (let i = 0; i < 3; i++) spawnXP();
-
-    updateRank();
-    requestAnimationFrame(gameLoop);
-  </script>
+</script>
 </body>
 </html>

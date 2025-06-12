@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Classement</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('fond-fortnite.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 80px auto;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 36px;
+      color: #f1c40f;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    th, td {
+      padding: 15px;
+      border-bottom: 1px solid #555;
+    }
+
+    th {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #f39c12;
+      font-size: 20px;
+    }
+
+    td {
+      font-size: 18px;
+    }
+
+    .retour {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 25px;
+      background-color: #2980b9;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+
+    .retour:hover {
+      background-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏆 Classement des Meilleurs Joueurs</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Pseudo</th>
+          <th>Score</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="classementBody">
+        <!-- Les scores seront ajoutés ici dynamiquement -->
+      </tbody>
+    </table>
+    <a class="retour" href="menu.html">⬅ Retour au Menu</a>
+  </div>
+
+  <script>
+    const classement = JSON.parse(localStorage.getItem("classement") || "[]");
+
+    // Trie par score décroissant
+    classement.sort((a, b) => b.score - a.score);
+
+    const tbody = document.getElementById("classementBody");
+
+    classement.forEach((entree, index) => {
+      const row = document.createElement("tr");
+
+      const position = document.createElement("td");
+      position.textContent = index + 1;
+
+      const pseudo = document.createElement("td");
+      pseudo.textContent = entree.pseudo || "Joueur inconnu";
+
+      const score = document.createElement("td");
+      score.textContent = entree.score;
+
+      const date = document.createElement("td");
+      date.textContent = entree.date || "";
+
+      row.appendChild(position);
+      row.appendChild(pseudo);
+      row.appendChild(score);
+      row.appendChild(date);
+
+      tbody.appendChild(row);
+    });
+  </script>
+</body>
+</html>
