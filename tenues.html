@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Casier - Tenues</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    .skins-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .skin {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .locked {
+      filter: grayscale(100%) brightness(0.5);
+      cursor: not-allowed;
+    }
+
+    .selected {
+      border-color: lime;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎽 Casier - Tenues</h1>
+  <p>Skins débloqués via la roue de la chance</p>
+
+  <div class="skins-container" id="skinsContainer"></div>
+
+  <script>
+    const skins = ["Ninja", "Robot", "Pirate", "Chevalier", "Cosmique"];
+    const container = document.getElementById("skinsContainer");
+
+    const unlockedSkins = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
+    const selectedSkin = localStorage.getItem("selectedSkin");
+
+    function renderSkins() {
+      container.innerHTML = "";
+      skins.forEach(skin => {
+        const div = document.createElement("div");
+        div.className = "skin";
+        div.innerText = skin;
+
+        // Colorier différemment chaque skin
+        const colorMap = {
+          "Ninja": "#2c3e50",
+          "Robot": "#8e44ad",
+          "Pirate": "#d35400",
+          "Chevalier": "#3498db",
+          "Cosmique": "#16a085"
+        };
+        div.style.background = colorMap[skin];
+
+        if (!unlockedSkins.includes(skin)) {
+          div.classList.add("locked");
+        } else {
+          div.onclick = () => {
+            localStorage.setItem("selectedSkin", skin);
+            renderSkins();
+          };
+          if (skin === selectedSkin) {
+            div.classList.add("selected");
+          }
+        }
+
+        container.appendChild(div);
+      });
+    }
+
+    renderSkins();
+  </script>
+</body>
+</html>
