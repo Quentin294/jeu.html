@@ -2,98 +2,100 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Casier - Tenues</title>
+  <title>Tenues</title>
   <style>
     body {
-      background: #111;
-      color: white;
       font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #232526, #414345);
+      color: white;
+      padding: 20px;
       text-align: center;
-      padding: 40px;
     }
-
     h1 {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
-
-    .skins-container {
+    .skins {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 20px;
     }
-
     .skin {
-      width: 120px;
-      height: 120px;
-      border-radius: 12px;
-      border: 3px solid transparent;
+      width: 100px;
+      height: 100px;
+      border: 2px solid white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
+      font-size: 32px;
     }
-
-    .locked {
-      filter: grayscale(100%) brightness(0.5);
+    .skin.locked {
+      filter: grayscale(100%);
+      opacity: 0.5;
       cursor: not-allowed;
     }
-
+    .skin:hover:not(.locked) {
+      transform: scale(1.1);
+    }
     .selected {
-      border-color: lime;
+      outline: 4px solid #00ffcc;
+    }
+    .retour {
+      display: block;
+      margin-top: 30px;
+      color: #00aced;
+      font-weight: bold;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <h1>🎽 Casier - Tenues</h1>
-  <p>Skins débloqués via la roue de la chance</p>
-
-  <div class="skins-container" id="skinsContainer"></div>
+  <h1>Casier - Tenues débloquées</h1>
+  <div class="skins" id="skinContainer"></div>
+  <a class="retour" href="index.html">← Retour au menu</a>
 
   <script>
-    const skins = ["Ninja", "Robot", "Pirate", "Chevalier", "Cosmique"];
-    const container = document.getElementById("skinsContainer");
+    // Skins de la roue (0 à 4)
+    const roueSkins = ["🐱", "🐶", "🐸", "🐧", "🐰"];
+    const roueNoms = ["Chat", "Chien", "Grenouille", "Pingouin", "Lapin"];
 
-    const unlockedSkins = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
-    const selectedSkin = localStorage.getItem("selectedSkin");
+    // Skins du passe de combat (5 à 14)
+    const passeSkins = ["🌟", "🔥", "💎", "🎮", "🧙", "🐉", "🦊", "👾", "🦄", "⚡"];
+    const passeNoms = ["Étoile", "Flamme", "Diamant", "Manette", "Sorcier", "Dragon", "Renard", "Alien", "Licorne", "Éclair"];
 
-    function renderSkins() {
-      container.innerHTML = "";
-      skins.forEach(skin => {
-        const div = document.createElement("div");
-        div.className = "skin";
-        div.innerText = skin;
+    const allSkins = [...roueSkins, ...passeSkins];
+    const allNoms = [...roueNoms, ...passeNoms];
 
-        // Colorier différemment chaque skin
-        const colorMap = {
-          "Ninja": "#2c3e50",
-          "Robot": "#8e44ad",
-          "Pirate": "#d35400",
-          "Chevalier": "#3498db",
-          "Cosmique": "#16a085"
+    const skinsDebloques = JSON.parse(localStorage.getItem("skins") || "[]");
+    const skinActuel = localStorage.getItem("skinSelectionne") || "";
+    const container = document.getElementById("skinContainer");
+
+    allSkins.forEach((emoji, index) => {
+      const nom = allNoms[index];
+      const skinId = "skin" + index;
+      const debloque = skinsDebloques.includes(skinId);
+      const div = document.createElement("div");
+
+      div.className = "skin";
+      if (!debloque) div.classList.add("locked");
+      if (skinId === skinActuel) div.classList.add("selected");
+
+      div.innerText = emoji;
+      div.title = nom;
+
+      if (debloque) {
+        div.onclick = () => {
+          localStorage.setItem("skinSelectionne", skinId);
+          document.querySelectorAll(".skin").forEach(s => s.classList.remove("selected"));
+          div.classList.add("selected");
         };
-        div.style.background = colorMap[skin];
+      }
 
-        if (!unlockedSkins.includes(skin)) {
-          div.classList.add("locked");
-        } else {
-          div.onclick = () => {
-            localStorage.setItem("selectedSkin", skin);
-            renderSkins();
-          };
-          if (skin === selectedSkin) {
-            div.classList.add("selected");
-          }
-        }
-
-        container.appendChild(div);
-      });
-    }
-
-    renderSkins();
+      container.appendChild(div);
+    });
   </script>
 </body>
 </html>

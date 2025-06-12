@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Succès</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .succes-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .succes {
+      border: 2px solid #fff;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: #2c3e50;
+      width: 200px;
+      text-align: center;
+    }
+    .trophee {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    .bronze {
+      color: #cd7f32;
+    }
+    .argent {
+      color: #c0c0c0;
+    }
+    .or {
+      color: #ffd700;
+    }
+    .retour {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      text-decoration: none;
+      color: #00aced;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Succès Débloqués</h1>
+  <div class="succes-container" id="succesContainer"></div>
+  <a class="retour" href="index.html">← Retour au menu</a>
+
+  <script>
+    const succesList = {
+      "premierePiece": { nom: "Première pièce !", difficulte: "bronze" },
+      "10Pieces": { nom: "10 pièces collectées", difficulte: "argent" },
+      "50Pieces": { nom: "50 pièces collectées", difficulte: "or" },
+      "ennemiAvoid": { nom: "Évité un ennemi", difficulte: "bronze" },
+      "100XP": { nom: "100 XP gagnés", difficulte: "argent" },
+      "niveauMax": { nom: "Passe de combat complété", difficulte: "or" }
+    };
+
+    const succesObtenus = JSON.parse(localStorage.getItem("succesDebloques") || "[]");
+    const container = document.getElementById("succesContainer");
+
+    if (succesObtenus.length === 0) {
+      container.innerHTML = "<p style='text-align:center;'>Aucun succès débloqué pour l’instant.</p>";
+    } else {
+      succesObtenus.forEach(id => {
+        const succes = succesList[id];
+        if (succes) {
+          const div = document.createElement("div");
+          div.className = "succes";
+          div.innerHTML = `
+            <div class="trophee ${succes.difficulte}">🏆</div>
+            <strong>${succes.nom}</strong><br>
+            <small>${succes.difficulte.toUpperCase()}</small>
+          `;
+          container.appendChild(div);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

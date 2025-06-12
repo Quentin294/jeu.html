@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Boutique</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    #currency {
+      text-align: right;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .item {
+      background: #222;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    button {
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #777;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <h1>Boutique</h1>
+  <div id="currency">💎 : 0</div>
+  <div id="items"></div>
+
+  <script>
+    const boutiqueItems = [
+      { id: "skin_gold", name: "Skin Doré", price: 40 },
+      { id: "skin_shadow", name: "Skin Sombre", price: 50 },
+      { id: "skin_flame", name: "Skin Flamme", price: 30 }
+    ];
+
+    let currency = parseInt(localStorage.getItem("currency") || "0");
+    const unlocked = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
+
+    document.getElementById("currency").innerText = `💎 : ${currency}`;
+
+    const container = document.getElementById("items");
+
+    boutiqueItems.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+
+      const info = document.createElement("span");
+      info.textContent = `${item.name} – 💎 ${item.price}`;
+      div.appendChild(info);
+
+      const button = document.createElement("button");
+      if (unlocked.includes(item.id)) {
+        button.textContent = "Acheté";
+        button.disabled = true;
+      } else {
+        button.textContent = "Acheter";
+        button.onclick = () => {
+          if (currency >= item.price) {
+            currency -= item.price;
+            unlocked.push(item.id);
+            localStorage.setItem("currency", currency);
+            localStorage.setItem("unlockedSkins", JSON.stringify(unlocked));
+            location.reload();
+          } else {
+            alert("Pas assez de 💎 !");
+          }
+        };
+      }
+
+      div.appendChild(button);
+      container.appendChild(div);
+    });
+  </script>
+</body>
+</html>

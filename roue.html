@@ -5,148 +5,100 @@
   <title>Roue de la Chance</title>
   <style>
     body {
-      background: #222;
-      color: white;
       font-family: Arial, sans-serif;
+      background: radial-gradient(circle at center, #2c3e50, #000);
+      color: white;
       text-align: center;
-      padding-top: 50px;
+      padding: 40px;
     }
-
+    h1 {
+      margin-bottom: 20px;
+    }
     #wheel {
-      margin: 0 auto;
-      width: 300px;
-      height: 300px;
+      width: 200px;
+      height: 200px;
+      border: 10px solid white;
       border-radius: 50%;
-      border: 10px solid #fff;
-      position: relative;
-      overflow: hidden;
-      transition: transform 5s ease-out;
-    }
-
-    .segment {
-      position: absolute;
-      width: 50%;
-      height: 50%;
-      top: 50%;
-      left: 50%;
-      transform-origin: 0% 0%;
-      background: gold;
-      clip-path: polygon(0 0, 100% 0, 0 100%);
-      color: black;
-      font-weight: bold;
-      font-size: 14px;
+      margin: 30px auto;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 40px;
+      background-color: #111;
+      transition: transform 4s ease-out;
     }
-
-    #pointer {
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 30px solid red;
-      margin: 20px auto;
-    }
-
-    #result {
-      margin-top: 30px;
-      font-size: 24px;
-    }
-
     button {
-      padding: 10px 20px;
-      font-size: 18px;
-      background: #4CAF50;
-      border: none;
+      padding: 15px 25px;
+      font-size: 16px;
+      background-color: #00aced;
       color: white;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
-      border-radius: 5px;
+      margin-top: 20px;
     }
-
     button:disabled {
-      background: #777;
+      background-color: #555;
       cursor: not-allowed;
+    }
+    .retour {
+      display: block;
+      margin-top: 30px;
+      color: #00aced;
+      font-weight: bold;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-
-  <h1>🎁 Roue de la chance</h1>
-  <div id="pointer"></div>
-  <div id="wheel">
-    <!-- Segments créés dynamiquement -->
-  </div>
-
-  <br>
-  <button id="spinBtn">Tourner la roue</button>
-
-  <div id="result"></div>
+  <h1>🎯 Roue de la chance</h1>
+  <div id="wheel">🎁</div>
+  <button id="spinButton">Tourner la roue</button>
+  <p id="resultat"></p>
+  <a class="retour" href="index.html">← Retour au menu</a>
 
   <script>
-    const skins = ["Ninja", "Robot", "Pirate", "Chevalier", "Cosmique"];
+    const bouton = document.getElementById("spinButton");
     const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spinBtn");
-    const result = document.getElementById("result");
-    let isSpinning = false;
+    const resultat = document.getElementById("resultat");
 
-    // Créer les segments de la roue
-    const segmentAngle = 360 / skins.length;
-    skins.forEach((skin, i) => {
-      const segment = document.createElement("div");
-      segment.className = "segment";
-      segment.style.transform = `rotate(${i * segmentAngle}deg) translate(-100%, -100%)`;
-      segment.style.background = `hsl(${i * 72}, 80%, 50%)`;
-      segment.innerHTML = skin;
-      wheel.appendChild(segment);
-    });
+    const roueSkins = [
+      { id: "skin0", emoji: "🐱", nom: "Chat" },
+      { id: "skin1", emoji: "🐶", nom: "Chien" },
+      { id: "skin2", emoji: "🐸", nom: "Grenouille" },
+      { id: "skin3", emoji: "🐧", nom: "Pingouin" },
+      { id: "skin4", emoji: "🐰", nom: "Lapin" }
+    ];
 
-    // Fonction pour tourner la roue
-    spinBtn.onclick = () => {
-      if (isSpinning) return;
+    const delay = 3600 * 1000; // 1 heure
+    const lastSpin = localStorage.getItem("lastSpin");
+    const now = Date.now();
 
-      const lastSpin = localStorage.getItem("lastSpin");
-      if (lastSpin && Date.now() - parseInt(lastSpin) < 3600000) {
-        const minutesLeft = Math.ceil((3600000 - (Date.now() - parseInt(lastSpin))) / 60000);
-        result.innerHTML = `⏳ Reviens dans ${minutesLeft} minute(s) pour rejouer.`;
-        return;
-      }
+    if (lastSpin && now - lastSpin < delay) {
+      const minutes = Math.ceil((delay - (now - lastSpin)) / 60000);
+      bouton.disabled = true;
+      bouton.innerText = `Disponible dans ${minutes} min`;
+    }
 
-      isSpinning = true;
-      spinBtn.disabled = true;
-      result.innerHTML = "";
+    bouton.onclick = () => {
+      const skin = roueSkins[Math.floor(Math.random() * roueSkins.length)];
 
-      const randomIndex = Math.floor(Math.random() * skins.length);
-      const spins = 5;
-      const finalDeg = (spins * 360) + (360 - (randomIndex * segmentAngle) - segmentAngle / 2);
-
-      wheel.style.transition = "transform 5s ease-out";
-      wheel.style.transform = `rotate(${finalDeg}deg)`;
+      wheel.style.transform = `rotate(${360 * 10 + Math.random() * 360}deg)`;
+      bouton.disabled = true;
+      bouton.innerText = "Veuillez patienter...";
+      localStorage.setItem("lastSpin", Date.now());
 
       setTimeout(() => {
-        const wonSkin = skins[randomIndex];
-        result.innerHTML = `🎉 Tu as gagné le skin <strong>${wonSkin}</strong> !`;
-
-        // Sauvegarder la date de tirage
-        localStorage.setItem("lastSpin", Date.now().toString());
-
-        // Débloquer le skin dans le casier
-        let unlocked = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
-        if (!unlocked.includes(wonSkin)) {
-          unlocked.push(wonSkin);
-          localStorage.setItem("unlockedSkins", JSON.stringify(unlocked));
+        let skins = JSON.parse(localStorage.getItem("skins") || "[]");
+        if (!skins.includes(skin.id)) {
+          skins.push(skin.id);
+          localStorage.setItem("skins", JSON.stringify(skins));
+          resultat.innerText = `🎉 Vous avez gagné le skin ${skin.nom} ${skin.emoji} !`;
+        } else {
+          resultat.innerText = `😅 Vous êtes tombé sur ${skin.nom} ${skin.emoji}, que vous aviez déjà.`;
         }
-
-        isSpinning = false;
-      }, 5000);
-    };
-
-    // Réactivation possible au chargement si temps écoulé
-    window.onload = () => {
-      const lastSpin = localStorage.getItem("lastSpin");
-      if (!lastSpin || Date.now() - parseInt(lastSpin) > 3600000) {
-        spinBtn.disabled = false;
-      }
+        bouton.innerText = "Disponible dans 60 min";
+      }, 4000);
     };
   </script>
 </body>

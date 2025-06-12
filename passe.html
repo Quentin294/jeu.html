@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Passe de Combat</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .level {
+      background: #222;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .claimed {
+      background: #444;
+      color: #aaa;
+    }
+    .level span {
+      font-size: 18px;
+    }
+    .reward {
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 20px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button[disabled] {
+      background: #777;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <h1>Passe de Combat</h1>
+  <div id="levels"></div>
+
+  <script>
+    const passData = JSON.parse(localStorage.getItem("passData") || "{}");
+    const level = parseInt(localStorage.getItem("playerLevel") || "1");
+    let currency = parseInt(localStorage.getItem("currency") || "0");
+
+    const rewards = {
+      1: "skin1",
+      2: "skin2",
+      3: "💎 x5",
+      4: "skin3",
+      5: "skin4",
+      6: "skin5",
+      7: "💎 x10",
+      8: "skin6",
+      9: "skin7",
+      10: "skin8",
+      11: "💎 x15",
+      12: "💎 x20",
+      13: "💎 x30",
+      14: "💎 x40",
+      15: "💎 x50"
+    };
+
+    const container = document.getElementById("levels");
+
+    for (let i = 1; i <= 15; i++) {
+      const levelDiv = document.createElement("div");
+      levelDiv.classList.add("level");
+      if (passData[i]) levelDiv.classList.add("claimed");
+
+      const rewardText = document.createElement("span");
+      rewardText.innerHTML = `Niveau ${i} – <span class="reward">${rewards[i]}</span>`;
+      levelDiv.appendChild(rewardText);
+
+      const claimButton = document.createElement("button");
+      claimButton.innerText = passData[i] ? "Réclamé" : "Réclamer";
+      claimButton.disabled = passData[i] || i > level;
+
+      if (!passData[i] && i <= level) {
+        claimButton.onclick = () => {
+          passData[i] = true;
+          localStorage.setItem("passData", JSON.stringify(passData));
+
+          // Si c’est un skin, on l'ajoute dans les skins débloqués
+          if (rewards[i].startsWith("skin")) {
+            const unlocked = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
+            if (!unlocked.includes(rewards[i])) {
+              unlocked.push(rewards[i]);
+              localStorage.setItem("unlockedSkins", JSON.stringify(unlocked));
+            }
+          }
+
+          // Si c’est une récompense de monnaie 💎
+          if (rewards[i].includes("💎")) {
+            const amount = parseInt(rewards[i].replace(/[^\d]/g, ""));
+            currency += amount;
+            localStorage.setItem("currency", currency);
+          }
+
+          location.reload(); // rafraîchir pour mettre à jour l'affichage
+        };
+      }
+
+      levelDiv.appendChild(claimButton);
+      container.appendChild(levelDiv);
+    }
+  </script>
+</body>
+</html>
