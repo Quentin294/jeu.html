@@ -2,101 +2,165 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Événement - Festival du Pixel</title>
+  <title>Événement spécial</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: url('fond-evenement.jpg') no-repeat center center fixed;
-      background-size: cover;
-      font-family: 'Segoe UI', sans-serif;
-      color: white;
-    }
-
-    .container {
-      padding: 40px;
-      max-width: 800px;
-      margin: auto;
-      background-color: rgba(0, 0, 0, 0.7);
-      border-radius: 20px;
-      margin-top: 50px;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    .countdown {
-      font-size: 24px;
-      text-align: center;
-      margin: 20px 0;
-      color: #ffd700;
-    }
-
-    .quest {
-      background-color: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 15px;
-      border-radius: 15px;
-      margin: 15px 0;
-    }
-
-    .quest p {
-      margin: 5px 0;
-    }
-
-    .reward {
-      color: #00ffcc;
-    }
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {max-width:700px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    h1 {text-align:center;font-size:38px;margin-bottom:10px;}
+    .event-desc {text-align:center;font-size:18px;color:#ffe066;margin-bottom:10px;}
+    .chrono {text-align:center;font-size:22px;color:#ffe066;margin-bottom:32px;}
+    .quest-list {margin:0 auto 24px auto;max-width:520px;}
+    .quest-row {display:flex;align-items:center;justify-content:space-between;background:#232b3b;margin-bottom:18px;padding:14px 18px;border-radius:12px;box-shadow:0 2px 8px #0005;}
+    .quest-label {font-size:18px;}
+    .quest-reward {font-size:15px;color:#ffe066;}
+    .quest-progress {font-size:15px;margin-left:18px;}
+    .quest-claim {margin-left:24px;}
+    .claim-btn {background:#ffe066;color:#232b3b;font-weight:bold;border:none;border-radius:8px;padding:8px 20px;font-size:17px;cursor:pointer;box-shadow:0 2px 8px #ffe06688;transition:background 0.15s;}
+    .claim-btn:disabled {background:#888;color:#ccc;cursor:not-allowed;box-shadow:none;}
+    .claimed {color:#43e86e;font-weight:bold;}
+    .final-reward {text-align:center;margin:30px 0 10px 0;}
+    .final-btn {margin-top:10px;background:#43e86e;color:#fff;font-weight:bold;border:none;border-radius:10px;padding:12px 38px;font-size:20px;cursor:pointer;box-shadow:0 2px 8px #43e86e88;transition:background 0.15s;}
+    .final-btn:disabled {background:#888;color:#ccc;cursor:not-allowed;box-shadow:none;}
+    .final-claimed {color:#ffe066;font-size:20px;font-weight:bold;}
+    .btn-menu {margin-top:28px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>🎉 Festival du Pixel</h1>
-    <div class="countdown" id="countdown">Chargement du temps restant...</div>
-
-    <h2>🔥 Quêtes spéciales</h2>
-
-    <div class="quest">
-      <p><strong>🎮 Jouer 10 parties</strong></p>
-      <p class="reward">Récompense : 300 XP</p>
-    </div>
-
-    <div class="quest">
-      <p><strong>💰 Collecter 100 pièces</strong></p>
-      <p class="reward">Récompense : Skin exclusif « PixelOr »</p>
-    </div>
-
-    <div class="quest">
-      <p><strong>🛡️ Terminer 5 parties sans mourir</strong></p>
-      <p class="reward">Récompense : 500 XP + 10 diamants</p>
-    </div>
+    <h1>🎉 Festival du Mois</h1>
+    <div class="event-desc">Complète les quêtes d'événement avant la fin du mois pour gagner des récompenses exclusives !</div>
+    <div class="chrono" id="eventChrono"></div>
+    <div class="quest-list" id="eventQuestList"></div>
+    <div class="final-reward" id="finalReward"></div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour</button>
   </div>
-
   <script>
-    const endDate = new Date("2025-07-31T23:59:59");
+    // Configuration de l'événement (30 jours à partir du 1er juin 2025)
+    const EVENT_START = new Date(2025, 5, 1, 0, 0, 0).getTime(); // Mois 5 = juin (0-indexé)
+    const EVENT_DURATION = 30 * 24 * 3600 * 1000;
+    const EVENT_END = EVENT_START + EVENT_DURATION;
 
-    function updateCountdown() {
-      const now = new Date();
-      const distance = endDate - now;
+    // Quêtes d'événement (modifiable)
+    const EVENT_QUESTS = [
+      { id:"ev_collect_100_coins", label:"Ramasse 100 pièces", reward:"200 XP", goal:100 },
+      { id:"ev_win_5_games", label:"Gagne 5 parties", reward:"Skin spécial", goal:5 },
+      { id:"ev_survive_60_min", label:"Survis 60 minutes au total", reward:"500 pièces", goal:60 }
+    ];
+    const FINAL_REWARD = { label:"Skin ultra rare", desc:"Termine toutes les quêtes pour gagner ce skin exclusif !" };
 
-      if (distance <= 0) {
-        document.getElementById("countdown").textContent = "L'événement est terminé.";
-        return;
+    // État localStorage
+    function getEventState() {
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem("eventState")||"{}"); } catch(e){}
+      if(!state.progress) state.progress = {};
+      if(!state.claimed) state.claimed = {};
+      if(state.finalClaimed === undefined) state.finalClaimed = false;
+      for(const q of EVENT_QUESTS) {
+        if(state.progress[q.id] === undefined) state.progress[q.id] = 0;
+        if(state.claimed[q.id] === undefined) state.claimed[q.id] = false;
       }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-
-      document.getElementById("countdown").textContent =
-        `Temps restant : ${days} jours, ${hours} heures, ${minutes} minutes`;
+      return state;
+    }
+    function saveEventState(state) {
+      localStorage.setItem("eventState", JSON.stringify(state));
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 60000);
-  </script>
+    // Chrono
+    function updateChrono() {
+      const now = Date.now();
+      let chrono = document.getElementById('eventChrono');
+      if(now < EVENT_START) {
+        let left = EVENT_START - now;
+        let d = Math.floor(left/86400000), h = Math.floor((left%86400000)/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+        chrono.textContent = `Débute dans : ${d}j ${h}h ${m}m ${s}s`;
+        setTimeout(updateChrono, 1000);
+        return;
+      }
+      if(now >= EVENT_END) {
+        chrono.textContent = "Événement terminé !";
+        return;
+      }
+      let left = EVENT_END - now;
+      let d = Math.floor(left/86400000), h = Math.floor((left%86400000)/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+      chrono.textContent = `Temps restant : ${d}j ${h}h ${m}m ${s}s`;
+      setTimeout(updateChrono, 1000);
+    }
 
+    // Affichage des quêtes et réclamation
+    function renderQuests() {
+      let state = getEventState();
+      const now = Date.now();
+      const list = document.getElementById('eventQuestList');
+      list.innerHTML = '';
+      let allClaimed = true;
+      for(const q of EVENT_QUESTS) {
+        let val = state.progress[q.id] || 0;
+        let done = val >= q.goal;
+        let claimed = !!state.claimed[q.id];
+        if(!claimed) allClaimed = false;
+        list.innerHTML += `
+          <div class="quest-row">
+            <span class="quest-label">${q.label}</span>
+            <span class="quest-reward">${q.reward}</span>
+            <span class="quest-progress">${Math.min(val,q.goal)}/${q.goal}</span>
+            <span class="quest-claim">
+              ${claimed
+                ? `<span class="claimed">Réclamé</span>`
+                : (done && now >= EVENT_START && now < EVENT_END
+                    ? `<button class="claim-btn" onclick="claimQuest('${q.id}')">Réclamer</button>`
+                    : `<button class="claim-btn" disabled>Réclamer</button>`)}
+            </span>
+          </div>
+        `;
+      }
+      // Récompense finale
+      const final = document.getElementById('finalReward');
+      if(allClaimed) {
+        if(state.finalClaimed) {
+          final.innerHTML = `<div class="final-claimed">🎉 Récompense finale déjà réclamée !<br>${FINAL_REWARD.label}</div>`;
+        } else if(now >= EVENT_START && now < EVENT_END) {
+          final.innerHTML = `<div><b>Récompense finale : ${FINAL_REWARD.label}</b><br>${FINAL_REWARD.desc}<br>
+            <button class="final-btn" onclick="claimFinal()">Réclamer la récompense finale</button></div>`;
+        } else {
+          final.innerHTML = `<div><b>Récompense finale : ${FINAL_REWARD.label}</b><br>${FINAL_REWARD.desc}<br>
+            <button class="final-btn" disabled>Réclamer</button></div>`;
+        }
+      } else {
+        final.innerHTML = `<div><b>Récompense finale : ${FINAL_REWARD.label}</b><br>${FINAL_REWARD.desc}</div>`;
+      }
+    }
+
+    // Actions de réclamation
+    window.claimQuest = function(qid) {
+      let state = getEventState();
+      if(state.claimed[qid]) return;
+      state.claimed[qid] = true;
+      saveEventState(state);
+      renderQuests();
+      alert("Récompense de quête d'événement obtenue !");
+    }
+    window.claimFinal = function() {
+      let state = getEventState();
+      if(state.finalClaimed) return;
+      state.finalClaimed = true;
+      saveEventState(state);
+      renderQuests();
+      alert("Récompense finale d'événement obtenue !");
+    }
+
+    // Initialisation
+    renderQuests();
+    updateChrono();
+    window.addEventListener('storage', function(event) {
+      if(event.key === "eventState") renderQuests();
+    });
+
+    // --- Exemple pour relier au jeu ---
+    // Dans le jeu, pour incrémenter la progression :
+    // let state = JSON.parse(localStorage.getItem("eventState")||"{}");
+    // state.progress["ev_collect_100_coins"] = (state.progress["ev_collect_100_coins"]||0)+1;
+    // localStorage.setItem("eventState",JSON.stringify(state));
+  </script>
 </body>
 </html>

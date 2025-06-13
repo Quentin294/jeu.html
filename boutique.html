@@ -4,92 +4,208 @@
   <meta charset="UTF-8">
   <title>Boutique</title>
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 20px;
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {max-width:700px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    h1 {text-align:center;font-size:38px;margin-bottom:10px;}
+    .skins-shop {display:flex;justify-content:center;gap:38px;margin:40px 0 30px 0;}
+    .skin-card {
+      background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
+      width:140px;padding:18px 12px 16px 12px;text-align:center;
+      border:3px solid #ffe066;position:relative;
+      display:flex;flex-direction:column;align-items:center;
     }
-    h1 {
-      text-align: center;
+    .skin-circle {
+      width:64px;height:64px;border-radius:50%;margin-bottom:12px;
+      border:4px solid #fff;box-shadow:0 2px 10px #0006;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:bold;font-size:15px;color:#232b3b;text-shadow:0 2px 8px #fff8;
     }
-    #currency {
-      text-align: right;
-      font-size: 18px;
-      margin-bottom: 20px;
+    .skin-name {font-size:16px;font-weight:bold;color:#ffe066;margin-bottom:8px;}
+    .skin-price {font-size:18px;margin-bottom:8px;}
+    .buy-btn {
+      background:#3a6ee8;color:#fff;border:none;border-radius:8px;
+      padding:8px 18px;font-size:17px;font-weight:bold;cursor:pointer;
+      margin-bottom:4px;
     }
-    .item {
-      background: #222;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .buy-btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
+    .owned-label {color:#43e86e;font-weight:bold;}
+    .refresh-timer {text-align:center;color:#ffe066;font-size:17px;margin-bottom:18px;}
+    .offers-title {text-align:center;font-size:23px;margin:38px 0 18px 0;color:#ffe066;}
+    .offers-row {display:flex;justify-content:center;gap:34px;margin-bottom:10px;}
+    .offer-card {
+      background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
+      width:180px;padding:20px 12px 18px 12px;text-align:center;
+      border:3px solid #3a6ee8;position:relative;
+      display:flex;flex-direction:column;align-items:center;
     }
-    button {
-      padding: 10px 20px;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    .offer-amount {font-size:22px;font-weight:bold;margin-bottom:6px;color:#ffe066;}
+    .offer-price {font-size:20px;margin-bottom:10px;}
+    .offer-btn {
+      background:#ffe066;color:#232b3b;border:none;border-radius:8px;
+      padding:10px 18px;font-size:18px;font-weight:bold;cursor:pointer;
+      margin-bottom:4px;transition:background 0.15s;
     }
-    button:disabled {
-      background: #777;
-      cursor: default;
-    }
+    .offer-btn:hover {background:#fff3a0;}
+    .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
-  <h1>Boutique</h1>
-  <div id="currency">💎 : 0</div>
-  <div id="items"></div>
-
+  <div class="container">
+    <h1>🛒 Boutique</h1>
+    <div class="refresh-timer" id="refreshTimer"></div>
+    <div class="skins-shop" id="skinsShop"></div>
+    <div class="offers-title">Acheter des diamants</div>
+    <div class="offers-row">
+      <div class="offer-card">
+        <div class="offer-amount">💎 500</div>
+        <div class="offer-price">7,99&nbsp;€</div>
+        <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+      </div>
+      <div class="offer-card">
+        <div class="offer-amount">💎 2500</div>
+        <div class="offer-price">19,99&nbsp;€</div>
+        <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+      </div>
+      <div class="offer-card">
+        <div class="offer-amount">💎 5000</div>
+        <div class="offer-price">49,99&nbsp;€</div>
+        <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+      </div>
+    </div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+  </div>
   <script>
-    const boutiqueItems = [
-      { id: "skin_gold", name: "Skin Doré", price: 40 },
-      { id: "skin_shadow", name: "Skin Sombre", price: 50 },
-      { id: "skin_flame", name: "Skin Flamme", price: 30 }
+    // Palette des couleurs possibles
+    const shopColors = [
+      {name:"Rouge", color:"#FF3B30"},
+      {name:"Orange", color:"#FF9500"},
+      {name:"Jaune", color:"#FFCC00"},
+      {name:"Vert", color:"#34C759"},
+      {name:"Bleu", color:"#007AFF"},
+      {name:"Violet", color:"#AF52DE"},
+      {name:"Rose", color:"#FF2D55"},
+      {name:"Turquoise", color:"#5AC8FA"}
     ];
+    // Prix en diamants
+    const priceDiamonds = 800;
 
-    let currency = parseInt(localStorage.getItem("currency") || "0");
-    const unlocked = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
-
-    document.getElementById("currency").innerText = `💎 : ${currency}`;
-
-    const container = document.getElementById("items");
-
-    boutiqueItems.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "item";
-
-      const info = document.createElement("span");
-      info.textContent = `${item.name} – 💎 ${item.price}`;
-      div.appendChild(info);
-
-      const button = document.createElement("button");
-      if (unlocked.includes(item.id)) {
-        button.textContent = "Acheté";
-        button.disabled = true;
-      } else {
-        button.textContent = "Acheter";
-        button.onclick = () => {
-          if (currency >= item.price) {
-            currency -= item.price;
-            unlocked.push(item.id);
-            localStorage.setItem("currency", currency);
-            localStorage.setItem("unlockedSkins", JSON.stringify(unlocked));
-            location.reload();
-          } else {
-            alert("Pas assez de 💎 !");
-          }
-        };
+    // Génère la sélection du jour (2 couleurs différentes, change toutes les 24h)
+    function getShopSkins() {
+      let data = localStorage.getItem("shopSkins");
+      let expires = parseInt(localStorage.getItem("shopSkinsExpires")||"0");
+      let now = Date.now();
+      if(!data || now > expires) {
+        // Nouvelle sélection
+        let indices = [];
+        while(indices.length < 2) {
+          let idx = Math.floor(Math.random()*shopColors.length);
+          if(!indices.includes(idx)) indices.push(idx);
+        }
+        let skins = [shopColors[indices[0]], shopColors[indices[1]]];
+        localStorage.setItem("shopSkins", JSON.stringify(skins));
+        // Prochaine réinitialisation dans 24h
+        let tomorrow = now + 24*3600*1000;
+        localStorage.setItem("shopSkinsExpires", tomorrow+"");
+        return skins;
       }
+      try {
+        return JSON.parse(data);
+      } catch(e) {
+        return [shopColors[0], shopColors[1]];
+      }
+    }
 
-      div.appendChild(button);
-      container.appendChild(div);
+    // Affiche les skins du jour
+    function renderShopSkins() {
+      let skins = getShopSkins();
+      let div = document.getElementById('skinsShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      skins.forEach(skin => {
+        let ownedThis = owned.includes(skin.name);
+        let card = document.createElement("div");
+        card.className = "skin-card";
+        let circle = document.createElement("div");
+        circle.className = "skin-circle";
+        circle.style.background = skin.color;
+        circle.textContent = skin.name;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "skin-name";
+        name.textContent = skin.name;
+        card.appendChild(name);
+        let price = document.createElement("div");
+        price.className = "skin-price";
+        price.innerHTML = `💎 ${priceDiamonds}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() {
+            acheterSkin(skin);
+          };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Achat d'un skin couleur
+    function acheterSkin(skin) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < priceDiamonds) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      if(owned.includes(skin.name)) {
+        alert("Tu possèdes déjà cette couleur !");
+        return;
+      }
+      d -= priceDiamonds;
+      owned.push(skin.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("wonColors", JSON.stringify(owned));
+      alert(`Tu as acheté la couleur ${skin.name} !`);
+      renderShopSkins();
+    }
+
+    // Affiche le timer de refresh
+    function updateRefreshTimer() {
+      let expires = parseInt(localStorage.getItem("shopSkinsExpires")||"0");
+      let now = Date.now();
+      let left = expires-now;
+      let el = document.getElementById('refreshTimer');
+      if(left <= 0) {
+        renderShopSkins();
+        el.textContent = "Boutique réinitialisée !";
+        setTimeout(updateRefreshTimer, 1000);
+        return;
+      }
+      let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+      el.textContent = `Nouveaux skins dans : ${h}h ${m}m ${s}s`;
+      setTimeout(updateRefreshTimer, 1000);
+    }
+
+    // Synchronisation multi-onglets
+    window.addEventListener('storage', function(event) {
+      if(event.key === "wonColors" || event.key === "diamonds" || event.key === "shopSkins" || event.key === "shopSkinsExpires") {
+        renderShopSkins();
+      }
     });
+
+    // Initialisation
+    renderShopSkins();
+    updateRefreshTimer();
   </script>
 </body>
 </html>

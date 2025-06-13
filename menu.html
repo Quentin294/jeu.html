@@ -12,8 +12,6 @@
     .left-item {background:rgba(40,40,40,0.85);border-radius:10px;padding:10px 20px;font-size:16px;min-width:120px;text-align:center;cursor:pointer;transition:background 0.2s;}
     .left-item:hover {background:#3a6ee8;}
     .main-content {position:absolute;top:100px;left:50%;transform:translateX(-50%);width:900px;min-height:540px;background:rgba(35,43,59,0.98);border-radius:30px;box-shadow:0 8px 32px #0008;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:1;}
-    .tab-content {display:none;width:100%;height:100%;}
-    .tab-content.active {display:block;}
     .center-skin {display:flex;flex-direction:column;align-items:center;width:100%;}
     .skin-img {width:320px;height:400px;background:#444;border-radius:30px;margin-bottom:20px;box-shadow:0 8px 32px #0008;background-size:cover;background-position:center;cursor:pointer;}
     .skin-name {font-size:24px;font-weight:bold;letter-spacing:2px;text-shadow:0 2px 8px #000a;}
@@ -29,307 +27,96 @@
     .mode-btn:hover,.modal-btn:hover {background:#254a9c;}
     .close-modal {position:absolute;top:12px;right:18px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:0.7;transition:opacity 0.15s;}
     .close-modal:hover {opacity:1;}
-    .skins-list {display:flex;flex-wrap:wrap;gap:26px;justify-content:center;margin-top:36px;}
-    .skin-card {background:#232b3b;border-radius:18px;box-shadow:0 2px 12px #0007;padding:18px 18px 10px 18px;text-align:center;cursor:pointer;border:3px solid transparent;transition:border 0.2s,box-shadow 0.2s;width:140px;position:relative;}
-    .skin-card.selected {border:3px solid #ffe066;box-shadow:0 2px 18px #ffe06688;}
-    .skin-card img {width:100px;height:120px;object-fit:cover;border-radius:10px;background:#444;margin-bottom:10px;}
-    .skin-card .skin-name {font-size:16px;font-weight:bold;color:#ffe066;}
-    .wheel-container {display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;padding-top:30px;}
-    .wheel-canvas {margin:0 auto;display:block;background:#232b3b;border-radius:50%;box-shadow:0 4px 24px #0008;}
-    .wheel-btn {margin-top:30px;padding:18px 42px;font-size:22px;background:#3a6ee8;color:#fff;border:none;border-radius:14px;cursor:pointer;font-weight:bold;box-shadow:0 2px 8px #0006;transition:background 0.2s;}
-    .wheel-btn[disabled] {background:#888;cursor:not-allowed;}
-    .wheel-result {margin-top:30px;font-size:20px;text-align:center;min-height:40px;}
-    .wheel-won-skins {margin-top:20px;font-size:16px;text-align:center;color:#ffe066;max-width:90%;word-wrap:break-word;}
-    #wheel-toast {position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#232b3b;color:#fff;padding:18px 38px;border-radius:18px;box-shadow:0 4px 16px #000a;font-size:20px;font-weight:bold;display:none;z-index:200;border:2px solid #43e86e;animation:popin 0.2s;}
+    .btn-plus {margin-left:6px;padding:0 8px;background:#ffe066;color:#232b3b;border:none;border-radius:50%;font-size:20px;font-weight:bold;cursor:pointer;line-height:1.2;}
+    .btn-plus:hover {background:#fff3a0;}
   </style>
 </head>
 <body>
   <div class="menu-bar" id="mainMenuBar">
-    <button class="menu-btn active" data-tab="commencer">Commencer</button>
+    <button class="menu-btn active" id="btnCommencer">Commencer</button>
     <button class="menu-btn" onclick="window.location.href='succes.html'">Succès</button>
-    <button class="menu-btn" data-tab="roue">Roue</button>
-    <button class="menu-btn" data-tab="tenues">Tenues</button>
-    <button class="menu-btn" data-tab="passe">Passe de combat</button>
-    <button class="menu-btn" data-tab="boutique">Boutique</button>
+    <button class="menu-btn" onclick="window.location.href='roue.html'">Roue</button>
+    <button class="menu-btn" onclick="window.location.href='tenues.html'">Tenues</button>
+    <button class="menu-btn" onclick="window.location.href='passe.html'">Passe de combat</button>
+    <button class="menu-btn" onclick="window.location.href='boutique.html'">Boutique</button>
   </div>
   <div class="left-panel" id="mainLeftPanel">
-    <div class="left-item">💎 Diamants : <span id="diamonds">1500</span></div>
+    <div class="left-item" style="display:flex;align-items:center;gap:8px;">
+      💎 Diamants : <span id="diamonds">0</span>
+      <button id="diamondsPlus" class="btn-plus" title="Acheter des diamants">+</button>
+    </div>
     <div class="left-item" onclick="window.location.href='quetes.html'">📜 Quêtes</div>
     <div class="left-item" onclick="window.location.href='calendrier.html'">📅 Calendrier</div>
-    <div class="left-item">🏆 Classement</div>
+    <div class="left-item" onclick="window.location.href='classement.html'">🏆 Classement</div>
     <div class="left-item" onclick="window.location.href='evenement.html'">🎉 Événement</div>
   </div>
   <div class="main-content" id="mainContent">
-    <!-- Onglet Commencer -->
-    <div class="tab-content active" id="tab-commencer">
-      <div class="center-skin" id="skinPanel">
-        <div class="skin-img" id="skinImg"></div>
-        <div class="skin-name" id="skinName">Skin Actuel</div>
-      </div>
-      <div class="start-panel" id="startPanel">
-        <button class="start-btn" id="openModalBtn">COMMENCER</button>
-      </div>
-      <!-- Modal Choix du mode -->
-      <div class="modal-bg" id="modalBg">
-        <div class="modal">
-          <button class="close-modal" id="closeModalBtn" title="Fermer">&times;</button>
-          <div class="modal-title">Choisis ton mode</div>
-          <button class="mode-btn" onclick="window.location.href='classique.html'">Classique</button>
-          <button class="mode-btn" onclick="alert('Mode Chrono à venir !')">Chrono</button>
-          <button class="mode-btn" onclick="alert('Mode Infini à venir !')">Infini</button>
-        </div>
-      </div>
+    <div class="center-skin" id="skinPanel">
+      <div class="skin-img" id="skinImg"></div>
+      <div class="skin-name" id="skinName">Skin Actuel</div>
     </div>
-    <!-- Onglet Roue -->
-    <div class="tab-content" id="tab-roue">
-      <div class="wheel-container">
-        <h2>Roue de la chance</h2>
-        <canvas id="wheelCanvas" class="wheel-canvas" width="350" height="350"></canvas>
-        <button class="wheel-btn" id="spinBtn">Tourner la roue</button>
-        <div class="wheel-result" id="wheelResult"></div>
-        <div class="wheel-won-skins" id="wheelWonSkins"></div>
-      </div>
+    <div class="start-panel" id="startPanel">
+      <button class="start-btn" id="openModalBtn">COMMENCER</button>
     </div>
-    <!-- Onglet Tenues -->
-    <div class="tab-content" id="tab-tenues">
-      <div style="width:100%;text-align:center;padding:30px 0 0 0;">
-        <h2>Tenues débloquées</h2>
-        <div class="skins-list" id="skinsList"></div>
-        <div style="margin-top:28px;color:#ffe066;font-size:18px;" id="tenueInfo"></div>
-      </div>
-    </div>
-    <!-- Onglet Passe de combat -->
-    <div class="tab-content" id="tab-passe">
-      <div style="width:100%;text-align:center;padding:60px 0;">
-        <h2>Passe de combat</h2>
-        <p>Débloque des récompenses exclusives !</p>
-      </div>
-    </div>
-    <!-- Onglet Boutique -->
-    <div class="tab-content" id="tab-boutique">
-      <div style="width:100%;text-align:center;padding:60px 0;">
-        <h2>Boutique</h2>
-        <p>Achetez des objets, skins et plus encore !</p>
+    <!-- Modal Choix du mode -->
+    <div class="modal-bg" id="modalBg">
+      <div class="modal">
+        <button class="close-modal" id="closeModalBtn" title="Fermer">&times;</button>
+        <div class="modal-title">Choisis ton mode</div>
+        <button class="mode-btn" onclick="window.location.href='classique.html'">Classique</button>
+        <button class="mode-btn" onclick="window.location.href='chrono.html'">Chrono</button>
+        <button class="mode-btn" onclick="window.location.href='infini.html'">Infini</button>
       </div>
     </div>
   </div>
-  <div id="wheel-toast"></div>
   <script>
-    // Skins de base + mapping images pour la roue
-    const skinImages = {
-      "Agent Élite": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png",
-      "Chevalier Noir": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/4/48/Outfit_Black_Knight.png",
-      "Lapin Futé": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/0/0b/Outfit_Bunny_Brawler.png",
-      "Ninja Rose": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/2/2d/Outfit_Kuno.png",
-      "Pyjama Party": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/9/9a/Outfit_Onesie.png",
-      "Robot Vert": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/39/Outfit_Toy_Trooper.png",
-      "Samouraï": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/8/8d/Outfit_Musha.png",
-      "Vampire": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/0/0d/Outfit_Dusk.png"
+    // Affichage dynamique des diamants
+    function updateDiamonds() {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      document.getElementById('diamonds').textContent = d;
+    }
+    updateDiamonds();
+    window.addEventListener('storage', function(event) {
+      if(event.key === "diamonds") updateDiamonds();
+    });
+
+    // Bouton "+" pour acheter des diamants
+    document.getElementById('diamondsPlus').onclick = function() {
+      localStorage.setItem("goToDiamondsOffer", "1");
+      window.location.href = "boutique.html";
     };
 
-    // --- Onglets et panneau gauche ---
-    const tabs = document.querySelectorAll('.menu-btn[data-tab]');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabs.forEach(btn => {
-      btn.onclick = () => {
-        tabs.forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        tabContents.forEach(tc=>tc.classList.remove('active'));
-        document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-        if(btn.dataset.tab==="roue" || btn.dataset.tab==="tenues") {
-          document.getElementById('mainLeftPanel').style.display = "none";
-        } else {
-          document.getElementById('mainLeftPanel').style.display = "";
-        }
-        if(btn.dataset.tab==="tenues") renderTenues();
+    // Modal Commencer
+    document.addEventListener("DOMContentLoaded", function() {
+      var openModalBtn = document.getElementById('openModalBtn');
+      var modalBg = document.getElementById('modalBg');
+      var closeModalBtn = document.getElementById('closeModalBtn');
+      if(openModalBtn && modalBg && closeModalBtn) {
+        openModalBtn.onclick = function() {
+          modalBg.classList.add('active');
+        };
+        closeModalBtn.onclick = function() {
+          modalBg.classList.remove('active');
+        };
+        modalBg.onclick = function(e) {
+          if (e.target === modalBg) modalBg.classList.remove('active');
+        };
       }
     });
 
-    // --- Tenues (toujours synchro avec localStorage) ---
-    function renderTenues() {
-      const skins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
-      const selected = localStorage.getItem("selectedSkin") || "Agent Élite";
-      const list = document.getElementById('skinsList');
-      const info = document.getElementById('tenueInfo');
-      if(!list) return;
-      list.innerHTML = "";
-      (skins.length ? skins : ["Agent Élite"]).forEach(skin => {
-        list.innerHTML += `
-          <div class="skin-card${skin===selected ? " selected":""}" data-skin="${skin}">
-            <img src="${skinImages[skin] || skinImages["Agent Élite"]}" alt="${skin}" />
-            <div class="skin-name">${skin}</div>
-          </div>
-        `;
-      });
-      info.innerHTML = "Clique sur une tenue pour l'utiliser en jeu.";
-      Array.from(list.querySelectorAll('.skin-card')).forEach(card => {
-        card.onclick = () => {
-          localStorage.setItem("selectedSkin", card.dataset.skin);
-          renderTenues();
-          updateCommencerSkin();
-        };
-      });
-    }
+    // Skin d'accueil (placeholder, à adapter selon ton système)
+    const skinImages = {
+      "Agent Élite": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png"
+    };
     function updateCommencerSkin() {
       const skin = localStorage.getItem("selectedSkin") || "Agent Élite";
       document.getElementById('skinImg').style.backgroundImage = `url('${skinImages[skin] || skinImages["Agent Élite"]}')`;
       document.getElementById('skinName').textContent = skin;
     }
-    document.getElementById('skinImg').onclick = () => {
-      const skins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
-      let arr = (skins.length ? skins : ["Agent Élite"]);
-      let idx = arr.indexOf(localStorage.getItem("selectedSkin") || "Agent Élite");
-      idx = (idx+1)%arr.length;
-      localStorage.setItem("selectedSkin", arr[idx]);
-      updateCommencerSkin();
-    };
     updateCommencerSkin();
-
-    // --- Roue de la chance (inchangé) ---
-    const wheelSkins = [
-      {name:"Agent Élite", color:"#3a6ee8"},
-      {name:"Chevalier Noir", color:"#232b3b"},
-      {name:"Lapin Futé", color:"#e83a3a"},
-      {name:"Ninja Rose", color:"#d72660"},
-      {name:"Pyjama Party", color:"#ffe066"},
-      {name:"Robot Vert", color:"#43e86e"},
-      {name:"Samouraï", color:"#b87333"},
-      {name:"Vampire", color:"#b80000"}
-    ];
-    let wonSkins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
-    function getNextSpinTime() {
-      return parseInt(localStorage.getItem("wheelNextSpin")||"0");
-    }
-    function setNextSpinTime(ts) {
-      localStorage.setItem("wheelNextSpin",ts+"");
-    }
-    function saveWonSkins() {
-      localStorage.setItem("wonSkins",JSON.stringify(wonSkins));
-    }
-    function updateWheelWonSkins() {
-      const el = document.getElementById('wheelWonSkins');
-      if(wonSkins.length===0)
-        el.innerHTML = "Aucun skin gagné pour l’instant.";
-      else
-        el.innerHTML = "Skins gagnés : " + wonSkins.join(", ");
-    }
-    function showWheelToast(msg) {
-      const toast = document.getElementById('wheel-toast');
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(()=>{ toast.style.display = "none"; }, 2500);
-    }
-    function updateWheelCooldown() {
-      const btn = document.getElementById('spinBtn');
-      const now = Date.now();
-      const next = getNextSpinTime();
-      if(now < next) {
-        btn.disabled = true;
-        let sec = Math.ceil((next-now)/1000);
-        let min = Math.floor(sec/60);
-        sec = sec%60;
-        btn.textContent = `Reviens dans ${min}m ${sec}s`;
-        setTimeout(updateWheelCooldown, 1000);
-      } else {
-        btn.disabled = false;
-        btn.textContent = "Tourner la roue";
-      }
-    }
-    function drawWheel(angle=0) {
-      const canvas = document.getElementById('wheelCanvas');
-      if(!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const n = wheelSkins.length;
-      const r = 170;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(let i=0;i<n;i++) {
-        const start = angle + i*2*Math.PI/n;
-        const end = angle + (i+1)*2*Math.PI/n;
-        ctx.beginPath();
-        ctx.moveTo(175,175);
-        ctx.arc(175,175,r,start,end);
-        ctx.closePath();
-        ctx.fillStyle = wheelSkins[i].color;
-        ctx.fill();
-        ctx.save();
-        ctx.translate(175,175);
-        ctx.rotate((start+end)/2);
-        ctx.textAlign = "right";
-        ctx.font = "bold 18px Arial";
-        ctx.fillStyle = "#fff";
-        ctx.fillText(wheelSkins[i].name, r-10,8);
-        ctx.restore();
-      }
-      ctx.beginPath();
-      ctx.moveTo(175,10); ctx.lineTo(165,40); ctx.lineTo(185,40); ctx.closePath();
-      ctx.fillStyle = "#ffe066"; ctx.fill();
-    }
-    function spinWheel() {
-      const btn = document.getElementById('spinBtn');
-      if(btn.disabled) return;
-      btn.disabled = true;
-      btn.textContent = "Tirage...";
-      let angle = 0;
-      let t = 0, duration = 3500 + Math.random()*600;
-      let targetIndex = Math.floor(Math.random()*wheelSkins.length);
-      let targetAngle = 2*Math.PI*3 + (2*Math.PI/wheelSkins.length)*(wheelSkins.length-targetIndex-0.5);
-      function animate() {
-        t += 16;
-        let progress = Math.min(1, t/duration);
-        let ease = 1-Math.pow(1-progress,3);
-        angle = ease*targetAngle;
-        drawWheel(angle);
-        if(progress<1) requestAnimationFrame(animate);
-        else {
-          const skin = wheelSkins[targetIndex].name;
-          document.getElementById('wheelResult').innerHTML = `<b>Bravo !</b> Tu as gagné le skin <span style="color:#ffe066">${skin}</span> !`;
-          if(!wonSkins.includes(skin)) {
-            wonSkins.push(skin);
-            saveWonSkins();
-            showWheelToast(`Nouveau skin gagné : ${skin} !`);
-          } else {
-            showWheelToast(`Tu as déjà ce skin : ${skin}`);
-          }
-          updateWheelWonSkins();
-          setNextSpinTime(Date.now() + 3600*1000);
-          updateWheelCooldown();
-        }
-      }
-      animate();
-    }
-    document.getElementById('spinBtn').onclick = spinWheel;
-    drawWheel();
-    updateWheelCooldown();
-    updateWheelWonSkins();
-    setInterval(updateWheelCooldown, 1000);
-
-    // --- Modal Choix du mode ---
-    const modalBg = document.getElementById('modalBg');
-    document.getElementById('openModalBtn').onclick = () => {
-      modalBg.classList.add('active');
-    };
-    document.getElementById('closeModalBtn').onclick = () => {
-      modalBg.classList.remove('active');
-    };
-    modalBg.onclick = (e) => {
-      if (e.target === modalBg) modalBg.classList.remove('active');
-    };
-
-    // --- Synchronisation automatique avec le jeu classique ---
     window.addEventListener('storage', function(event) {
-      if(event.key === "selectedSkin") {
-        renderTenues();
-        updateCommencerSkin();
-      }
-      if(event.key === "wonSkins") {
-        renderTenues();
-        updateWheelWonSkins();
-      }
+      if(event.key === "selectedSkin") updateCommencerSkin();
     });
-
-    // --- Initialisation à l'ouverture ---
-    renderTenues();
-
   </script>
 </body>
 </html>

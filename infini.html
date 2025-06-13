@@ -4,251 +4,251 @@
   <meta charset="UTF-8">
   <title>Mode Infini</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background-color: #111;
-    }
-    canvas {
-      display: block;
-      background: linear-gradient(#87ceeb, #ffffff);
-    }
-    #score, #xp-bar {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      font-size: 20px;
-      background: rgba(0,0,0,0.5);
-      padding: 5px 10px;
-      border-radius: 10px;
-    }
-    #xp-bar {
-      top: 40px;
-      width: 200px;
-      height: 20px;
-      background: rgba(255,255,255,0.2);
-    }
-    #xp-fill {
-      height: 100%;
-      background: dodgerblue;
-      width: 0%;
-      border-radius: 10px;
-    }
-    #pause-menu {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      display: none;
-      text-align: center;
-    }
-    #pause-menu button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .success-popup {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: gold;
-      color: black;
-      padding: 10px;
-      border-radius: 10px;
-      display: none;
-    }
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    #infiniGameArea { width: 600px; height: 400px; background: #232b3b; position: relative; margin: 40px auto 0 auto; border-radius: 24px; box-shadow: 0 8px 32px #0008;}
+    .player { width: 48px; height: 48px; position: absolute; border-radius: 50%; background:#3a6ee8;}
+    .enemy { width: 44px; height: 44px; background: #e83a3a; position: absolute; border-radius: 14px; }
+    .coin { width: 32px; height: 32px; background: gold; position: absolute; border-radius: 50%; border:2px solid #ffe066;}
+    .xp-bubble { width: 24px; height: 24px; background: #43e86e; position: absolute; border-radius: 50%; border:2px solid #fff;}
+    #hud-left {position:absolute;left:20px;top:20px;z-index:10;}
+    #rank {margin-top:12px;}
+    #xp-bar-bg {position:absolute;left:20px;bottom:32px;width:300px;height:16px;background:#111;border-radius:8px;}
+    #xp-bar {height:16px;border-radius:8px;background:#3a6ee8;width:0;}
+    #xp-label {position:absolute;left:20px;bottom:10px;}
+    #infini-timer {position:absolute;top:20px;right:30px;font-size:24px;font-weight:bold;background:#232b3b;padding:8px 20px;border-radius:16px;color:#ffe066;box-shadow:0 2px 8px #0008;}
+    .modal-bg {display:none;position:fixed;z-index:100;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
+    .modal-bg.active {display:flex;}
+    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:40px 32px 32px 32px;min-width:320px;text-align:center;position:relative;}
+    .modal-title {font-size:28px;font-weight:bold;margin-bottom:28px;letter-spacing:1px;}
+    .modal-btn {display:block;width:100%;margin:16px 0;padding:18px 0;font-size:22px;font-weight:bold;border:none;border-radius:12px;background:#3a6ee8;color:#fff;cursor:pointer;transition:background 0.15s;}
+    .modal-btn.quit {background:#e83a3a;}
+    .modal-btn.gold {background:#ffe066;color:#232b3b;}
   </style>
 </head>
 <body>
-
-<canvas id="gameCanvas" width="800" height="400"></canvas>
-<div id="score">Score : 0</div>
-<div id="xp-bar"><div id="xp-fill"></div></div>
-<div class="success-popup" id="successPopup"></div>
-
-<div id="pause-menu">
-  <h2>Pause</h2>
-  <button onclick="resumeGame()">Reprendre</button>
-  <button onclick="restartGame()">Recommencer</button>
-  <button onclick="exitToMenu()">Quitter</button>
-</div>
-
-<script>
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-
-  let player = { x: 50, y: 300, width: 40, height: 40, dy: 0, grounded: false };
-  let gravity = 0.8;
-  let jumpForce = -12;
-  let score = 0;
-  let coins = [];
-  let enemies = [];
-  let xp = 0;
-  let paused = false;
-  let gameOver = false;
-  let difficultyTimer = 0;
-
-  function spawnCoin() {
-    coins.push({ x: Math.random() * 760 + 20, y: Math.random() * 360 + 20, radius: 10 });
-  }
-
-  function spawnEnemy() {
-    enemies.push({ x: Math.random() * 760 + 20, y: 370, width: 40, height: 30 });
-  }
-
-  function updateXPBar() {
-    const xpFill = document.getElementById("xp-fill");
-    const levelXP = 100;
-    const progress = Math.min(100, (xp % levelXP));
-    xpFill.style.width = progress + "%";
-  }
-
-  function saveHighScore() {
-    const highScore = parseInt(localStorage.getItem("infini_high_score") || "0", 10);
-    if (score > highScore) {
-      localStorage.setItem("infini_high_score", score);
-      showSuccess("Nouveau record !");
-    }
-  }
-
-  function showSuccess(text) {
-    const popup = document.getElementById("successPopup");
-    popup.textContent = "🏆 " + text;
-    popup.style.display = "block";
-    setTimeout(() => {
-      popup.style.display = "none";
-    }, 3000);
-  }
-
-  function checkAchievements() {
-    if (score >= 100 && !localStorage.getItem("success_100pts")) {
-      localStorage.setItem("success_100pts", "true");
-      showSuccess("Atteindre 100 points");
-    }
-    if (score >= 500 && !localStorage.getItem("success_500pts")) {
-      localStorage.setItem("success_500pts", "true");
-      showSuccess("Atteindre 500 points");
-    }
-    if (score >= 1000 && !localStorage.getItem("success_1000pts")) {
-      localStorage.setItem("success_1000pts", "true");
-      showSuccess("Atteindre 1000 points");
-    }
-  }
-
-  function increaseDifficulty() {
-    difficultyTimer++;
-    if (difficultyTimer % 600 === 0) {
-      spawnEnemy();
-    }
-  }
-
-  function endGame() {
-    gameOver = true;
-    saveHighScore();
-    alert("Game Over! Score : " + score);
-    window.location.href = "menu.html";
-  }
-
-  function pauseGame() {
-    paused = true;
-    document.getElementById("pause-menu").style.display = "block";
-  }
-
-  function resumeGame() {
-    paused = false;
-    document.getElementById("pause-menu").style.display = "none";
-    updateGame();
-  }
-
-  function restartGame() {
-    location.reload();
-  }
-
-  function exitToMenu() {
-    window.location.href = "menu.html";
-  }
-
-  document.addEventListener("keydown", function(e) {
-    if (e.code === "Space") {
-      if (paused) {
-        resumeGame();
-      } else if (player.grounded) {
-        player.dy = jumpForce;
+  <div style="width:100%;text-align:center;margin-top:22px;">
+    <button onclick="window.history.back()" class="modal-btn" style="width:auto;display:inline-block;">&larr; Retour au menu</button>
+  </div>
+  <div id="infiniGameArea" tabindex="1"></div>
+  <div id="infini-timer"></div>
+  <div class="modal-bg" id="pauseModal">
+    <div class="modal">
+      <div class="modal-title">Pause</div>
+      <button class="modal-btn" id="resumeBtn">Reprendre</button>
+      <button class="modal-btn" id="restartBtn">Recommencer</button>
+      <button class="modal-btn quit" id="quitBtn">Quitter</button>
+    </div>
+  </div>
+  <div class="modal-bg" id="gameOverModal">
+    <div class="modal">
+      <div class="modal-title">GAME OVER</div>
+      <div id="finalScore" style="font-size:24px;margin-bottom:28px;"></div>
+      <div id="bestScore" style="font-size:18px;margin-bottom:18px;color:#ffe066;"></div>
+      <button class="modal-btn gold" id="restartBtnGO">Recommencer</button>
+      <button class="modal-btn quit" id="quitBtnGO">Quitter</button>
+    </div>
+  </div>
+  <script>
+    function startInfiniGame() {
+      const area = document.getElementById('infiniGameArea');
+      area.innerHTML = `
+        <div id="hud-left">
+          <div>Score : <span id="score">0</span></div>
+          <div>🪙 Pièces : <span id="coins">0</span></div>
+          <div id="rank">Rang : Débutant</div>
+        </div>
+        <div id="xp-bar-bg">
+          <div id="xp-bar"></div>
+        </div>
+        <div id="xp-label">XP : <span id="xp">0</span> / <span id="xp-max">100</span></div>
+        <div class="player" id="player"></div>
+        <div class="enemy" id="enemy1"></div>
+        <div class="enemy" id="enemy2"></div>
+        <div class="coin" id="coin"></div>
+        <div class="xp-bubble" id="xpBubble"></div>
+      `;
+      let width = area.clientWidth, height = area.clientHeight;
+      let px = width/2-24, py = height/2-24, ps = 6;
+      let ex = [100, width-100], ey = [100, height-100], evx = [3, -2.5], evy = [2.5, 3];
+      let coinPos = [200, 200], xpPos = [400, 400];
+      let score = 0, coins = 0, xp = 0, xpMax = 100;
+      let paused = false, gameOver = false;
+      let keys = {};
+      let running = true;
+      let frameId = null;
+      let startTime = Date.now();
+      let lastTick = Date.now();
+      let secondsSurvived = 0;
+      let difficultyTimer = 0;
+      function getRank(n) {
+        if (n >= 30) return "Maître";
+        if (n >= 20) return "Expert";
+        if (n >= 10) return "Pro";
+        if (n >= 5) return "Avancé";
+        return "Débutant";
       }
-    } else if (e.code === "Escape") {
-      pauseGame();
-    }
-  });
-
-  function updateGame() {
-    if (paused || gameOver) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Gravité
-    player.dy += gravity;
-    player.y += player.dy;
-
-    if (player.y + player.height > canvas.height) {
-      player.y = canvas.height - player.height;
-      player.dy = 0;
-      player.grounded = true;
-    } else {
-      player.grounded = false;
-    }
-
-    // Joueur
-    ctx.fillStyle = "red";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    // Pièces
-    for (let i = 0; i < coins.length; i++) {
-      const coin = coins[i];
-      ctx.fillStyle = "yellow";
-      ctx.beginPath();
-      ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (Math.hypot(player.x + player.width / 2 - coin.x, player.y + player.height / 2 - coin.y) < player.width / 2 + coin.radius) {
-        coins.splice(i, 1);
-        score += 10;
-        xp += 10;
-        document.getElementById("score").textContent = "Score : " + score;
-        updateXPBar();
-        checkAchievements();
-        spawnCoin();
+      function placeRandom(el, margin=40) {
+        let x = Math.random()*(width-margin*2)+margin;
+        let y = Math.random()*(height-margin*2)+margin;
+        el.style.left = x+"px";
+        el.style.top = y+"px";
+        return [x,y];
       }
-    }
-
-    // Ennemis
-    for (let i = 0; i < enemies.length; i++) {
-      const e = enemies[i];
-      ctx.fillStyle = "black";
-      ctx.fillRect(e.x, e.y, e.width, e.height);
-
-      if (player.x < e.x + e.width && player.x + player.width > e.x &&
-          player.y < e.y + e.height && player.y + player.height > e.y) {
-        endGame();
+      function updateEntities() {
+        document.getElementById('player').style.left = px+"px";
+        document.getElementById('player').style.top = py+"px";
+        document.getElementById('enemy1').style.left = ex[0]+"px";
+        document.getElementById('enemy1').style.top = ey[0]+"px";
+        document.getElementById('enemy2').style.left = ex[1]+"px";
+        document.getElementById('enemy2').style.top = ey[1]+"px";
+        document.getElementById('coin').style.left = coinPos[0]+"px";
+        document.getElementById('coin').style.top = coinPos[1]+"px";
+        document.getElementById('xpBubble').style.left = xpPos[0]+"px";
+        document.getElementById('xpBubble').style.top = xpPos[1]+"px";
       }
+      function updateHUD() {
+        document.getElementById('score').textContent = score;
+        document.getElementById('coins').textContent = coins;
+        document.getElementById('rank').textContent = "Rang : "+getRank(coins);
+        document.getElementById('xp').textContent = xp;
+        document.getElementById('xp-max').textContent = xpMax;
+        document.getElementById('xp-bar').style.width = Math.min(100,100*xp/xpMax)+"%";
+      }
+      function updateTimerDisplay() {
+        let min = Math.floor(secondsSurvived/60);
+        let sec = secondsSurvived%60;
+        document.getElementById('infini-timer').textContent = `🕒 ${min}m ${sec.toString().padStart(2,'0')}s`;
+      }
+      function resetGame() {
+        px = width/2-24; py = height/2-24;
+        ex[0]=100; ey[0]=100; ex[1]=width-100; ey[1]=height-100;
+        evx=[3, -2.5]; evy=[2.5, 3];
+        score=0; coins=0; xp=0; xpMax=100;
+        gameOver=false; paused=false;
+        coinPos = placeRandom(document.getElementById('coin'));
+        xpPos = placeRandom(document.getElementById('xpBubble'), 30);
+        updateEntities(); updateHUD();
+        document.getElementById('pauseModal').classList.remove('active');
+        document.getElementById('gameOverModal').classList.remove('active');
+        area.focus();
+        startTime = Date.now();
+        lastTick = Date.now();
+        secondsSurvived = 0;
+        difficultyTimer = 0;
+        updateTimerDisplay();
+      }
+      function pauseGame() {
+        if(!gameOver){ paused=true; document.getElementById('pauseModal').classList.add('active');}
+      }
+      function resumeGame() {
+        paused=false; document.getElementById('pauseModal').classList.remove('active'); area.focus();
+        lastTick = Date.now();
+      }
+      function quitToMenu() {
+        running = false;
+        window.history.back();
+      }
+      function restartGame() {
+        running = false;
+        setTimeout(() => {
+          running = true;
+          resetGame();
+          frameId = requestAnimationFrame(gameLoop);
+        }, 30);
+      }
+      function showGameOver() {
+        gameOver=true;
+        document.getElementById('gameOverModal').classList.add('active');
+        document.getElementById('finalScore').innerHTML = `Score final : <b>${score}</b><br>Pièces : <b>${coins}</b><br>XP : <b>${xp}</b><br>Temps survécu : <b>${Math.floor(secondsSurvived/60)}m ${(secondsSurvived%60).toString().padStart(2,'0')}s</b>`;
+        // Sauvegarde du meilleur score local
+        let best = parseInt(localStorage.getItem("infiniBestScore")||"0");
+        if(score > best) {
+          localStorage.setItem("infiniBestScore",score);
+          document.getElementById('bestScore').innerHTML = "🏆 Nouveau record personnel !";
+        } else {
+          document.getElementById('bestScore').innerHTML = "Meilleur score : " + best;
+        }
+      }
+      function rectsCollide(ax,ay,aw,ah,bx,by,bw,bh) {
+        return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+      }
+      function increaseDifficulty() {
+        // Augmente la vitesse toutes les 30 secondes
+        for(let i=0;i<2;i++) {
+          if(evx[i]>0) evx[i]+=0.2;
+          else evx[i]-=0.2;
+          if(evy[i]>0) evy[i]+=0.2;
+          else evy[i]-=0.2;
+        }
+      }
+      function gameLoop() {
+        if(!running) return;
+        if(!paused && !gameOver) {
+          let now = Date.now();
+          let delta = Math.floor((now-lastTick)/1000);
+          if(delta>0) {
+            secondsSurvived += delta;
+            difficultyTimer += delta;
+            lastTick = now;
+            updateTimerDisplay();
+            if(difficultyTimer >= 30) {
+              increaseDifficulty();
+              difficultyTimer = 0;
+            }
+          }
+          if(keys["ArrowLeft"]||keys["KeyA"]) px=Math.max(0,px-ps);
+          if(keys["ArrowRight"]||keys["KeyD"]) px=Math.min(width-48,px+ps);
+          if(keys["ArrowUp"]||keys["KeyW"]) py=Math.max(0,py-ps);
+          if(keys["ArrowDown"]||keys["KeyS"]) py=Math.min(height-48,py+ps);
+          for(let i=0;i<2;i++) {
+            ex[i]+=evx[i]; ey[i]+=evy[i];
+            if(ex[i]<0||ex[i]>width-44) evx[i]*=-1;
+            if(ey[i]<0||ey[i]>height-44) evy[i]*=-1;
+          }
+          for(let i=0;i<2;i++) {
+            if(rectsCollide(px,py,48,48,ex[i],ey[i],44,44)) {
+              showGameOver();
+              return;
+            }
+          }
+          if(rectsCollide(px,py,48,48,coinPos[0],coinPos[1],32,32)) {
+            coins++; score+=10;
+            coinPos = placeRandom(document.getElementById('coin'));
+            updateHUD();
+          }
+          if(rectsCollide(px,py,48,48,xpPos[0],xpPos[1],24,24)) {
+            xp+=20; score+=2;
+            if(xp>=xpMax) { xp-=xpMax; xpMax+=50; score+=20; }
+            xpPos = placeRandom(document.getElementById('xpBubble'), 30);
+            updateHUD();
+          }
+          updateEntities();
+        }
+        frameId = requestAnimationFrame(gameLoop);
+      }
+      area.tabIndex = 1;
+      area.focus();
+      keys = {};
+      function keydownHandler(e) {
+        if(e.code==="Space") {
+          if(!paused && !gameOver) pauseGame();
+          else if(paused) resumeGame();
+        }
+        keys[e.code]=true;
+      }
+      function keyupHandler(e){ keys[e.code]=false; }
+      area.addEventListener('keydown', keydownHandler);
+      area.addEventListener('keyup', keyupHandler);
+      document.getElementById('resumeBtn').onclick = resumeGame;
+      document.getElementById('restartBtn').onclick = restartGame;
+      document.getElementById('quitBtn').onclick = quitToMenu;
+      document.getElementById('restartBtnGO').onclick = restartGame;
+      document.getElementById('quitBtnGO').onclick = quitToMenu;
+      resetGame();
+      running = true;
+      frameId = requestAnimationFrame(gameLoop);
     }
-
-    increaseDifficulty();
-    requestAnimationFrame(updateGame);
-  }
-
-  // Démarrage
-  spawnCoin();
-  spawnEnemy();
-  updateGame();
-</script>
-
+    startInfiniGame();
+  </script>
 </body>
 </html>

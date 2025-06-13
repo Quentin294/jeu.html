@@ -2,100 +2,180 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Tenues</title>
+  <title>Tenues - Choix de la couleur</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #232526, #414345);
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    .skins {
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {
+      min-height: 100vh;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       justify-content: center;
-      gap: 20px;
+      align-items: center;
     }
-    .skin {
-      width: 100px;
-      height: 100px;
-      border: 2px solid white;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
+    h1 {font-size:38px;margin-bottom:10px;text-align:center;}
+    .center-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    .main-circle {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: #888;
+      border: 6px solid #fff;
+      box-shadow: 0 8px 32px #0006;
+      margin-bottom: 32px;
+      transition: background 0.2s, border-color 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
-    }
-    .skin.locked {
-      filter: grayscale(100%);
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .skin:hover:not(.locked) {
-      transform: scale(1.1);
-    }
-    .selected {
-      outline: 4px solid #00ffcc;
-    }
-    .retour {
-      display: block;
-      margin-top: 30px;
-      color: #00aced;
+      font-size: 22px;
       font-weight: bold;
-      text-decoration: none;
+      color: #232b3b;
+      text-shadow: 0 2px 8px #fff8;
     }
+    .colors-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .color-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      cursor: pointer;
+      outline: none;
+      transition: border 0.17s, transform 0.17s;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .color-btn.selected {
+      border: 3px solid #ffe066;
+      box-shadow: 0 2px 16px #ffe06688;
+      transform: scale(1.18);
+    }
+    .color-label {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      color: #ffe066;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .no-colors {
+      color: #ffe066;
+      margin-top: 16px;
+      font-size: 18px;
+      text-align: center;
+    }
+    .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
-  <h1>Casier - Tenues débloquées</h1>
-  <div class="skins" id="skinContainer"></div>
-  <a class="retour" href="index.html">← Retour au menu</a>
-
+  <div class="container">
+    <h1>🎨 Choisis ta couleur de tenue</h1>
+    <div class="center-area">
+      <div class="main-circle" id="mainCircle">Aucune couleur</div>
+      <div class="colors-row" id="colorsRow"></div>
+      <div class="no-colors" id="noColorsMsg" style="display:none;">
+        Gagne des couleurs dans la <b>Roue</b> pour personnaliser ta tenue !
+      </div>
+    </div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+  </div>
   <script>
-    // Skins de la roue (0 à 4)
-    const roueSkins = ["🐱", "🐶", "🐸", "🐧", "🐰"];
-    const roueNoms = ["Chat", "Chien", "Grenouille", "Pingouin", "Lapin"];
+    // Palette des couleurs possibles (doit correspondre à roue.html)
+    const colorPalette = [
+      {name:"Rouge", color:"#FF3B30"},
+      {name:"Orange", color:"#FF9500"},
+      {name:"Jaune", color:"#FFCC00"},
+      {name:"Vert", color:"#34C759"},
+      {name:"Bleu", color:"#007AFF"},
+      {name:"Violet", color:"#AF52DE"},
+      {name:"Rose", color:"#FF2D55"},
+      {name:"Turquoise", color:"#5AC8FA"}
+    ];
 
-    // Skins du passe de combat (5 à 14)
-    const passeSkins = ["🌟", "🔥", "💎", "🎮", "🧙", "🐉", "🦊", "👾", "🦄", "⚡"];
-    const passeNoms = ["Étoile", "Flamme", "Diamant", "Manette", "Sorcier", "Dragon", "Renard", "Alien", "Licorne", "Éclair"];
+    function getWonColors() {
+      try {
+        return JSON.parse(localStorage.getItem("wonColors")||"[]");
+      } catch(e) { return []; }
+    }
+    function getSelectedColor() {
+      return localStorage.getItem("selectedColor") || "";
+    }
+    function setSelectedColor(name) {
+      localStorage.setItem("selectedColor", name);
+    }
 
-    const allSkins = [...roueSkins, ...passeSkins];
-    const allNoms = [...roueNoms, ...passeNoms];
-
-    const skinsDebloques = JSON.parse(localStorage.getItem("skins") || "[]");
-    const skinActuel = localStorage.getItem("skinSelectionne") || "";
-    const container = document.getElementById("skinContainer");
-
-    allSkins.forEach((emoji, index) => {
-      const nom = allNoms[index];
-      const skinId = "skin" + index;
-      const debloque = skinsDebloques.includes(skinId);
-      const div = document.createElement("div");
-
-      div.className = "skin";
-      if (!debloque) div.classList.add("locked");
-      if (skinId === skinActuel) div.classList.add("selected");
-
-      div.innerText = emoji;
-      div.title = nom;
-
-      if (debloque) {
-        div.onclick = () => {
-          localStorage.setItem("skinSelectionne", skinId);
-          document.querySelectorAll(".skin").forEach(s => s.classList.remove("selected"));
-          div.classList.add("selected");
-        };
+    function renderTenues() {
+      const colors = getWonColors();
+      const selected = getSelectedColor();
+      const row = document.getElementById('colorsRow');
+      const mainCircle = document.getElementById('mainCircle');
+      const noColorsMsg = document.getElementById('noColorsMsg');
+      row.innerHTML = "";
+      if(colors.length === 0) {
+        mainCircle.textContent = "Aucune couleur";
+        mainCircle.style.background = "#888";
+        mainCircle.style.borderColor = "#fff";
+        noColorsMsg.style.display = "";
+        return;
       }
+      noColorsMsg.style.display = "none";
+      // Affiche la couleur sélectionnée
+      let colorObj = colorPalette.find(c => c.name === selected);
+      if(colorObj) {
+        mainCircle.textContent = colorObj.name;
+        mainCircle.style.background = colorObj.color;
+        mainCircle.style.borderColor = "#ffe066";
+        mainCircle.style.color = "#232b3b";
+      } else {
+        mainCircle.textContent = "Choisis une couleur";
+        mainCircle.style.background = "#888";
+        mainCircle.style.borderColor = "#fff";
+        mainCircle.style.color = "#232b3b";
+      }
+      // Affiche les boutons couleurs
+      colors.forEach(name => {
+        let obj = colorPalette.find(c=>c.name===name);
+        if(!obj) return;
+        let btn = document.createElement("button");
+        btn.className = "color-btn" + (selected===name ? " selected" : "");
+        btn.style.background = obj.color;
+        btn.title = name;
+        btn.onclick = () => {
+          setSelectedColor(name);
+          renderTenues();
+        };
+        let label = document.createElement("span");
+        label.className = "color-label";
+        label.textContent = name;
+        btn.appendChild(label);
+        row.appendChild(btn);
+      });
+    }
 
-      container.appendChild(div);
+    // Synchronisation multi-onglets
+    window.addEventListener('storage', function(event) {
+      if(event.key === "wonColors" || event.key === "selectedColor") {
+        renderTenues();
+      }
     });
+
+    renderTenues();
   </script>
 </body>
 </html>

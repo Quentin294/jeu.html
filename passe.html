@@ -2,120 +2,209 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Passe de Combat</title>
+  <title>Passe de combat</title>
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 20px;
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {max-width:900px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    h1 {text-align:center;font-size:38px;margin-bottom:10px;}
+    .xp-bar-bg {margin:30px auto 40px auto;width:400px;height:22px;background:#111;border-radius:11px;box-shadow:0 2px 8px #0008;}
+    .xp-bar {height:22px;border-radius:11px;background:#3a6ee8;width:0;transition:width 0.4s;}
+    .xp-label {position:relative;text-align:center;top:-28px;font-size:16px;color:#ffe066;}
+    .levels {display:flex;flex-wrap:wrap;gap:30px 24px;justify-content:center;}
+    .level-card {
+      background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
+      width:150px;padding:18px 12px 16px 12px;text-align:center;
+      border:3px solid transparent;transition:border 0.2s,box-shadow 0.2s;
+      position:relative;
     }
-    h1 {
-      text-align: center;
-    }
-    .level {
-      background: #222;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .claimed {
-      background: #444;
-      color: #aaa;
-    }
-    .level span {
-      font-size: 18px;
-    }
-    .reward {
-      font-weight: bold;
-    }
-    button {
-      padding: 10px 20px;
-      background: #2ecc71;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button[disabled] {
-      background: #777;
-      cursor: default;
-    }
+    .level-card.current {border:3px solid #ffe066;box-shadow:0 2px 18px #ffe06688;}
+    .level-card.claimed {border:3px solid #43e86e;}
+    .level-num {font-size:20px;font-weight:bold;margin-bottom:8px;}
+    .reward-img {width:64px;height:64px;border-radius:12px;object-fit:cover;background:#444;margin:0 auto 8px auto;display:block;}
+    .reward-badge {display:inline-block;padding:8px 16px;background:#ffe066;color:#232b3b;border-radius:8px;font-weight:bold;font-size:16px;margin:8px 0;}
+    .reward-diam {font-size:28px;vertical-align:middle;margin-right:6px;}
+    .claim-btn {margin-top:10px;background:#43e86e;color:#fff;font-weight:bold;border:none;border-radius:8px;padding:8px 20px;font-size:17px;cursor:pointer;box-shadow:0 2px 8px #43e86e88;transition:background 0.15s;}
+    .claim-btn:disabled {background:#888;color:#ccc;cursor:not-allowed;box-shadow:none;}
+    .claimed-label {color:#43e86e;font-weight:bold;}
+    .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
-  <h1>Passe de Combat</h1>
-  <div id="levels"></div>
-
+  <div class="container">
+    <h1>🏆 Passe de combat</h1>
+    <div style="text-align:center;color:#ffe066;margin-bottom:12px;">
+      Gagne de l'XP en jouant pour débloquer chaque niveau et ses récompenses !
+    </div>
+    <div class="xp-bar-bg">
+      <div class="xp-bar" id="xpBar"></div>
+      <div class="xp-label" id="xpLabel"></div>
+    </div>
+    <div class="levels" id="levels"></div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+  </div>
   <script>
-    const passData = JSON.parse(localStorage.getItem("passData") || "{}");
-    const level = parseInt(localStorage.getItem("playerLevel") || "1");
-    let currency = parseInt(localStorage.getItem("currency") || "0");
+    // Palette de skins couleurs (doit correspondre à roue/tenues)
+    const skinColors = [
+      {name:"Rouge", color:"#FF3B30"},
+      {name:"Orange", color:"#FF9500"},
+      {name:"Jaune", color:"#FFCC00"},
+      {name:"Vert", color:"#34C759"},
+      {name:"Bleu", color:"#007AFF"},
+      {name:"Violet", color:"#AF52DE"},
+      {name:"Rose", color:"#FF2D55"},
+      {name:"Turquoise", color:"#5AC8FA"}
+    ];
 
-    const rewards = {
-      1: "skin1",
-      2: "skin2",
-      3: "💎 x5",
-      4: "skin3",
-      5: "skin4",
-      6: "skin5",
-      7: "💎 x10",
-      8: "skin6",
-      9: "skin7",
-      10: "skin8",
-      11: "💎 x15",
-      12: "💎 x20",
-      13: "💎 x30",
-      14: "💎 x40",
-      15: "💎 x50"
-    };
+    // Structure du pass (alternance skin/couleur et diamants)
+    const passLevels = [
+      { type:"skin", skin:skinColors[0] },
+      { type:"diamonds", amount:100 },
+      { type:"skin", skin:skinColors[1] },
+      { type:"diamonds", amount:200 },
+      { type:"skin", skin:skinColors[2] },
+      { type:"diamonds", amount:300 },
+      { type:"skin", skin:skinColors[3] },
+      { type:"diamonds", amount:400 },
+      { type:"skin", skin:skinColors[4] },
+      { type:"diamonds", amount:500 }
+    ];
+    const LEVELS = passLevels.length;
+    const XP_PER_LEVEL = 100;
 
-    const container = document.getElementById("levels");
-
-    for (let i = 1; i <= 15; i++) {
-      const levelDiv = document.createElement("div");
-      levelDiv.classList.add("level");
-      if (passData[i]) levelDiv.classList.add("claimed");
-
-      const rewardText = document.createElement("span");
-      rewardText.innerHTML = `Niveau ${i} – <span class="reward">${rewards[i]}</span>`;
-      levelDiv.appendChild(rewardText);
-
-      const claimButton = document.createElement("button");
-      claimButton.innerText = passData[i] ? "Réclamé" : "Réclamer";
-      claimButton.disabled = passData[i] || i > level;
-
-      if (!passData[i] && i <= level) {
-        claimButton.onclick = () => {
-          passData[i] = true;
-          localStorage.setItem("passData", JSON.stringify(passData));
-
-          // Si c’est un skin, on l'ajoute dans les skins débloqués
-          if (rewards[i].startsWith("skin")) {
-            const unlocked = JSON.parse(localStorage.getItem("unlockedSkins") || "[]");
-            if (!unlocked.includes(rewards[i])) {
-              unlocked.push(rewards[i]);
-              localStorage.setItem("unlockedSkins", JSON.stringify(unlocked));
-            }
-          }
-
-          // Si c’est une récompense de monnaie 💎
-          if (rewards[i].includes("💎")) {
-            const amount = parseInt(rewards[i].replace(/[^\d]/g, ""));
-            currency += amount;
-            localStorage.setItem("currency", currency);
-          }
-
-          location.reload(); // rafraîchir pour mettre à jour l'affichage
-        };
-      }
-
-      levelDiv.appendChild(claimButton);
-      container.appendChild(levelDiv);
+    // Etat du pass (niveau, xp, récompenses réclamées)
+    function getPassState() {
+      try {
+        let s = JSON.parse(localStorage.getItem("passState")||"{}");
+        if(!s.xp) s.xp = 0;
+        if(!s.level) s.level = 0;
+        if(!s.claimed) s.claimed = [];
+        return s;
+      } catch(e){ return {xp:0,level:0,claimed:[]}; }
     }
+    function savePassState(s) {
+      localStorage.setItem("passState", JSON.stringify(s));
+    }
+
+    // Mise à jour de la barre d'XP et des niveaux
+    function renderPass() {
+      const state = getPassState();
+      // Barre d'XP
+      let xp = state.xp;
+      let level = state.level;
+      let xpBar = document.getElementById('xpBar');
+      let xpLabel = document.getElementById('xpLabel');
+      let percent = Math.min(100, 100 * (xp % XP_PER_LEVEL) / XP_PER_LEVEL);
+      xpBar.style.width = percent + "%";
+      xpLabel.textContent = `Niveau ${level+1}  |  XP : ${xp % XP_PER_LEVEL} / ${XP_PER_LEVEL}`;
+      // Cartes de niveaux
+      const levelsDiv = document.getElementById('levels');
+      levelsDiv.innerHTML = "";
+      for(let i=0;i<LEVELS;i++) {
+        let card = document.createElement("div");
+        card.className = "level-card";
+        if(i === level) card.classList.add("current");
+        if(state.claimed.includes(i)) card.classList.add("claimed");
+        let num = document.createElement("div");
+        num.className = "level-num";
+        num.textContent = "Niveau " + (i+1);
+        card.appendChild(num);
+        let reward = passLevels[i];
+        if(reward.type === "skin") {
+          let img = document.createElement("div");
+          img.className = "reward-img";
+          img.style.background = reward.skin.color;
+          img.style.border = "3px solid #fff";
+          img.title = reward.skin.name;
+          img.innerHTML = `<span style="color:#232b3b;font-weight:bold;font-size:15px;line-height:64px;">${reward.skin.name}</span>`;
+          card.appendChild(img);
+          let badge = document.createElement("div");
+          badge.className = "reward-badge";
+          badge.textContent = "Tenue couleur";
+          card.appendChild(badge);
+        } else if(reward.type === "diamonds") {
+          let badge = document.createElement("div");
+          badge.className = "reward-badge";
+          badge.innerHTML = `<span class="reward-diam">💎</span> +${reward.amount} diamants`;
+          card.appendChild(badge);
+        }
+        // Bouton de réclamation
+        if(i < level && !state.claimed.includes(i)) {
+          let btn = document.createElement("button");
+          btn.className = "claim-btn";
+          btn.textContent = "Réclamer";
+          btn.onclick = function() {
+            claimReward(i);
+          };
+          card.appendChild(btn);
+        } else if(state.claimed.includes(i)) {
+          let lbl = document.createElement("div");
+          lbl.className = "claimed-label";
+          lbl.textContent = "Réclamé !";
+          card.appendChild(lbl);
+        }
+        levelsDiv.appendChild(card);
+      }
+    }
+
+    // Réclamer une récompense
+    function claimReward(i) {
+      let state = getPassState();
+      if(state.claimed.includes(i)) return;
+      state.claimed.push(i);
+      // Récompense : ajoute la couleur à wonColors ou les diamants au compteur
+      let reward = passLevels[i];
+      if(reward.type === "skin") {
+        let won = [];
+        try { won = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+        if(!won.includes(reward.skin.name)) {
+          won.push(reward.skin.name);
+          localStorage.setItem("wonColors", JSON.stringify(won));
+        }
+      } else if(reward.type === "diamonds") {
+        let d = parseInt(localStorage.getItem("diamonds")||"0");
+        d += reward.amount;
+        localStorage.setItem("diamonds", d+"");
+      }
+      savePassState(state);
+      renderPass();
+      alert("Récompense ajoutée à ton compte !");
+    }
+
+    // Fonction à appeler depuis le jeu quand la barre d'XP est remplie
+    // Ex : passGagneNiveau();
+    window.passGagneNiveau = function() {
+      let state = getPassState();
+      if(state.level < LEVELS) {
+        state.level++;
+        state.xp = state.level * XP_PER_LEVEL;
+        savePassState(state);
+        renderPass();
+      }
+    }
+
+    // Fonction à appeler depuis le jeu pour ajouter de l'XP
+    // Ex : passAjouteXP(20);
+    window.passAjouteXP = function(xpGagne) {
+      let state = getPassState();
+      state.xp += xpGagne;
+      let newLevel = Math.floor(state.xp / XP_PER_LEVEL);
+      if(newLevel > state.level && newLevel < LEVELS) {
+        state.level = newLevel;
+      }
+      savePassState(state);
+      renderPass();
+    }
+
+    // Synchronisation multi-onglets
+    window.addEventListener('storage', function(event) {
+      if(event.key === "passState" || event.key === "wonColors" || event.key === "diamonds") {
+        renderPass();
+      }
+    });
+
+    // Initialisation
+    renderPass();
   </script>
 </body>
 </html>
