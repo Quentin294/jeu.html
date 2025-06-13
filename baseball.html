@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Baseball Arcade</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(#bde0fe 60%, #fff 100%);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      user-select: none;
+    }
+    #gameZone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas {
+      background: linear-gradient(#bde0fe 60%, #fff 100%);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #0004;
+      cursor: pointer;
+    }
+    .ui-bar {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 24px;
+      color: #3a6ee8;
+      font-weight: bold;
+    }
+    .btn-replay {
+      margin-top: 16px;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 20px;
+      padding: 10px 34px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-replay:hover {
+      background: #254a9c;
+    }
+    .tip {
+      margin-top: 10px;
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameZone">
+    <canvas id="gameCanvas" width="700" height="350" title="Clique ou appuie sur Espace pour frapper la balle"></canvas>
+    <div class="ui-bar" id="score">Distance : 0 m</div>
+    <button class="btn-replay" id="replayBtn" style="display:none;">Rejouer</button>
+    <div class="tip">Clique ou appuie sur Espace au bon moment pour frapper la balle !</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDiv = document.getElementById('score');
+    const replayBtn = document.getElementById('replayBtn');
+
+    // Etat du jeu
+    let state = "ready"; // ready, waiting, swing, flying, finished
+    let batAngle = -0.3;
+    let ball = {x: 140, y: 220, vx: 0, vy: 0, flying: false, dist: 0};
+    let penguin = {x: 90, y: 260};
+
+    // Dessin du Yeti avec batte
+    function drawYeti(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      // Corps
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.ellipse(0, 30, 30, 45, 0, 0, Math.PI*2);
+      ctx.fill();
+      // Tête
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI*2);
+      ctx.fill();
+      // Bras
+      ctx.strokeStyle = "#ccc";
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.arc(-15, 40, 20, Math.PI*0.2, Math.PI*1.2, false);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(15, 40, 20, Math.PI*1.8, Math.PI*0.8, true);
+      ctx.stroke();
+      // Batte
+      ctx.save();
+      ctx.rotate(batAngle);
+      ctx.fillStyle = "#deb887";
+      ctx.fillRect(18, 10, 60, 8);
+      ctx.restore();
+      // Yeux
+      ctx.fillStyle = "#222";
+      ctx.beginPath();ctx.arc(-7,-6,3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(7,-6,3,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+
+    // Dessin du Pingouin qui lance la balle
+    function drawPenguin(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      // Corps
+      ctx.fillStyle = "#222";
+      ctx.beginPath();
+      ctx.ellipse(0, 18, 13, 22, 0, 0, Math.PI*2);
+      ctx.fill();
+      // Ventre
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.ellipse(0, 22, 8, 14, 0, 0, Math.PI*2);
+      ctx.fill();
+      // Bec
+      ctx.fillStyle = "#ffb300";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-4, 6);
+      ctx.lineTo(4, 6);
+      ctx.closePath();
+      ctx.fill();
+      // Yeux
+      ctx.fillStyle = "#222";
+      ctx.beginPath();ctx.arc(-4,4,1.5,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(4,4,1.5,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+
+    // Dessin de la balle
+    function drawBall(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = "#e83a3a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, Math.PI*0.2, Math.PI*1.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, Math.PI*1.8, Math.PI*0.8);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Dessin complet
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // Sol
+      ctx.fillStyle = "#93c47d";
+      ctx.fillRect(0, 300, canvas.width, 50);
+      // Ligne de base
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 300);
+      ctx.lineTo(canvas.width, 300);
+      ctx.stroke();
+      // Yeti
+      drawYeti(120, 220);
+      // Pingouin
+      drawPenguin(penguin.x, penguin.y);
+      // Balle
+      if(state !== "ready" || penguin.x >= 120) {
+        drawBall(ball.x, ball.y);
+      }
+      // Distance affichée
+      if(state === "flying" || state === "finished") {
+        ctx.font = "bold 22px Arial";
+        ctx.fillStyle = "#3a6ee8";
+        ctx.fillText("Distance : " + Math.floor(ball.dist) + " m", 510, 60);
+      }
+    }
+
+    // Réinitialisation du jeu
+    function resetGame() {
+      state = "ready";
+      batAngle = -0.3;
+      ball = {x: 140, y: 220, vx: 0, vy: 0, flying: false, dist: 0};
+      penguin = {x: 90, y: 260};
+      scoreDiv.textContent = "Distance : 0 m";
+      replayBtn.style.display = "none";
+      draw();
+      requestAnimationFrame(animatePenguin);
+    }
+
+    // Animation du pingouin lançant la balle
+    function animatePenguin() {
+      if(state !== "ready") return;
+      draw();
+      penguin.x += 2;
+      if(penguin.x >= 140) {
+        penguin.x = 90;
+        ball.x = 140;
+        ball.y = 220;
+        state = "waiting";
+        ball.flying = false;
+        draw();
+      } else {
+        requestAnimationFrame(animatePenguin);
+      }
+    }
+
+    // Animation du swing de la batte
+    function swingBat() {
+      if(state !== "waiting") return;
+      state = "swing";
+      let swingFrames = 12;
+      function animateSwing(frame=0) {
+        batAngle = -0.3 + (frame / swingFrames) * 1.7;
+        draw();
+        if(frame < swingFrames) {
+          requestAnimationFrame(() => animateSwing(frame + 1));
+        } else {
+          // Calcul de la puissance selon la proximité de la balle
+          let dx = ball.x - 170, dy = ball.y - 235;
+          let dist = Math.sqrt(dx*dx + dy*dy);
+          let power = Math.max(0, 1 - dist / 30);
+          if(power > 0.3) {
+            ball.flying = true;
+            ball.vx = 11 + Math.random()*3 + power*7;
+            ball.vy = -10 - Math.random()*3 - power*6;
+            state = "flying";
+            flyBall();
+          } else {
+            state = "finished";
+            scoreDiv.textContent = "Raté ! Distance : 0 m";
+            replayBtn.style.display = "";
+            draw();
+          }
+        }
+      }
+      animateSwing();
+    }
+
+    // Animation du vol de la balle
+    function flyBall() {
+      if(state !== "flying") return;
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+      ball.vy += 0.45; // gravité
+      ball.dist += ball.vx * 0.3;
+      if(ball.y > 300) {
+        ball.y = 300;
+        state = "finished";
+        scoreDiv.textContent = "Distance : " + Math.floor(ball.dist) + " m";
+        replayBtn.style.display = "";
+        draw();
+        return;
+      }
+      draw();
+      requestAnimationFrame(flyBall);
+    }
+
+    // Gestion des entrées utilisateur
+    canvas.addEventListener('click', swingBat);
+    window.addEventListener('keydown', e => {
+      if(e.code === "Space") swingBat();
+    });
+    replayBtn.onclick = resetGame;
+
+    // Démarrage
+    resetGame();
+  </script>
+</body>
+</html>

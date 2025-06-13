@@ -4,71 +4,244 @@
   <meta charset="UTF-8">
   <title>Succès</title>
   <style>
-    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
-    .container {max-width:700px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
-    h1 {text-align:center;font-size:38px;margin-bottom:30px;}
-    .progress-bar-bg {width:400px;height:16px;border-radius:8px;background:#111;margin:0 auto 30px auto;position:relative;}
-    .progress-bar {height:16px;border-radius:8px;background:#3a6ee8;width:0;}
-    .progress-label {position:absolute;left:50%;top:0;transform:translateX(-50%);font-size:14px;color:#fff;}
-    .achievements-list {margin:0 auto;max-width:600px;}
-    .achievement-row {display:flex;align-items:center;background:#232b3b;margin-bottom:18px;padding:14px 18px;border-radius:12px;box-shadow:0 2px 8px #0005;}
-    .achievement-row.locked {opacity:0.4;}
-    .achievement-icon {font-size:32px;margin-right:16px;}
-    .achievement-title {font-size:18px;font-weight:bold;}
-    .achievement-desc {font-size:14px;color:#ffe066;}
-    .btn-menu {margin-top:28px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #232b3b 0%, #3a6ee8 100%);
+      color: #fff;
+    }
+    h1 {
+      text-align: center;
+      font-size: 44px;
+      margin-top: 36px;
+      margin-bottom: 18px;
+      color: #ffe066;
+      text-shadow: 0 4px 16px #000a;
+      letter-spacing: 2px;
+    }
+    .container {
+      max-width: 950px;
+      margin: 0 auto 40px auto;
+      background: rgba(35,43,59,0.94);
+      border-radius: 32px;
+      box-shadow: 0 8px 32px #000a;
+      padding: 48px 32px 48px 32px;
+    }
+    .progress-bar-container {
+      margin: 0 auto 38px auto;
+      width: 96%;
+      max-width: 750px;
+      background: #232b3b;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px #0008;
+      padding: 18px 28px 18px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid #ffe066;
+    }
+    .progress-bar-label {
+      font-size: 20px;
+      color: #ffe066;
+      font-weight: bold;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 26px;
+      background: #3a6ee8;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px #0006 inset;
+      margin-bottom: 6px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffe066 0%, #43e86e 100%);
+      border-radius: 14px;
+      transition: width 0.5s;
+      text-align: right;
+      font-size: 16px;
+      color: #232b3b;
+      font-weight: bold;
+      padding-right: 12px;
+      box-sizing: border-box;
+      line-height: 26px;
+      letter-spacing: 1px;
+    }
+    .progress-bar-numbers {
+      font-size: 16px;
+      color: #fff;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 2px;
+    }
+    .success-list {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .success-card {
+      background: #232b3b;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px #0008;
+      border: 2px solid #ffe066;
+      padding: 22px 26px 18px 26px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      position: relative;
+    }
+    .success-icon {
+      font-size: 38px;
+      margin-right: 12px;
+      min-width: 44px;
+      text-align: center;
+      filter: drop-shadow(0 2px 8px #0006);
+    }
+    .success-info {
+      flex: 1;
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #ffe066;
+      margin-bottom: 5px;
+    }
+    .success-desc {
+      font-size: 16px;
+      color: #eee;
+      margin-bottom: 6px;
+    }
+    .success-reward {
+      font-size: 17px;
+      color: #43e86e;
+      font-weight: bold;
+      margin-top: 2px;
+    }
+    .success-status {
+      font-size: 17px;
+      font-weight: bold;
+      color: #43e86e;
+      margin-left: 24px;
+    }
+    .locked {
+      color: #888 !important;
+      opacity: 0.65;
+    }
+    .btn-menu {
+      margin: 44px auto 0 auto;
+      display: block;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 26px;
+      padding: 18px 48px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow:0 4px 24px #0008;
+      transition: background 0.2s;
+    }
     .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
+  <h1>🏆 Succès</h1>
   <div class="container">
-    <h1>Succès</h1>
-    <div class="progress-bar-bg">
-      <div class="progress-bar" id="achvProgressBar"></div>
-      <div class="progress-label" id="achvProgressLabel"></div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-label">Progression des succès</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBarFill">0%</div>
+      </div>
+      <div class="progress-bar-numbers" id="progressBarNumbers"></div>
     </div>
-    <div class="achievements-list" id="achievementsList"></div>
-    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+    <div class="success-list" id="successList"></div>
   </div>
+  <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
   <script>
-    const ACHIEVEMENTS = [
-      { id: "first_coin", icon: "🪙", title: "Première pièce !", desc: "Ramasse ta première pièce." },
-      { id: "ten_coins", icon: "💰", title: "Collectionneur", desc: "Ramasse 10 pièces en une partie." },
-      { id: "hundred_xp", icon: "⚡", title: "XP 100", desc: "Atteins 100 XP en une partie." },
-      { id: "survivor", icon: "🛡️", title: "Survivant", desc: "Atteins 200 de score sans mourir." },
-      { id: "master_collector", icon: "👑", title: "Maître des pièces", desc: "Ramasse 30 pièces en une partie." }
+    // Succès existants + nouveaux succès liés à tous les ajouts récents
+    const successes = [
+      // Succès classiques
+      {icon:"🎮", title:"Première victoire", desc:"Remporte ta toute première partie.", reward:"💎 100", achieved:true},
+      {icon:"🔥", title:"Série de 5 victoires", desc:"Enchaîne 5 victoires d'affilée.", reward:"💎 200", achieved:false},
+      {icon:"💎", title:"Roi des diamants", desc:"Gagne un total de 5000 diamants.", reward:"🎁 Skin exclusif", achieved:false},
+      // Succès modes de jeu
+      {icon:"⏱️", title:"Maître du Chrono", desc:"Atteins un score de 30 dans le mode Chrono.", reward:"💎 300", achieved:false},
+      {icon:"♾️", title:"Survivant Infini", desc:"Survis plus de 120 secondes dans le mode Infini.", reward:"💎 350", achieved:false},
+      {icon:"⚾", title:"Homerun !", desc:"Fais plus de 400m dans le mode Baseball.", reward:"💎 200", achieved:false},
+      {icon:"🏃", title:"Sprinter", desc:"Atteins un score de 2000 dans le mode Course.", reward:"💎 250", achieved:false},
+      // Succès roue
+      {icon:"🎰", title:"Chanceux", desc:"Remporte un skin rare à la roue gratuite.", reward:"💎 100", achieved:false},
+      {icon:"💎", title:"Premium gagnant", desc:"Obtiens un familier premium à la roue premium.", reward:"🎁 Familier spécial", achieved:false},
+      // Succès pass de combat
+      {icon:"🎫", title:"Niveau max", desc:"Atteins le niveau 15 du pass gratuit.", reward:"💎 500", achieved:false},
+      {icon:"👑", title:"Pass premium débloqué", desc:"Débloque le pass premium au moins une fois.", reward:"💎 250", achieved:false},
+      // Succès skins/familiers/acolytes
+      {icon:"🎨", title:"Collectionneur de skins", desc:"Débloque 10 skins différents.", reward:"💎 200", achieved:false},
+      {icon:"🦊", title:"Amoureux des familiers", desc:"Débloque 5 familiers différents.", reward:"💎 200", achieved:false},
+      {icon:"🤖", title:"Acolyte en chef", desc:"Débloque 3 acolytes différents.", reward:"💎 200", achieved:false},
+      // Succès quêtes
+      {icon:"📜", title:"Quêteur quotidien", desc:"Termine 30 quêtes quotidiennes.", reward:"💎 300", achieved:false},
+      {icon:"🗺️", title:"Quêteur de l'extrême", desc:"Termine 10 quêtes longues.", reward:"💎 400", achieved:false},
+      // Succès sociaux et guilde
+      {icon:"🤝", title:"Ami fidèle", desc:"Ajoute 10 amis.", reward:"💎 100", achieved:false},
+      {icon:"👑", title:"Chef de guilde", desc:"Crée ta propre guilde.", reward:"💎 200", achieved:false},
+      {icon:"🏅", title:"Guilde en or", desc:"Atteins le top 10 du classement guilde.", reward:"💎 400", achieved:false},
+      // Succès boutique
+      {icon:"🛒", title:"Shopping", desc:"Achète un objet dans la boutique.", reward:"💎 50", achieved:false},
+      // Succès bonus
+      {icon:"🎁", title:"Cadeau surprise", desc:"Ouvre un cadeau mystère.", reward:"💎 100", achieved:false},
+      {icon:"📆", title:"Assidu", desc:"Te connecter 30 jours d'affilée.", reward:"💎 500", achieved:false}
     ];
-    function renderAchievements() {
-      let achievementsState = {};
-      try {
-        achievementsState = JSON.parse(localStorage.getItem("achievementsState") || "{}");
-      } catch(e) {}
-      for(const achv of ACHIEVEMENTS) {
-        if(achievementsState[achv.id] === undefined) achievementsState[achv.id] = false;
-      }
-      const list = document.getElementById('achievementsList');
-      list.innerHTML = '';
-      for(const achv of ACHIEVEMENTS) {
-        const unlocked = achievementsState[achv.id];
-        list.innerHTML += `
-          <div class="achievement-row${unlocked ? '' : ' locked'}">
-            <div class="achievement-icon">${achv.icon}</div>
-            <div class="achievement-info">
-              <span class="achievement-title">${achv.title}</span>
-              <span class="achievement-desc">${achv.desc}</span>
-            </div>
-          </div>
-        `;
-      }
-      const total = ACHIEVEMENTS.length, unlocked = Object.values(achievementsState).filter(v=>v).length;
-      const percent = Math.round(100*unlocked/total);
-      document.getElementById('achvProgressBar').style.width = percent + "%";
-      document.getElementById('achvProgressLabel').textContent = `${unlocked} / ${total} succès (${percent}%)`;
+
+    function renderProgressBar() {
+      const total = successes.length;
+      const unlocked = successes.filter(s => s.achieved).length;
+      const percent = Math.round((unlocked/total)*100);
+      document.getElementById('progressBarFill').style.width = percent + "%";
+      document.getElementById('progressBarFill').textContent = percent + "%";
+      document.getElementById('progressBarNumbers').textContent = unlocked + " / " + total + " succès débloqués";
     }
-    renderAchievements();
-    window.addEventListener('storage', function(event) {
-      if(event.key === "achievementsState") renderAchievements();
-    });
+
+    function renderSuccesses() {
+      const list = document.getElementById('successList');
+      list.innerHTML = '';
+      successes.forEach(s => {
+        let card = document.createElement('div');
+        card.className = "success-card";
+        if(!s.achieved) card.classList.add("locked");
+        let icon = document.createElement('div');
+        icon.className = "success-icon";
+        icon.textContent = s.icon;
+        card.appendChild(icon);
+        let info = document.createElement('div');
+        info.className = "success-info";
+        let title = document.createElement('div');
+        title.className = "success-title";
+        title.textContent = s.title;
+        let desc = document.createElement('div');
+        desc.className = "success-desc";
+        desc.textContent = s.desc;
+        let reward = document.createElement('div');
+        reward.className = "success-reward";
+        reward.textContent = "Récompense : " + s.reward;
+        info.appendChild(title);
+        info.appendChild(desc);
+        info.appendChild(reward);
+        card.appendChild(info);
+        let status = document.createElement('div');
+        status.className = "success-status";
+        status.textContent = s.achieved ? "Débloqué" : "Verrouillé";
+        card.appendChild(status);
+        list.appendChild(card);
+      });
+    }
+
+    renderProgressBar();
+    renderSuccesses();
   </script>
 </body>
 </html>

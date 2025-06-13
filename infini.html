@@ -4,251 +4,191 @@
   <meta charset="UTF-8">
   <title>Mode Infini</title>
   <style>
-    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
-    #infiniGameArea { width: 600px; height: 400px; background: #232b3b; position: relative; margin: 40px auto 0 auto; border-radius: 24px; box-shadow: 0 8px 32px #0008;}
-    .player { width: 48px; height: 48px; position: absolute; border-radius: 50%; background:#3a6ee8;}
-    .enemy { width: 44px; height: 44px; background: #e83a3a; position: absolute; border-radius: 14px; }
-    .coin { width: 32px; height: 32px; background: gold; position: absolute; border-radius: 50%; border:2px solid #ffe066;}
-    .xp-bubble { width: 24px; height: 24px; background: #43e86e; position: absolute; border-radius: 50%; border:2px solid #fff;}
-    #hud-left {position:absolute;left:20px;top:20px;z-index:10;}
-    #rank {margin-top:12px;}
-    #xp-bar-bg {position:absolute;left:20px;bottom:32px;width:300px;height:16px;background:#111;border-radius:8px;}
-    #xp-bar {height:16px;border-radius:8px;background:#3a6ee8;width:0;}
-    #xp-label {position:absolute;left:20px;bottom:10px;}
-    #infini-timer {position:absolute;top:20px;right:30px;font-size:24px;font-weight:bold;background:#232b3b;padding:8px 20px;border-radius:16px;color:#ffe066;box-shadow:0 2px 8px #0008;}
-    .modal-bg {display:none;position:fixed;z-index:100;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
-    .modal-bg.active {display:flex;}
-    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:40px 32px 32px 32px;min-width:320px;text-align:center;position:relative;}
-    .modal-title {font-size:28px;font-weight:bold;margin-bottom:28px;letter-spacing:1px;}
-    .modal-btn {display:block;width:100%;margin:16px 0;padding:18px 0;font-size:22px;font-weight:bold;border:none;border-radius:12px;background:#3a6ee8;color:#fff;cursor:pointer;transition:background 0.15s;}
-    .modal-btn.quit {background:#e83a3a;}
-    .modal-btn.gold {background:#ffe066;color:#232b3b;}
+    body {margin:0;padding:0;background:#232b3b;color:#fff;font-family:Arial,sans-serif;}
+    #gameZone {display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+    .hud {display:flex;justify-content:space-between;width:500px;margin-bottom:12px;}
+    .timer {font-size:26px;color:#ffe066;font-weight:bold;}
+    .score {font-size:26px;color:#3a6ee8;font-weight:bold;}
+    canvas {background:#232b3b;border-radius:18px;box-shadow:0 4px 24px #0004;}
+    .btn-replay {margin-top:18px;background:#3a6ee8;color:#fff;border:none;border-radius:10px;font-size:20px;padding:10px 34px;font-weight:bold;cursor:pointer;transition:background 0.2s;}
+    .btn-replay:hover {background:#254a9c;}
+    .tip {margin-top:14px;color:#888;}
   </style>
 </head>
 <body>
-  <div style="width:100%;text-align:center;margin-top:22px;">
-    <button onclick="window.history.back()" class="modal-btn" style="width:auto;display:inline-block;">&larr; Retour au menu</button>
-  </div>
-  <div id="infiniGameArea" tabindex="1"></div>
-  <div id="infini-timer"></div>
-  <div class="modal-bg" id="pauseModal">
-    <div class="modal">
-      <div class="modal-title">Pause</div>
-      <button class="modal-btn" id="resumeBtn">Reprendre</button>
-      <button class="modal-btn" id="restartBtn">Recommencer</button>
-      <button class="modal-btn quit" id="quitBtn">Quitter</button>
+  <div id="gameZone">
+    <div class="hud">
+      <div class="timer" id="timer">0s</div>
+      <div class="score" id="score">Score : 0</div>
     </div>
-  </div>
-  <div class="modal-bg" id="gameOverModal">
-    <div class="modal">
-      <div class="modal-title">GAME OVER</div>
-      <div id="finalScore" style="font-size:24px;margin-bottom:28px;"></div>
-      <div id="bestScore" style="font-size:18px;margin-bottom:18px;color:#ffe066;"></div>
-      <button class="modal-btn gold" id="restartBtnGO">Recommencer</button>
-      <button class="modal-btn quit" id="quitBtnGO">Quitter</button>
-    </div>
+    <canvas id="gameCanvas" width="500" height="500" tabindex="0"></canvas>
+    <button class="btn-replay" id="replayBtn" style="display:none;">Rejouer</button>
+    <div class="tip">Déplace-toi (flèches ou swipe) et évite les obstacles le plus longtemps possible !</div>
   </div>
   <script>
-    function startInfiniGame() {
-      const area = document.getElementById('infiniGameArea');
-      area.innerHTML = `
-        <div id="hud-left">
-          <div>Score : <span id="score">0</span></div>
-          <div>🪙 Pièces : <span id="coins">0</span></div>
-          <div id="rank">Rang : Débutant</div>
-        </div>
-        <div id="xp-bar-bg">
-          <div id="xp-bar"></div>
-        </div>
-        <div id="xp-label">XP : <span id="xp">0</span> / <span id="xp-max">100</span></div>
-        <div class="player" id="player"></div>
-        <div class="enemy" id="enemy1"></div>
-        <div class="enemy" id="enemy2"></div>
-        <div class="coin" id="coin"></div>
-        <div class="xp-bubble" id="xpBubble"></div>
-      `;
-      let width = area.clientWidth, height = area.clientHeight;
-      let px = width/2-24, py = height/2-24, ps = 6;
-      let ex = [100, width-100], ey = [100, height-100], evx = [3, -2.5], evy = [2.5, 3];
-      let coinPos = [200, 200], xpPos = [400, 400];
-      let score = 0, coins = 0, xp = 0, xpMax = 100;
-      let paused = false, gameOver = false;
-      let keys = {};
-      let running = true;
-      let frameId = null;
-      let startTime = Date.now();
-      let lastTick = Date.now();
-      let secondsSurvived = 0;
-      let difficultyTimer = 0;
-      function getRank(n) {
-        if (n >= 30) return "Maître";
-        if (n >= 20) return "Expert";
-        if (n >= 10) return "Pro";
-        if (n >= 5) return "Avancé";
-        return "Débutant";
-      }
-      function placeRandom(el, margin=40) {
-        let x = Math.random()*(width-margin*2)+margin;
-        let y = Math.random()*(height-margin*2)+margin;
-        el.style.left = x+"px";
-        el.style.top = y+"px";
-        return [x,y];
-      }
-      function updateEntities() {
-        document.getElementById('player').style.left = px+"px";
-        document.getElementById('player').style.top = py+"px";
-        document.getElementById('enemy1').style.left = ex[0]+"px";
-        document.getElementById('enemy1').style.top = ey[0]+"px";
-        document.getElementById('enemy2').style.left = ex[1]+"px";
-        document.getElementById('enemy2').style.top = ey[1]+"px";
-        document.getElementById('coin').style.left = coinPos[0]+"px";
-        document.getElementById('coin').style.top = coinPos[1]+"px";
-        document.getElementById('xpBubble').style.left = xpPos[0]+"px";
-        document.getElementById('xpBubble').style.top = xpPos[1]+"px";
-      }
-      function updateHUD() {
-        document.getElementById('score').textContent = score;
-        document.getElementById('coins').textContent = coins;
-        document.getElementById('rank').textContent = "Rang : "+getRank(coins);
-        document.getElementById('xp').textContent = xp;
-        document.getElementById('xp-max').textContent = xpMax;
-        document.getElementById('xp-bar').style.width = Math.min(100,100*xp/xpMax)+"%";
-      }
-      function updateTimerDisplay() {
-        let min = Math.floor(secondsSurvived/60);
-        let sec = secondsSurvived%60;
-        document.getElementById('infini-timer').textContent = `🕒 ${min}m ${sec.toString().padStart(2,'0')}s`;
-      }
-      function resetGame() {
-        px = width/2-24; py = height/2-24;
-        ex[0]=100; ey[0]=100; ex[1]=width-100; ey[1]=height-100;
-        evx=[3, -2.5]; evy=[2.5, 3];
-        score=0; coins=0; xp=0; xpMax=100;
-        gameOver=false; paused=false;
-        coinPos = placeRandom(document.getElementById('coin'));
-        xpPos = placeRandom(document.getElementById('xpBubble'), 30);
-        updateEntities(); updateHUD();
-        document.getElementById('pauseModal').classList.remove('active');
-        document.getElementById('gameOverModal').classList.remove('active');
-        area.focus();
-        startTime = Date.now();
-        lastTick = Date.now();
-        secondsSurvived = 0;
-        difficultyTimer = 0;
-        updateTimerDisplay();
-      }
-      function pauseGame() {
-        if(!gameOver){ paused=true; document.getElementById('pauseModal').classList.add('active');}
-      }
-      function resumeGame() {
-        paused=false; document.getElementById('pauseModal').classList.remove('active'); area.focus();
-        lastTick = Date.now();
-      }
-      function quitToMenu() {
-        running = false;
-        window.history.back();
-      }
-      function restartGame() {
-        running = false;
-        setTimeout(() => {
-          running = true;
-          resetGame();
-          frameId = requestAnimationFrame(gameLoop);
-        }, 30);
-      }
-      function showGameOver() {
-        gameOver=true;
-        document.getElementById('gameOverModal').classList.add('active');
-        document.getElementById('finalScore').innerHTML = `Score final : <b>${score}</b><br>Pièces : <b>${coins}</b><br>XP : <b>${xp}</b><br>Temps survécu : <b>${Math.floor(secondsSurvived/60)}m ${(secondsSurvived%60).toString().padStart(2,'0')}s</b>`;
-        // Sauvegarde du meilleur score local
-        let best = parseInt(localStorage.getItem("infiniBestScore")||"0");
-        if(score > best) {
-          localStorage.setItem("infiniBestScore",score);
-          document.getElementById('bestScore').innerHTML = "🏆 Nouveau record personnel !";
-        } else {
-          document.getElementById('bestScore').innerHTML = "Meilleur score : " + best;
-        }
-      }
-      function rectsCollide(ax,ay,aw,ah,bx,by,bw,bh) {
-        return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
-      }
-      function increaseDifficulty() {
-        // Augmente la vitesse toutes les 30 secondes
-        for(let i=0;i<2;i++) {
-          if(evx[i]>0) evx[i]+=0.2;
-          else evx[i]-=0.2;
-          if(evy[i]>0) evy[i]+=0.2;
-          else evy[i]-=0.2;
-        }
-      }
-      function gameLoop() {
-        if(!running) return;
-        if(!paused && !gameOver) {
-          let now = Date.now();
-          let delta = Math.floor((now-lastTick)/1000);
-          if(delta>0) {
-            secondsSurvived += delta;
-            difficultyTimer += delta;
-            lastTick = now;
-            updateTimerDisplay();
-            if(difficultyTimer >= 30) {
-              increaseDifficulty();
-              difficultyTimer = 0;
-            }
-          }
-          if(keys["ArrowLeft"]||keys["KeyA"]) px=Math.max(0,px-ps);
-          if(keys["ArrowRight"]||keys["KeyD"]) px=Math.min(width-48,px+ps);
-          if(keys["ArrowUp"]||keys["KeyW"]) py=Math.max(0,py-ps);
-          if(keys["ArrowDown"]||keys["KeyS"]) py=Math.min(height-48,py+ps);
-          for(let i=0;i<2;i++) {
-            ex[i]+=evx[i]; ey[i]+=evy[i];
-            if(ex[i]<0||ex[i]>width-44) evx[i]*=-1;
-            if(ey[i]<0||ey[i]>height-44) evy[i]*=-1;
-          }
-          for(let i=0;i<2;i++) {
-            if(rectsCollide(px,py,48,48,ex[i],ey[i],44,44)) {
-              showGameOver();
-              return;
-            }
-          }
-          if(rectsCollide(px,py,48,48,coinPos[0],coinPos[1],32,32)) {
-            coins++; score+=10;
-            coinPos = placeRandom(document.getElementById('coin'));
-            updateHUD();
-          }
-          if(rectsCollide(px,py,48,48,xpPos[0],xpPos[1],24,24)) {
-            xp+=20; score+=2;
-            if(xp>=xpMax) { xp-=xpMax; xpMax+=50; score+=20; }
-            xpPos = placeRandom(document.getElementById('xpBubble'), 30);
-            updateHUD();
-          }
-          updateEntities();
-        }
-        frameId = requestAnimationFrame(gameLoop);
-      }
-      area.tabIndex = 1;
-      area.focus();
-      keys = {};
-      function keydownHandler(e) {
-        if(e.code==="Space") {
-          if(!paused && !gameOver) pauseGame();
-          else if(paused) resumeGame();
-        }
-        keys[e.code]=true;
-      }
-      function keyupHandler(e){ keys[e.code]=false; }
-      area.addEventListener('keydown', keydownHandler);
-      area.addEventListener('keyup', keyupHandler);
-      document.getElementById('resumeBtn').onclick = resumeGame;
-      document.getElementById('restartBtn').onclick = restartGame;
-      document.getElementById('quitBtn').onclick = quitToMenu;
-      document.getElementById('restartBtnGO').onclick = restartGame;
-      document.getElementById('quitBtnGO').onclick = quitToMenu;
-      resetGame();
-      running = true;
-      frameId = requestAnimationFrame(gameLoop);
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const timerDiv = document.getElementById('timer');
+    const scoreDiv = document.getElementById('score');
+    const replayBtn = document.getElementById('replayBtn');
+
+    let player, obstacles, playing, score, startTime, animId, lastObstacle, obstacleInterval, speedUpInterval;
+
+    function resetGame() {
+      player = {x: 250, y: 400, r: 18, vx:0, vy:0};
+      obstacles = [];
+      playing = true;
+      score = 0;
+      startTime = Date.now();
+      lastObstacle = Date.now();
+      obstacleInterval = 1200; // ms
+      speedUpInterval = 0;
+      scoreDiv.textContent = "Score : 0";
+      timerDiv.textContent = "0s";
+      replayBtn.style.display = "none";
+      draw();
+      animId = requestAnimationFrame(gameLoop);
     }
-    startInfiniGame();
+
+    function spawnObstacle() {
+      // Obstacle arrive d'un côté aléatoire
+      let side = Math.floor(Math.random()*4);
+      let pos, vx, vy, size = 28+Math.random()*10;
+      let baseSpeed = 2.5 + speedUpInterval*0.1 + Math.random();
+      if(side===0) { // haut
+        pos = {x:Math.random()*460+20, y:-size, vx:0, vy:baseSpeed};
+      } else if(side===1) { // bas
+        pos = {x:Math.random()*460+20, y:500+size, vx:0, vy:-baseSpeed};
+      } else if(side===2) { // gauche
+        pos = {x:-size, y:Math.random()*460+20, vx:baseSpeed, vy:0};
+      } else { // droite
+        pos = {x:500+size, y:Math.random()*460+20, vx:-baseSpeed, vy:0};
+      }
+      obstacles.push({x:pos.x, y:pos.y, vx:pos.vx, vy:pos.vy, r:size/2});
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,500,500);
+      // Player
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+      ctx.fillStyle = "#ffe066";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#3a6ee8";
+      ctx.stroke();
+      // Obstacles
+      for(let o of obstacles) {
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
+        ctx.fillStyle = "#e83a3a";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#fff";
+        ctx.stroke();
+      }
+    }
+
+    function gameLoop() {
+      // Déplacement joueur
+      player.x += player.vx;
+      player.y += player.vy;
+      // Friction
+      player.vx *= 0.85;
+      player.vy *= 0.85;
+      // Bords
+      player.x = Math.max(player.r, Math.min(500-player.r, player.x));
+      player.y = Math.max(player.r, Math.min(500-player.r, player.y));
+      // Obstacles
+      for(let o of obstacles) {
+        o.x += o.vx;
+        o.y += o.vy;
+      }
+      // Retirer les obstacles hors écran
+      obstacles = obstacles.filter(o => o.x>-40 && o.x<540 && o.y>-40 && o.y<540);
+
+      // Spawn obstacles
+      if(Date.now()-lastObstacle > obstacleInterval) {
+        spawnObstacle();
+        lastObstacle = Date.now();
+      }
+      // Accélération progressive
+      if(Date.now()-startTime > (speedUpInterval+1)*7000) {
+        speedUpInterval++;
+        obstacleInterval = Math.max(400, obstacleInterval-80);
+      }
+
+      // Collision
+      for(let o of obstacles) {
+        let dx = o.x-player.x, dy = o.y-player.y;
+        if(Math.hypot(dx,dy) < o.r+player.r) {
+          endGame();
+          return;
+        }
+      }
+
+      // Score = temps de survie
+      let now = Date.now();
+      let s = Math.floor((now-startTime)/1000);
+      scoreDiv.textContent = "Score : "+s;
+      timerDiv.textContent = s+"s";
+
+      draw();
+      if(playing) animId = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      playing = false;
+      cancelAnimationFrame(animId);
+      let now = Date.now();
+      let s = Math.floor((now-startTime)/1000);
+      timerDiv.textContent = s+"s";
+      scoreDiv.textContent = "Perdu ! Score : "+s;
+      replayBtn.style.display = "";
+      draw();
+      ctx.save();
+      ctx.font = "bold 38px Arial";
+      ctx.fillStyle = "#ffe066";
+      ctx.textAlign = "center";
+      ctx.fillText("Game Over", 250, 250);
+      ctx.font = "bold 28px Arial";
+      ctx.fillStyle = "#3a6ee8";
+      ctx.fillText("Score final : " + s, 250, 295);
+      ctx.restore();
+    }
+
+    // Contrôles clavier
+    window.addEventListener('keydown', function(e){
+      if(!playing) return;
+      if(e.code === "ArrowLeft") player.vx -= 3.5;
+      if(e.code === "ArrowRight") player.vx += 3.5;
+      if(e.code === "ArrowUp") player.vy -= 3.5;
+      if(e.code === "ArrowDown") player.vy += 3.5;
+    });
+
+    // Contrôles tactiles (swipe)
+    let touchStart = null;
+    canvas.addEventListener('touchstart', e => {
+      if(e.touches.length===1) touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY};
+    });
+    canvas.addEventListener('touchend', e => {
+      if(!touchStart || !playing) return;
+      let t = e.changedTouches[0];
+      let dx = t.clientX - touchStart.x, dy = t.clientY - touchStart.y;
+      if(Math.abs(dx)>Math.abs(dy)) {
+        if(dx>30) player.vx += 4.5;
+        if(dx<-30) player.vx -= 4.5;
+      } else {
+        if(dy>30) player.vy += 4.5;
+        if(dy<-30) player.vy -= 4.5;
+      }
+      touchStart = null;
+    });
+
+    replayBtn.onclick = resetGame;
+
+    // Démarrage
+    resetGame();
   </script>
 </body>
 </html>

@@ -6,114 +6,288 @@
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: url('fond-fortnite.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: white;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #232b3b 0%, #3a6ee8 100%);
+      color: #fff;
     }
-
-    .container {
-      max-width: 900px;
-      margin: 80px auto;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 40px;
-      border-radius: 20px;
-      text-align: center;
-    }
-
     h1 {
-      margin-bottom: 30px;
-      font-size: 36px;
-      color: #f1c40f;
+      text-align: center;
+      font-size: 40px;
+      margin-top: 28px;
+      margin-bottom: 24px;
+      color: #ffe066;
+      text-shadow: 0 4px 16px #000a;
+      letter-spacing: 1px;
     }
-
-    table {
+    .tabs-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 26px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 15px;
+      padding: 7px 14px;
+      border-radius: 11px;
+      font-weight: bold;
+      color: #ffe066;
+      transition: background 0.15s, color 0.15s;
+      box-shadow: 0 2px 8px #0002;
+      border: 2px solid #ffe066;
+      min-width: 115px;
+    }
+    .tab-btn.active {
+      background: #3a6ee8;
+      color: #fff;
+      border: 2px solid #3a6ee8;
+    }
+    .timer-row {
+      text-align:center;
+      color:#ffe066;
+      font-size:15px;
+      margin-bottom:10px;
+      margin-top:-4px;
+      font-weight:bold;
+    }
+    .ranking-table {
       width: 100%;
+      max-width: 760px;
+      margin: 0 auto 32px auto;
       border-collapse: collapse;
-      margin-top: 20px;
-      background-color: rgba(255, 255, 255, 0.1);
+      background: rgba(35,43,59,0.96);
+      border-radius: 12px;
+      box-shadow: 0 4px 18px #000a;
+      overflow: hidden;
+      font-size: 15px;
     }
-
-    th, td {
-      padding: 15px;
-      border-bottom: 1px solid #555;
+    .ranking-table th, .ranking-table td {
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 15px;
     }
-
-    th {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: #f39c12;
+    .ranking-table th {
+      background: #3a6ee8;
+      color: #ffe066;
+      font-size: 16px;
+      font-weight: bold;
+      border-bottom: 2px solid #ffe066;
+    }
+    .ranking-table tr:nth-child(even) {
+      background: #232b3b;
+    }
+    .ranking-table tr:nth-child(odd) {
+      background: #2b3650;
+    }
+    .ranking-table td.rank {
+      font-weight: bold;
+      color: #ffe066;
+      font-size: 16px;
+    }
+    .ranking-table td.me {
+      color: #43e86e;
+      font-weight: bold;
+    }
+    .btn-menu {
+      margin: 32px auto 0 auto;
+      display: block;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
       font-size: 20px;
+      padding: 13px 34px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow:0 2px 12px #0006;
+      transition: background 0.2s;
     }
-
-    td {
-      font-size: 18px;
+    .btn-menu:hover {background:#254a9c;}
+    @media (max-width: 900px) {
+      .ranking-table {font-size: 12px;}
+      .tabs-row {flex-wrap:wrap;}
+      .tab-btn {font-size: 13px; padding:6px 8px; min-width:90px;}
     }
-
-    .retour {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 12px 25px;
-      background-color: #2980b9;
-      color: white;
-      text-decoration: none;
-      border-radius: 10px;
-      transition: background 0.3s;
-    }
-
-    .retour:hover {
-      background-color: #3498db;
+    @media (max-width: 600px) {
+      .ranking-table th, .ranking-table td {font-size:11px; padding:4px 2px;}
+      .tab-btn {font-size: 11px; padding:4px 3px; min-width: 68px;}
+      h1 {font-size: 28px;}
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🏆 Classement des Meilleurs Joueurs</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Pseudo</th>
-          <th>Score</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody id="classementBody">
-        <!-- Les scores seront ajoutés ici dynamiquement -->
-      </tbody>
-    </table>
-    <a class="retour" href="menu.html">⬅ Retour au Menu</a>
+  <h1>🏆 Classement</h1>
+  <div class="tabs-row">
+    <button class="tab-btn active" id="tabBtnGeneral">Classement général</button>
+    <button class="tab-btn" id="tabBtnClassique">Classique</button>
+    <button class="tab-btn" id="tabBtnChrono">Chrono</button>
+    <button class="tab-btn" id="tabBtnInfini">Infini</button>
+    <button class="tab-btn" id="tabBtnBaseball">Baseball</button>
+    <button class="tab-btn" id="tabBtnCourse">Course</button>
   </div>
-
+  <div class="timer-row" id="classementTimer"></div>
+  <div id="tabGeneral">
+    <table class="ranking-table">
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Points cumulés</th>
+      </tr>
+      <tr><td class="rank">1</td><td>SuperAlex</td><td>14 500</td></tr>
+      <tr><td class="rank">2</td><td>PixelFox</td><td>13 900</td></tr>
+      <tr><td class="rank">3</td><td>Chimère</td><td>12 800</td></tr>
+      <tr><td class="rank">4</td><td>JoueurPro</td><td>12 400</td></tr>
+      <tr><td class="rank">5</td><td class="me">Moi</td><td class="me">11 900</td></tr>
+      <tr><td class="rank">6</td><td>GamerX</td><td>11 200</td></tr>
+      <tr><td class="rank">7</td><td>Speedy</td><td>10 950</td></tr>
+      <tr><td class="rank">8</td><td>Stellaire</td><td>10 700</td></tr>
+      <tr><td class="rank">9</td><td>Griffon</td><td>10 300</td></tr>
+      <tr><td class="rank">10</td><td>Nova</td><td>10 100</td></tr>
+    </table>
+  </div>
+  <div id="tabClassique" style="display:none;">
+    <table class="ranking-table">
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Score classique</th>
+      </tr>
+      <tr><td class="rank">1</td><td>SuperAlex</td><td>6 200</td></tr>
+      <tr><td class="rank">2</td><td>PixelFox</td><td>5 980</td></tr>
+      <tr><td class="rank">3</td><td class="me">Moi</td><td class="me">5 500</td></tr>
+      <tr><td class="rank">4</td><td>Chimère</td><td>5 380</td></tr>
+      <tr><td class="rank">5</td><td>JoueurPro</td><td>5 100</td></tr>
+      <tr><td class="rank">6</td><td>Speedy</td><td>4 950</td></tr>
+      <tr><td class="rank">7</td><td>Stellaire</td><td>4 800</td></tr>
+      <tr><td class="rank">8</td><td>Griffon</td><td>4 700</td></tr>
+      <tr><td class="rank">9</td><td>Nova</td><td>4 500</td></tr>
+      <tr><td class="rank">10</td><td>GamerX</td><td>4 200</td></tr>
+    </table>
+  </div>
+  <div id="tabChrono" style="display:none;">
+    <table class="ranking-table">
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Score chrono</th>
+      </tr>
+      <tr><td class="rank">1</td><td>Speedy</td><td>2 400</td></tr>
+      <tr><td class="rank">2</td><td class="me">Moi</td><td class="me">2 320</td></tr>
+      <tr><td class="rank">3</td><td>SuperAlex</td><td>2 280</td></tr>
+      <tr><td class="rank">4</td><td>PixelFox</td><td>2 200</td></tr>
+      <tr><td class="rank">5</td><td>Stellaire</td><td>2 100</td></tr>
+      <tr><td class="rank">6</td><td>JoueurPro</td><td>2 050</td></tr>
+      <tr><td class="rank">7</td><td>Nova</td><td>2 000</td></tr>
+      <tr><td class="rank">8</td><td>Chimère</td><td>1 980</td></tr>
+      <tr><td class="rank">9</td><td>Griffon</td><td>1 950</td></tr>
+      <tr><td class="rank">10</td><td>GamerX</td><td>1 900</td></tr>
+    </table>
+  </div>
+  <div id="tabInfini" style="display:none;">
+    <table class="ranking-table">
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Score infini</th>
+      </tr>
+      <tr><td class="rank">1</td><td class="me">Moi</td><td class="me">3 210</td></tr>
+      <tr><td class="rank">2</td><td>SuperAlex</td><td>3 180</td></tr>
+      <tr><td class="rank">3</td><td>PixelFox</td><td>3 150</td></tr>
+      <tr><td class="rank">4</td><td>Speedy</td><td>3 120</td></tr>
+      <tr><td class="rank">5</td><td>Stellaire</td><td>3 100</td></tr>
+      <tr><td class="rank">6</td><td>Chimère</td><td>3 080</td></tr>
+      <tr><td class="rank">7</td><td>Griffon</td><td>3 050</td></tr>
+      <tr><td class="rank">8</td><td>GamerX</td><td>3 020</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>3 000</td></tr>
+      <tr><td class="rank">10</td><td>Nova</td><td>2 980</td></tr>
+    </table>
+  </div>
+  <div id="tabBaseball" style="display:none;">
+    <table class="ranking-table">
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Distance (m)</th>
+      </tr>
+      <tr><td class="rank">1</td><td>SuperAlex</td><td>512</td></tr>
+      <tr><td class="rank">2</td><td class="me">Moi</td><td class="me">505</td></tr>
+      <tr><td class="rank">3</td><td>PixelFox</td><td>501</td></tr>
+      <tr><td class="rank">4</td><td>Speedy</td><td>498</td></tr>
+      <tr><td class="rank">5</td><td>Stellaire</td><td>495</td></tr>
+      <tr><td class="rank">6</td><td>Chimère</td><td>492</td></tr>
+      <tr><td class="rank">7</td><td>Griffon</td><td>488</td></tr>
+      <tr><td class="rank">8</td><td>Nova</td><td>485</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>482</td></tr>
+      <tr><td class="rank">10</td><td>GamerX</td><td>480</td></tr>
+    </table>
+  </div>
+  <div id="tabCourse" style="display:none;">
+    <table class="ranking-table">
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Score course</th>
+      </tr>
+      <tr><td class="rank">1</td><td>Speedy</td><td>4 520</td></tr>
+      <tr><td class="rank">2</td><td class="me">Moi</td><td class="me">4 300</td></tr>
+      <tr><td class="rank">3</td><td>SuperAlex</td><td>4 200</td></tr>
+      <tr><td class="rank">4</td><td>PixelFox</td><td>4 100</td></tr>
+      <tr><td class="rank">5</td><td>Stellaire</td><td>4 050</td></tr>
+      <tr><td class="rank">6</td><td>Chimère</td><td>4 000</td></tr>
+      <tr><td class="rank">7</td><td>Griffon</td><td>3 950</td></tr>
+      <tr><td class="rank">8</td><td>Nova</td><td>3 900</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>3 850</td></tr>
+      <tr><td class="rank">10</td><td>GamerX</td><td>3 800</td></tr>
+    </table>
+  </div>
+  <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
   <script>
-    const classement = JSON.parse(localStorage.getItem("classement") || "[]");
-
-    // Trie par score décroissant
-    classement.sort((a, b) => b.score - a.score);
-
-    const tbody = document.getElementById("classementBody");
-
-    classement.forEach((entree, index) => {
-      const row = document.createElement("tr");
-
-      const position = document.createElement("td");
-      position.textContent = index + 1;
-
-      const pseudo = document.createElement("td");
-      pseudo.textContent = entree.pseudo || "Joueur inconnu";
-
-      const score = document.createElement("td");
-      score.textContent = entree.score;
-
-      const date = document.createElement("td");
-      date.textContent = entree.date || "";
-
-      row.appendChild(position);
-      row.appendChild(pseudo);
-      row.appendChild(score);
-      row.appendChild(date);
-
-      tbody.appendChild(row);
+    // Tabs logic
+    const tabs = [
+      {btn: "tabBtnGeneral", tab: "tabGeneral"},
+      {btn: "tabBtnClassique", tab: "tabClassique"},
+      {btn: "tabBtnChrono", tab: "tabChrono"},
+      {btn: "tabBtnInfini", tab: "tabInfini"},
+      {btn: "tabBtnBaseball", tab: "tabBaseball"},
+      {btn: "tabBtnCourse", tab: "tabCourse"}
+    ];
+    tabs.forEach((t, idx) => {
+      document.getElementById(t.btn).onclick = function() {
+        tabs.forEach((tt, i) => {
+          document.getElementById(tt.tab).style.display = (i === idx) ? "" : "none";
+          document.getElementById(tt.btn).classList.toggle("active", i === idx);
+        });
+      };
     });
+
+    // Timer 24h pour la mise à jour des classements
+    function getNextClassementReset() {
+      let now = new Date();
+      let next = new Date(now);
+      next.setHours(0,0,0,0);
+      next.setDate(now.getDate()+1);
+      return next.getTime();
+    }
+    function updateClassementTimer() {
+      let now = Date.now();
+      let reset = parseInt(localStorage.getItem("classementReset") || "0");
+      if(!reset || now >= reset) {
+        let next = getNextClassementReset();
+        localStorage.setItem("classementReset", next+"");
+        reset = next;
+      }
+      let left = reset - now;
+      let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+      document.getElementById('classementTimer').textContent = "Mise à jour dans : " + 
+        (h<10?"0":"")+h+"h "+(m<10?"0":"")+m+"m "+(s<10?"0":"")+s+"s";
+      setTimeout(updateClassementTimer, 1000);
+    }
+    updateClassementTimer();
   </script>
 </body>
 </html>

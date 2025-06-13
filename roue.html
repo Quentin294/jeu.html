@@ -2,193 +2,363 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Roue des couleurs</title>
+  <title>Roue de la chance</title>
   <style>
-    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
-    .container {max-width:600px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
-    h1 {text-align:center;font-size:38px;margin-bottom:16px;}
-    .chrono {text-align:center;font-size:22px;color:#ffe066;margin-bottom:32px;}
-    .wheel-area {display:flex;flex-direction:column;align-items:center;}
-    #wheelCanvas {background:#232b3b;border-radius:50%;box-shadow:0 4px 24px #0008;}
-    .wheel-btn {margin-top:30px;padding:18px 42px;font-size:22px;background:#3a6ee8;color:#fff;border:none;border-radius:14px;cursor:pointer;font-weight:bold;box-shadow:0 2px 8px #0006;transition:background 0.2s;}
-    .wheel-btn[disabled] {background:#888;cursor:not-allowed;}
-    .wheel-result {margin-top:30px;font-size:20px;text-align:center;min-height:40px;}
-    .wheel-won-colors {margin-top:20px;font-size:16px;text-align:center;max-width:90%;word-wrap:break-word;}
-    .color-badge {display:inline-block;width:30px;height:30px;border-radius:50%;margin:0 6px 4px 0;border:2px solid #fff;vertical-align:middle;}
-    .btn-menu {margin-top:28px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      min-height:100vh;
+      background: linear-gradient(135deg, #232b3b 0%, #3a6ee8 100%);
+      color:#fff;
+      overflow-x:hidden;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 48px auto 0 auto;
+      background: rgba(35,43,59,0.92);
+      border-radius: 32px;
+      box-shadow: 0 12px 48px #000a;
+      padding: 48px 28px 48px 28px;
+      min-height: 720px;
+      display: flex;
+      flex-direction: row;
+      gap: 60px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .wheel-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 420px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 32px; /* réduit */
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+      color: #ffe066;
+      text-shadow: 0 4px 16px #000a;
+    }
+    .wheel-title {
+      font-size: 22px; /* réduit */
+      color: #ffe066;
+      text-align: center;
+      margin: 18px 0 24px 0;
+      font-weight:bold;
+      letter-spacing:1px;
+      text-shadow: 0 2px 8px #0008;
+    }
+    .wheel-canvas {
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #232b3b 70%, #3a6ee8 100%);
+      box-shadow: 0 8px 48px #000c, 0 0 0 8px #ffe06644;
+      margin-bottom: 26px;
+      display: block;
+      border: 4px solid #ffe066;
+      transition: box-shadow 0.2s;
+    }
+    .btn-spin {
+      background: linear-gradient(90deg,#ffe066 60%,#3a6ee8 100%);
+      color: #232b3b;
+      border: none;
+      border-radius: 18px;
+      font-size: 26px;
+      padding: 18px 54px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+      letter-spacing:1px;
+      box-shadow: 0 4px 20px #0007;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .btn-spin:disabled {
+      background:#888;
+      color:#ccc;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .timer-row {
+      text-align:center;
+      color:#ffe066;
+      font-size:21px;
+      margin-bottom:20px;
+      margin-top:-10px;
+      font-weight:bold;
+      text-shadow:0 2px 8px #0006;
+    }
+    .reward-row {
+      text-align:center;
+      color:#43e86e;
+      font-size:22px;
+      margin-top:12px;
+      min-height:38px;
+      font-weight:bold;
+      text-shadow:0 2px 8px #0008;
+    }
+    .premium-label {
+      color:#ffe066;
+      font-size:22px;
+      font-weight:bold;
+      text-align: center;
+      margin-bottom:10px;
+      margin-top:6px;
+      letter-spacing:1px;
+      text-shadow:0 2px 8px #0008;
+    }
+    .gem-icon {
+      font-size: 28px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    .btn-menu {
+      margin: 44px auto 0 auto;
+      display: block;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 26px;
+      padding: 18px 48px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow:0 4px 24px #0008;
+      transition: background 0.2s;
+    }
     .btn-menu:hover {background:#254a9c;}
-    #wheel-toast {position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#232b3b;color:#fff;padding:18px 38px;border-radius:18px;box-shadow:0 4px 16px #000a;font-size:20px;font-weight:bold;display:none;z-index:200;border:2px solid #43e86e;animation:popin 0.2s;}
-    @keyframes popin {from{transform:scale(0.7);}to{transform:scale(1);}}
+    @media (max-width: 1100px) {
+      .container {flex-direction:column;align-items:center;}
+      .wheel-section {margin-bottom:38px;}
+    }
+    @media (max-width: 700px) {
+      .container {padding:10px;}
+      .wheel-canvas {width:300px;height:300px;}
+      .wheel-section {min-width:0;}
+    }
   </style>
 </head>
 <body>
+  <h1>🎰 Roue de la chance</h1>
   <div class="container">
-    <h1>🎨 Roue des couleurs</h1>
-    <div class="chrono" id="wheelChrono"></div>
-    <div class="wheel-area">
-      <canvas id="wheelCanvas" width="350" height="350"></canvas>
-      <button class="wheel-btn" id="spinBtn">Tourner la roue</button>
-      <div class="wheel-result" id="wheelResult"></div>
-      <div class="wheel-won-colors" id="wheelWonColors"></div>
+    <!-- Roue gratuite -->
+    <div class="wheel-section">
+      <div class="wheel-title">Roue gratuite</div>
+      <canvas id="wheelFree" class="wheel-canvas" width="480" height="480"></canvas>
+      <button class="btn-spin" id="spinFreeBtn">Lancer la roue</button>
+      <div class="timer-row" id="timerFree"></div>
+      <div class="reward-row" id="rewardFree"></div>
     </div>
-    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+    <!-- Roue premium -->
+    <div class="wheel-section">
+      <div class="wheel-title">Roue premium</div>
+      <div class="premium-label"><span class="gem-icon">💎</span>Coût : 120 gemmes</div>
+      <canvas id="wheelPremium" class="wheel-canvas" width="480" height="480"></canvas>
+      <button class="btn-spin" id="spinPremiumBtn">Lancer la roue premium</button>
+      <div class="timer-row" id="timerPremium"></div>
+      <div class="reward-row" id="rewardPremium"></div>
+    </div>
   </div>
-  <div id="wheel-toast"></div>
+  <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
   <script>
-    // Palette de couleurs (tu peux personnaliser)
-    const wheelColors = [
-      {name:"Rouge", color:"#FF3B30"},
-      {name:"Orange", color:"#FF9500"},
-      {name:"Jaune", color:"#FFCC00"},
-      {name:"Vert", color:"#34C759"},
-      {name:"Bleu", color:"#007AFF"},
-      {name:"Violet", color:"#AF52DE"},
-      {name:"Rose", color:"#FF2D55"},
-      {name:"Turquoise", color:"#5AC8FA"}
+    // Récompenses roue gratuite
+    const freeRewards = [
+      {label:"Couleur Rouge", type:"skin", color:"#FF3B30"},
+      {label:"Couleur Arc-en-ciel", type:"skin", color:"linear-gradient(135deg, #ff005e 0%, #fffd00 25%, #00ff87 50%, #00cfff 75%, #a259ff 100%)"},
+      {label:"Familier Pixel 🦊", type:"familier", icon:"🦊"},
+      {label:"Familier Nébula 🐉", type:"familier", icon:"🐉"},
+      {label:"Acolyte Omega 🤖", type:"acolyte", icon:"🤖"},
+      {label:"Acolyte Gardien ⏳", type:"acolyte", icon:"⏳"},
+      {label:"Couleur Bleu", type:"skin", color:"#007AFF"},
+      {label:"Couleur Vert", type:"skin", color:"#34C759"}
+    ];
+    // Récompenses roue premium
+    const premiumRewards = [
+      {label:"Couleur Cosmos 🌌", type:"skin", color:"linear-gradient(135deg,#2d00f7 0%,#ff0291 100%)"},
+      {label:"Couleur Or Royal", type:"skin", color:"#ffe066"},
+      {label:"Familier Griffon 🦅", type:"familier", icon:"🦅"},
+      {label:"Familier Chimère 🦄", type:"familier", icon:"🦄"},
+      {label:"Acolyte Titan 🦾", type:"acolyte", icon:"🦾"},
+      {label:"Acolyte Oracle 🧙‍♂️", type:"acolyte", icon:"🧙‍♂️"},
+      {label:"Couleur Rose", type:"skin", color:"#FF2D55"},
+      {label:"Couleur Turquoise", type:"skin", color:"#5AC8FA"}
     ];
 
-    // --- Gestion du cooldown (1h entre chaque spin) ---
-    function getNextSpinTime() {
-      return parseInt(localStorage.getItem("wheelNextSpinColor")||"0");
+    // Gestion du timer (1h d'attente)
+    function getNextSpinTime(key) {
+      let t = parseInt(localStorage.getItem(key) || "0");
+      return t;
     }
-    function setNextSpinTime(ts) {
-      localStorage.setItem("wheelNextSpinColor",ts+"");
+    function setNextSpinTime(key) {
+      let next = Date.now() + 3600*1000;
+      localStorage.setItem(key, next+"");
     }
-
-    // --- Gestion des couleurs gagnées ---
-    function getWonColors() {
-      try {
-        return JSON.parse(localStorage.getItem("wonColors")||"[]");
-      } catch(e) { return []; }
-    }
-    function saveWonColors(arr) {
-      localStorage.setItem("wonColors", JSON.stringify(arr));
-    }
-    function updateWheelWonColors() {
-      const el = document.getElementById('wheelWonColors');
-      const colors = getWonColors();
-      if(colors.length===0) {
-        el.innerHTML = "Aucune couleur gagnée pour l’instant.";
-      } else {
-        el.innerHTML = "Couleurs gagnées :<br>" + colors.map(c=>{
-          const obj = wheelColors.find(wc=>wc.name===c);
-          return `<span class="color-badge" title="${c}" style="background:${obj ? obj.color : '#fff'}"></span>`;
-        }).join("") + "<br>" + colors.join(", ");
-      }
-    }
-
-    // --- Chrono avant prochain spin ---
-    function updateWheelCooldown() {
-      const btn = document.getElementById('spinBtn');
-      const now = Date.now();
-      const next = getNextSpinTime();
-      const chrono = document.getElementById('wheelChrono');
-      if(now < next) {
-        btn.disabled = true;
-        let sec = Math.ceil((next-now)/1000);
-        let min = Math.floor(sec/60);
-        sec = sec%60;
-        btn.textContent = `Reviens dans ${min}m ${sec}s`;
-        chrono.textContent = `Prochain tirage disponible dans ${min}m ${sec}s`;
-        setTimeout(updateWheelCooldown, 1000);
-      } else {
+    function updateTimer(id, key, btnId) {
+      let now = Date.now();
+      let next = getNextSpinTime(key);
+      let el = document.getElementById(id);
+      let btn = document.getElementById(btnId);
+      if(now >= next) {
+        el.textContent = "Roue disponible !";
         btn.disabled = false;
-        btn.textContent = "Tourner la roue";
-        chrono.textContent = "Tourne la roue pour gagner une nouvelle couleur !";
+      } else {
+        btn.disabled = true;
+        let left = next - now;
+        let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+        el.textContent = `Disponible dans : ${(h<10?"0":"")+h}h ${(m<10?"0":"")+m}m ${(s<10?"0":"")+s}s`;
+        setTimeout(()=>updateTimer(id, key, btnId),1000);
       }
     }
 
-    // --- Affichage de la roue ---
-    function drawWheel(angle=0) {
-      const canvas = document.getElementById('wheelCanvas');
-      if(!canvas) return;
+    // Dessin de la roue : noms non chevauchés (texte sur plusieurs lignes si besoin)
+    function drawWheel(canvas, rewards, angle=0) {
       const ctx = canvas.getContext('2d');
-      const n = wheelColors.length;
-      const r = 170;
       ctx.clearRect(0,0,canvas.width,canvas.height);
+      const cx = canvas.width/2, cy = canvas.height/2, r = canvas.width/2-18;
+      const n = rewards.length;
+      const colors = [
+        "#3a6ee8", "#ffe066", "#ff3b30", "#43e86e", "#ff5ca7", "#00cfff", "#a259ff", "#ff9500"
+      ];
       for(let i=0;i<n;i++) {
-        const start = angle + i*2*Math.PI/n;
-        const end = angle + (i+1)*2*Math.PI/n;
-        ctx.beginPath();
-        ctx.moveTo(175,175);
-        ctx.arc(175,175,r,start,end);
-        ctx.closePath();
-        ctx.fillStyle = wheelColors[i].color;
-        ctx.fill();
-        // Label couleur
+        let a0 = angle + i*2*Math.PI/n, a1 = angle + (i+1)*2*Math.PI/n;
         ctx.save();
-        ctx.translate(175,175);
-        ctx.rotate((start+end)/2);
-        ctx.textAlign = "right";
-        ctx.font = "bold 18px Arial";
-        ctx.fillStyle = "#fff";
-        ctx.strokeStyle = "#232b3b";
-        ctx.lineWidth = 6;
-        ctx.strokeText(wheelColors[i].name, r-20,8);
-        ctx.fillText(wheelColors[i].name, r-20,8);
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,r,a0,a1);
+        ctx.closePath();
+        ctx.fillStyle = colors[i%colors.length];
+        ctx.globalAlpha = 0.96;
+        ctx.shadowColor="#000";
+        ctx.shadowBlur=8;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur=0;
+        ctx.restore();
+
+        // Texte ou icône, bien centré, noms sur plusieurs lignes si besoin
+        ctx.save();
+        ctx.translate(cx,cy);
+        ctx.rotate((a0+a1)/2);
+        ctx.textAlign = "center";
+        let reward = rewards[i];
+        let y = -r+82;
+        // Multi-ligne pour le label
+        function drawMultiline(text, x, y, font, color, lineHeight = 19) {
+          ctx.font = font;
+          ctx.fillStyle = color;
+          let lines = [];
+          if (text.length > 16) {
+            // coupe sur l'espace le plus proche
+            let idx = text.lastIndexOf(' ', 16);
+            if (idx === -1) idx = 16;
+            lines = [text.slice(0, idx), text.slice(idx+1)];
+          } else {
+            lines = [text];
+          }
+          lines.forEach((line, j) => {
+            ctx.fillText(line, x, y + j*lineHeight);
+          });
+        }
+        // Dessin du cercle couleur
+        if(reward.type==="skin" && reward.color.startsWith("linear-gradient")) {
+          ctx.font = "bold 32px Arial";
+          ctx.fillStyle = "#fff";
+          ctx.fillText("🌈",0,y-16);
+          drawMultiline(reward.label, 0, y+18, "bold 17px Arial", "#232b3b");
+        } else if(reward.type==="skin") {
+          ctx.beginPath();
+          ctx.arc(0,y-10,26,0,Math.PI*2);
+          ctx.closePath();
+          ctx.fillStyle = reward.color;
+          ctx.fill();
+          ctx.strokeStyle="#fff";
+          ctx.lineWidth=3;
+          ctx.stroke();
+          drawMultiline(reward.label, 0, y+28, "bold 17px Arial", "#232b3b");
+        } else if(reward.type==="familier" || reward.type==="acolyte") {
+          ctx.font = "38px Arial";
+          ctx.fillText(reward.icon,0,y-6);
+          drawMultiline(reward.label, 0, y+28, "bold 17px Arial", "#232b3b");
+        }
         ctx.restore();
       }
       // Flèche
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(-Math.PI/2);
       ctx.beginPath();
-      ctx.moveTo(175,10); ctx.lineTo(165,40); ctx.lineTo(185,40); ctx.closePath();
-      ctx.fillStyle = "#ffe066"; ctx.fill();
+      ctx.moveTo(0,-r-8);
+      ctx.lineTo(-22,-r+34);
+      ctx.lineTo(22,-r+34);
+      ctx.closePath();
+      ctx.fillStyle="#fff";
+      ctx.shadowColor="#232b3b";
+      ctx.shadowBlur=10;
+      ctx.fill();
+      ctx.restore();
     }
 
-    // --- Spin de la roue ---
-    function showWheelToast(msg) {
-      const toast = document.getElementById('wheel-toast');
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(()=>{ toast.style.display = "none"; }, 2500);
-    }
-    function spinWheel() {
-      const btn = document.getElementById('spinBtn');
-      if(btn.disabled) return;
-      btn.disabled = true;
-      btn.textContent = "Tirage...";
+    // Animation de la roue
+    function spinWheel(canvas, rewards, cb) {
       let angle = 0;
-      let t = 0, duration = 3500 + Math.random()*600;
-      let targetIndex = Math.floor(Math.random()*wheelColors.length);
-      let targetAngle = 2*Math.PI*3 + (2*Math.PI/wheelColors.length)*(wheelColors.length-targetIndex-0.5);
-      function animate() {
-        t += 16;
-        let progress = Math.min(1, t/duration);
-        let ease = 1-Math.pow(1-progress,3);
-        angle = ease*targetAngle;
-        drawWheel(angle);
-        if(progress<1) requestAnimationFrame(animate);
-        else {
-          const colorObj = wheelColors[targetIndex];
-          document.getElementById('wheelResult').innerHTML = `<b>Bravo !</b> Tu as gagné la couleur <span style="color:${colorObj.color};font-weight:bold">${colorObj.name}</span> !`;
-          let won = getWonColors();
-          if(!won.includes(colorObj.name)) {
-            won.push(colorObj.name);
-            saveWonColors(won);
-            showWheelToast(`Nouvelle couleur gagnée : ${colorObj.name} !`);
-          } else {
-            showWheelToast(`Tu as déjà cette couleur : ${colorObj.name}`);
-          }
-          updateWheelWonColors();
-          setNextSpinTime(Date.now() + 3600*1000);
-          updateWheelCooldown();
+      let speed = 0.38 + Math.random()*0.06;
+      let friction = 0.985 + Math.random()*0.002;
+      let stopAt = Math.floor(Math.random()*rewards.length);
+      let rounds = 6 + Math.floor(Math.random()*2);
+      let total = rounds*2*Math.PI + stopAt*2*Math.PI/rewards.length + Math.PI*1.5;
+      let spinning = true;
+      function anim() {
+        if(!spinning) return;
+        angle += speed;
+        speed *= friction;
+        drawWheel(canvas, rewards, angle);
+        if(angle >= total || speed < 0.01) {
+          spinning = false;
+          angle = total;
+          drawWheel(canvas, rewards, angle);
+          setTimeout(()=>cb(stopAt), 900);
+        } else {
+          requestAnimationFrame(anim);
         }
       }
-      animate();
+      anim();
     }
 
-    // --- Initialisation ---
-    document.getElementById('spinBtn').onclick = spinWheel;
-    drawWheel();
-    updateWheelCooldown();
-    updateWheelWonColors();
-    setInterval(updateWheelCooldown, 1000);
-
-    // --- Synchronisation multi-onglets ---
-    window.addEventListener('storage', function(event) {
-      if(event.key === "wonColors") {
-        updateWheelWonColors();
+    // Gestion des boutons
+    function handleSpin(isPremium) {
+      const key = isPremium ? "nextSpinPremium" : "nextSpinFree";
+      const canvas = document.getElementById(isPremium ? "wheelPremium" : "wheelFree");
+      const btn = document.getElementById(isPremium ? "spinPremiumBtn" : "spinFreeBtn");
+      const rewards = isPremium ? premiumRewards : freeRewards;
+      const rewardDiv = document.getElementById(isPremium ? "rewardPremium" : "rewardFree");
+      if(isPremium) {
+        let gems = parseInt(localStorage.getItem("diamonds")||"0");
+        if(gems < 120) {
+          alert("Pas assez de gemmes !");
+          return;
+        }
+        localStorage.setItem("diamonds", (gems-120)+"");
       }
-    });
+      btn.disabled = true;
+      rewardDiv.textContent = "";
+      spinWheel(canvas, rewards, idx => {
+        let r = rewards[idx];
+        rewardDiv.innerHTML = `<b>Bravo !</b> Tu as gagné : <span style="color:#ffe066;">${r.label}</span>`;
+        setNextSpinTime(key);
+        updateTimer(isPremium ? "timerPremium":"timerFree", key, isPremium ? "spinPremiumBtn":"spinFreeBtn");
+        // Ajoute ici la logique pour ajouter la récompense au joueur
+      });
+    }
+
+    // Initialisation
+    drawWheel(document.getElementById("wheelFree"), freeRewards, 0);
+    drawWheel(document.getElementById("wheelPremium"), premiumRewards, 0);
+    updateTimer("timerFree", "nextSpinFree", "spinFreeBtn");
+    updateTimer("timerPremium", "nextSpinPremium", "spinPremiumBtn");
+    document.getElementById("spinFreeBtn").onclick = ()=>handleSpin(false);
+    document.getElementById("spinPremiumBtn").onclick = ()=>handleSpin(true);
   </script>
 </body>
 </html>

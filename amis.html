@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Amis</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #232b3b;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background: #3a6ee8;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 12px #0008;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      overflow: hidden;
+    }
+    .friends-list, .chat-section, .requests-section {
+      background: #232b3bcc;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px #000a;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .friends-list, .requests-section {
+      width: 280px;
+      overflow-y: auto;
+    }
+    .chat-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #ffe066;
+      text-align: center;
+    }
+    .friend, .request {
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #3a6ee8;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .friend:hover, .request:hover {
+      background: #254a9c;
+    }
+    .friend.online::after {
+      content: "●";
+      color: #43e86e;
+      margin-left: 8px;
+      font-size: 18px;
+    }
+    .friend.offline::after {
+      content: "●";
+      color: #888;
+      margin-left: 8px;
+      font-size: 18px;
+    }
+    .chat-messages {
+      flex: 1;
+      background: #1e2740;
+      border-radius: 12px;
+      padding: 12px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .chat-message {
+      margin-bottom: 8px;
+    }
+    .chat-message .author {
+      font-weight: bold;
+      color: #ffe066;
+      margin-right: 6px;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .chat-input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+    }
+    .btn-send {
+      background: #3a6ee8;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-send:hover {
+      background: #254a9c;
+    }
+    .add-friend-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+    .add-friend-input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+    }
+    .btn-add-friend {
+      background: #43e86e;
+      border: none;
+      color: #232b3b;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-add-friend:hover {
+      background: #2fae4f;
+    }
+    .no-friends, .no-requests, .no-chat {
+      text-align: center;
+      color: #888;
+      margin-top: 20px;
+      font-style: italic;
+    }
+    .btn-menu {
+      margin: 30px auto 18px auto;
+      display: block;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 22px;
+      padding: 14px 36px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-menu:hover {background:#254a9c;}
+  </style>
+</head>
+<body>
+  <header>👥 Amis</header>
+  <main>
+    <section class="friends-list">
+      <h2>Mes amis</h2>
+      <div id="friendsContainer">
+        <div class="no-friends">Tu n'as pas encore d'amis.</div>
+      </div>
+      <div class="add-friend-row">
+        <input type="text" id="addFriendInput" class="add-friend-input" placeholder="Ajouter un ami par pseudo" />
+        <button id="btnAddFriend" class="btn-add-friend">Ajouter</button>
+      </div>
+    </section>
+
+    <section class="chat-section">
+      <h2>Chat</h2>
+      <div id="chatMessages" class="chat-messages">
+        <div class="no-chat">Sélectionne un ami pour discuter.</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Écris un message..." disabled />
+        <button id="btnSend" class="btn-send" disabled>Envoyer</button>
+      </div>
+    </section>
+
+    <section class="requests-section">
+      <h2>Demandes d'amitié</h2>
+      <div id="requestsContainer">
+        <div class="no-requests">Aucune demande en attente.</div>
+      </div>
+    </section>
+  </main>
+  <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
+  <script>
+    // Données simulées stockées localement
+    let friends = JSON.parse(localStorage.getItem('friends')) || [];
+    let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || [];
+    let chats = JSON.parse(localStorage.getItem('chats')) || {}; // {friendName: [{author:'Moi', text:'...'}, ...]}
+    let currentChatFriend = null;
+
+    const friendsContainer = document.getElementById('friendsContainer');
+    const requestsContainer = document.getElementById('requestsContainer');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const btnSend = document.getElementById('btnSend');
+    const addFriendInput = document.getElementById('addFriendInput');
+    const btnAddFriend = document.getElementById('btnAddFriend');
+
+    function saveData() {
+      localStorage.setItem('friends', JSON.stringify(friends));
+      localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
+      localStorage.setItem('chats', JSON.stringify(chats));
+    }
+
+    function renderFriends() {
+      friendsContainer.innerHTML = '';
+      if(friends.length === 0) {
+        friendsContainer.innerHTML = '<div class="no-friends">Tu n\'as pas encore d\'amis.</div>';
+        return;
+      }
+      friends.forEach(friend => {
+        let div = document.createElement('div');
+        div.className = 'friend ' + (friend.online ? 'online' : 'offline');
+        div.textContent = friend.name;
+        div.onclick = () => openChat(friend.name);
+        friendsContainer.appendChild(div);
+      });
+    }
+
+    function renderRequests() {
+      requestsContainer.innerHTML = '';
+      if(friendRequests.length === 0) {
+        requestsContainer.innerHTML = '<div class="no-requests">Aucune demande en attente.</div>';
+        return;
+      }
+      friendRequests.forEach(req => {
+        let div = document.createElement('div');
+        div.className = 'request';
+        div.textContent = req;
+        let acceptBtn = document.createElement('button');
+        acceptBtn.textContent = 'Accepter';
+        acceptBtn.style.marginLeft = '10px';
+        acceptBtn.onclick = () => acceptRequest(req);
+        let rejectBtn = document.createElement('button');
+        rejectBtn.textContent = 'Refuser';
+        rejectBtn.style.marginLeft = '5px';
+        rejectBtn.onclick = () => rejectRequest(req);
+        div.appendChild(acceptBtn);
+        div.appendChild(rejectBtn);
+        requestsContainer.appendChild(div);
+      });
+    }
+
+    function openChat(friendName) {
+      currentChatFriend = friendName;
+      chatInput.disabled = false;
+      btnSend.disabled = false;
+      renderChat();
+    }
+
+    function renderChat() {
+      chatMessages.innerHTML = '';
+      if(!currentChatFriend) {
+        chatMessages.innerHTML = '<div class="no-chat">Sélectionne un ami pour discuter.</div>';
+        chatInput.disabled = true;
+        btnSend.disabled = true;
+        return;
+      }
+      let msgs = chats[currentChatFriend] || [];
+      if(msgs.length === 0) {
+        chatMessages.innerHTML = '<div class="no-chat">Aucun message avec ' + currentChatFriend + '.</div>';
+        return;
+      }
+      msgs.forEach(m => {
+        let div = document.createElement('div');
+        div.className = 'chat-message';
+        div.innerHTML = '<span class="author">' + m.author + ':</span> ' + m.text;
+        chatMessages.appendChild(div);
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    btnSend.onclick = () => {
+      let text = chatInput.value.trim();
+      if(!text || !currentChatFriend) return;
+      if(!chats[currentChatFriend]) chats[currentChatFriend] = [];
+      chats[currentChatFriend].push({author:'Moi', text});
+      saveData();
+      chatInput.value = '';
+      renderChat();
+    };
+
+    btnAddFriend.onclick = () => {
+      let name = addFriendInput.value.trim();
+      if(!name) return alert('Entre un pseudo valide.');
+      if(friends.find(f => f.name.toLowerCase() === name.toLowerCase()) || friendRequests.includes(name)) {
+        alert('Cet ami est déjà dans ta liste ou en demande.');
+        return;
+      }
+      // Simule l'envoi d'une demande (ici on l'ajoute directement en demande reçue)
+      friendRequests.push(name);
+      saveData();
+      renderRequests();
+      addFriendInput.value = '';
+      alert('Demande d\'ami envoyée à ' + name + ' (simulation).');
+    };
+
+    function acceptRequest(name) {
+      friendRequests = friendRequests.filter(r => r !== name);
+      friends.push({name, online: Math.random() < 0.5}); // statut aléatoire pour démo
+      saveData();
+      renderRequests();
+      renderFriends();
+      alert('Tu as accepté la demande d\'ami de ' + name + '.');
+    }
+    function rejectRequest(name) {
+      friendRequests = friendRequests.filter(r => r !== name);
+      saveData();
+      renderRequests();
+      alert('Tu as refusé la demande d\'ami de ' + name + '.');
+    }
+
+    // Initialisation
+    renderFriends();
+    renderRequests();
+    renderChat();
+  </script>
+</body>
+</html>

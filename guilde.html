@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Guilde</title>
+  <style>
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {max-width:900px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    h1 {text-align:center;font-size:38px;margin-bottom:10px;}
+    .row {display:flex;gap:36px;}
+    .col-main {flex:2;}
+    .col-side {flex:1;min-width:260px;}
+    .guilde-header {display:flex;align-items:center;gap:18px;margin-bottom:20px;}
+    .blason {width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#3a6ee8,#ffe066);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:bold;box-shadow:0 2px 8px #0006;}
+    .guilde-info {flex:1;}
+    .guilde-name {font-size:28px;font-weight:bold;}
+    .guilde-desc {font-size:16px;color:#ffe066;margin:6px 0 0 0;}
+    .guilde-level {font-size:16px;color:#43e86e;margin-top:4px;}
+    .guilde-settings {margin-top:10px;}
+    .btn {background:#3a6ee8;color:#fff;border:none;border-radius:10px;padding:8px 22px;font-size:17px;font-weight:bold;cursor:pointer;transition:background 0.2s;}
+    .btn.gold {background:#ffe066;color:#232b3b;}
+    .btn.red {background:#e83a3a;}
+    .btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
+    .section-title {font-size:22px;color:#ffe066;margin:30px 0 10px 0;}
+    .members-list {background:#232b3b;border-radius:12px;padding:14px 12px;margin-bottom:16px;}
+    .member-row {display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .member-role {font-size:15px;color:#ffe066;}
+    .member-name {font-size:16px;font-weight:bold;}
+    .member-actions button {margin-left:6px;}
+    .chat-box {background:#232b3b;border-radius:12px;padding:14px 12px;max-height:180px;overflow-y:auto;}
+    .chat-msg {margin-bottom:8px;}
+    .chat-author {color:#ffe066;font-weight:bold;}
+    .chat-input-row {display:flex;gap:8px;margin-top:8px;}
+    .chat-input {flex:1;padding:8px;border-radius:8px;border:none;font-size:16px;}
+    .guild-quests {background:#232b3b;border-radius:12px;padding:14px 12px;margin-bottom:16px;}
+    .quest-row {display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+    .quest-progress {color:#43e86e;font-size:15px;}
+    .quest-btn {background:#43e86e;color:#fff;border:none;border-radius:8px;padding:6px 16px;font-size:15px;font-weight:bold;cursor:pointer;}
+    .guild-shop {background:#232b3b;border-radius:12px;padding:14px 12px;margin-bottom:16px;}
+    .shop-row {display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .shop-circle {width:48px;height:48px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px #0006;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:13px;}
+    .shop-circle.exclu {border:3px solid #00fff0;box-shadow:0 0 16px #00fff0;}
+    .shop-name {font-size:15px;font-weight:bold;color:#ffe066;}
+    .shop-price {font-size:15px;}
+    .shop-btn {background:#00fff0;color:#232b3b;border:none;border-radius:8px;padding:6px 14px;font-size:15px;font-weight:bold;cursor:pointer;}
+    .owned-label {color:#43e86e;font-weight:bold;}
+    .guild-tokens {font-size:16px;color:#00fff0;margin-bottom:8px;}
+    .guild-leaderboard {background:#232b3b;border-radius:12px;padding:14px 12px;}
+    .guild-leaderboard-row {display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+    .guild-leaderboard-rank {width:28px;height:28px;border-radius:50%;background:#ffe066;color:#232b3b;display:flex;align-items:center;justify-content:center;font-weight:bold;}
+    .guild-leaderboard-name {font-weight:bold;}
+    .guild-leaderboard-xp {color:#43e86e;}
+    .modal-bg {display:none;position:fixed;z-index:100;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
+    .modal-bg.active {display:flex;}
+    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:36px 32px 32px 32px;min-width:320px;text-align:center;position:relative;}
+    .modal-title {font-size:24px;font-weight:bold;margin-bottom:18px;letter-spacing:1px;}
+    .modal-btn {display:block;width:100%;margin:14px 0;padding:14px 0;font-size:20px;font-weight:bold;border:none;border-radius:12px;background:#3a6ee8;color:#fff;cursor:pointer;transition:background 0.15s;}
+    .modal-btn.gold {background:#ffe066;color:#232b3b;}
+    .modal-btn.quit {background:#e83a3a;}
+    .close-modal {position:absolute;top:12px;right:18px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:0.7;transition:opacity 0.15s;}
+    .close-modal:hover {opacity:1;}
+    .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
+    .create-join-row {display:flex;gap:18px;justify-content:center;margin:40px 0;}
+    .input {padding:8px 12px;border-radius:8px;border:none;font-size:16px;}
+  </style>
+</head>
+<body>
+  <div class="container" id="mainGuild">
+    <h1>👑 Guilde</h1>
+    <div id="guildMain"></div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+  </div>
+  <div class="modal-bg" id="modalCreateGuild">
+    <div class="modal">
+      <button class="close-modal" onclick="closeModal('modalCreateGuild')">&times;</button>
+      <div class="modal-title">Créer une guilde</div>
+      <input class="input" id="newGuildName" maxlength="16" placeholder="Nom de la guilde"><br><br>
+      <input class="input" id="newGuildDesc" maxlength="64" placeholder="Description"><br><br>
+      <button class="modal-btn gold" onclick="createGuild()">Créer</button>
+      <button class="modal-btn quit" onclick="closeModal('modalCreateGuild')">Annuler</button>
+    </div>
+  </div>
+  <div class="modal-bg" id="modalJoinGuild">
+    <div class="modal">
+      <button class="close-modal" onclick="closeModal('modalJoinGuild')">&times;</button>
+      <div class="modal-title">Rejoindre une guilde</div>
+      <input class="input" id="joinGuildName" maxlength="16" placeholder="Nom de la guilde"><br><br>
+      <button class="modal-btn gold" onclick="joinGuild()">Rejoindre</button>
+      <button class="modal-btn quit" onclick="closeModal('modalJoinGuild')">Annuler</button>
+    </div>
+  </div>
+  <script>
+    // Skins exclusifs boutique de guilde
+    const guildShopSkins = [
+      {name:"Émeraude Antique", color:"#19FF8C"},
+      {name:"Saphir Royal", color:"#0099FF"},
+      {name:"Rubis Mystique", color:"#D9004C"},
+      {name:"Topaze Stellaire", color:"#FFD700"},
+      {name:"Onyx Sombre", color:"#232323"},
+      {name:"Aube Polaire", color:"linear-gradient(135deg,#fff,#b2f2ff)"}
+    ];
+
+    // Données de démo (localStorage)
+    function getGuildData() {
+      return JSON.parse(localStorage.getItem("guildData")||"null");
+    }
+    function setGuildData(data) {
+      localStorage.setItem("guildData", JSON.stringify(data));
+    }
+    function getGuildLeaderboard() {
+      return JSON.parse(localStorage.getItem("guildLeaderboard")||"[]");
+    }
+    function setGuildLeaderboard(lb) {
+      localStorage.setItem("guildLeaderboard", JSON.stringify(lb));
+    }
+    function getPlayerName() {
+      return localStorage.getItem("playerName")||"Moi";
+    }
+
+    // Affichage principal
+    function renderGuild() {
+      let data = getGuildData();
+      let main = document.getElementById("guildMain");
+      if(!data) {
+        main.innerHTML = `
+          <div class="create-join-row">
+            <button class="btn gold" onclick="openModal('modalCreateGuild')">Créer une guilde</button>
+            <button class="btn" onclick="openModal('modalJoinGuild')">Rejoindre une guilde</button>
+          </div>
+          <div style="text-align:center;color:#ffe066;margin-top:30px;">
+            Rejoins ou crée une guilde pour accéder à toutes les fonctionnalités communautaires !
+          </div>
+        `;
+        return;
+      }
+      // Affichage de la guilde
+      main.innerHTML = `
+        <div class="guilde-header">
+          <div class="blason">${data.icon||"🛡️"}</div>
+          <div class="guilde-info">
+            <div class="guilde-name">${data.name}</div>
+            <div class="guilde-desc">${data.desc||""}</div>
+            <div class="guilde-level">Niveau de guilde : ${data.level||1} | XP : ${data.xp||0} | Jetons : <span id="guildTokens">${data.tokens||0}</span></div>
+            <div class="guilde-settings">
+              ${data.role==="chef"?'<button class="btn" onclick="editGuildDesc()">Modifier la description</button>':''}
+              <button class="btn red" onclick="leaveGuild()">Quitter la guilde</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-main">
+            <div class="section-title">Membres</div>
+            <div class="members-list" id="membersList"></div>
+            <div class="section-title">Chat de guilde</div>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="chat-input-row">
+              <input class="chat-input" id="chatInput" maxlength="80" placeholder="Message...">
+              <button class="btn" onclick="sendGuildMsg()">Envoyer</button>
+            </div>
+            <div class="section-title">Quêtes de guilde</div>
+            <div class="guild-quests" id="guildQuests"></div>
+          </div>
+          <div class="col-side">
+            <div class="section-title">Boutique de guilde</div>
+            <div class="guild-shop" id="guildShop"></div>
+            <div class="section-title">Classement des guildes</div>
+            <div class="guild-leaderboard" id="guildLeaderboard"></div>
+          </div>
+        </div>
+      `;
+      renderMembers();
+      renderChat();
+      renderQuests();
+      renderGuildShop();
+      renderGuildLeaderboard();
+    }
+
+    // Création et rejoindre
+    function openModal(id) { document.getElementById(id).classList.add("active"); }
+    function closeModal(id) { document.getElementById(id).classList.remove("active"); }
+    function createGuild() {
+      let name = document.getElementById("newGuildName").value.trim();
+      let desc = document.getElementById("newGuildDesc").value.trim();
+      if(!name) return alert("Nom de guilde requis !");
+      let data = {
+        name, desc, icon:"🛡️", level:1, xp:0, tokens:0,
+        members: [{name:getPlayerName(), role:"chef"}],
+        chat:[], quests:[], shop:[], role:"chef"
+      };
+      setGuildData(data);
+      updateGuildLeaderboard(data);
+      closeModal("modalCreateGuild");
+      renderGuild();
+    }
+    function joinGuild() {
+      let name = document.getElementById("joinGuildName").value.trim();
+      if(!name) return alert("Nom de guilde requis !");
+      // Pour la démo, on rejoint une guilde vide
+      let data = {
+        name, desc:"", icon:"🛡️", level:1, xp:0, tokens:0,
+        members: [{name:getPlayerName(), role:"membre"}],
+        chat:[], quests:[], shop:[], role:"membre"
+      };
+      setGuildData(data);
+      updateGuildLeaderboard(data);
+      closeModal("modalJoinGuild");
+      renderGuild();
+    }
+    function leaveGuild() {
+      if(confirm("Quitter la guilde ?")) {
+        localStorage.removeItem("guildData");
+        renderGuild();
+      }
+    }
+    function editGuildDesc() {
+      let data = getGuildData();
+      let desc = prompt("Nouvelle description :", data.desc||"");
+      if(desc!==null) {
+        data.desc = desc;
+        setGuildData(data);
+        renderGuild();
+      }
+    }
+
+    // Membres
+    function renderMembers() {
+      let data = getGuildData();
+      let div = document.getElementById("membersList");
+      div.innerHTML = "";
+      data.members.forEach(m => {
+        let row = document.createElement("div");
+        row.className = "member-row";
+        row.innerHTML = `<span class="member-role">${m.role==="chef"?"👑":m.role==="officier"?"⭐":"👤"}</span>
+          <span class="member-name">${m.name}</span>`;
+        div.appendChild(row);
+      });
+    }
+
+    // Chat de guilde (local)
+    function renderChat() {
+      let data = getGuildData();
+      let div = document.getElementById("chatBox");
+      div.innerHTML = "";
+      data.chat.slice(-15).forEach(msg => {
+        let m = document.createElement("div");
+        m.className = "chat-msg";
+        m.innerHTML = `<span class="chat-author">${msg.author} :</span> ${msg.text}`;
+        div.appendChild(m);
+      });
+    }
+    function sendGuildMsg() {
+      let input = document.getElementById("chatInput");
+      let txt = input.value.trim();
+      if(!txt) return;
+      let data = getGuildData();
+      data.chat.push({author:getPlayerName(), text:txt});
+      setGuildData(data);
+      input.value = "";
+      renderChat();
+    }
+
+    // Quêtes de guilde (démo)
+    function renderQuests() {
+      let data = getGuildData();
+      // Démo : 3 quêtes
+      let quests = [
+        {id:1, name:"Jouer 10 parties", progress:data.quests[0]||0, goal:10, reward:20},
+        {id:2, name:"Gagner 5 000 XP", progress:data.quests[1]||0, goal:5000, reward:30},
+        {id:3, name:"Collecter 100 diamants", progress:data.quests[2]||0, goal:100, reward:40}
+      ];
+      let div = document.getElementById("guildQuests");
+      div.innerHTML = "";
+      quests.forEach((q,i) => {
+        let row = document.createElement("div");
+        row.className = "quest-row";
+        row.innerHTML = `<span>${q.name}</span>
+          <span class="quest-progress">${q.progress}/${q.goal}</span>
+          <button class="quest-btn" onclick="claimQuest(${i})" ${q.progress<q.goal?"disabled":""}>Réclamer +${q.reward} jetons</button>`;
+        div.appendChild(row);
+      });
+    }
+    function claimQuest(i) {
+      let data = getGuildData();
+      if(!data.quests[i] || data.quests[i]<[10,5000,100][i]) return;
+      data.tokens = (data.tokens||0) + [20,30,40][i];
+      data.quests[i] = 0;
+      setGuildData(data);
+      renderQuests();
+      document.getElementById("guildTokens").textContent = data.tokens;
+      alert("Jetons de guilde ajoutés !");
+    }
+
+    // Boutique de guilde avec skins exclusifs
+    function renderGuildShop() {
+      let data = getGuildData();
+      let owned = data.shop||[];
+      let div = document.getElementById("guildShop");
+      div.innerHTML = `<div class="guild-tokens">Jetons de guilde : <b>${data.tokens||0}</b></div>`;
+      guildShopSkins.forEach((skin,idx) => {
+        let ownedThis = owned.includes(skin.name);
+        let row = document.createElement("div");
+        row.className = "shop-row";
+        let circle = document.createElement("div");
+        circle.className = "shop-circle exclu";
+        if(skin.color.startsWith("linear-gradient")) circle.style.background = skin.color;
+        else circle.style.background = skin.color;
+        circle.textContent = "";
+        row.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "shop-name";
+        name.textContent = skin.name;
+        row.appendChild(name);
+        let price = document.createElement("div");
+        price.className = "shop-price";
+        price.innerHTML = `🎟️ 150 jetons`;
+        row.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          row.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "shop-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterGuildSkin(idx); };
+          row.appendChild(btn);
+        }
+        div.appendChild(row);
+      });
+    }
+    function acheterGuildSkin(idx) {
+      let data = getGuildData();
+      if((data.tokens||0) < 150) return alert("Pas assez de jetons !");
+      let owned = data.shop||[];
+      let skin = guildShopSkins[idx];
+      if(owned.includes(skin.name)) return alert("Déjà possédé !");
+      owned.push(skin.name);
+      data.tokens -= 150;
+      data.shop = owned;
+      // Ajoute à la collection globale
+      let won = [];
+      try { won = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      if(!won.includes(skin.name)) {
+        won.push(skin.name);
+        localStorage.setItem("wonColors", JSON.stringify(won));
+      }
+      setGuildData(data);
+      renderGuildShop();
+      alert(`Tu as acheté la couleur exclusive ${skin.name} !`);
+    }
+
+    // Classement des guildes (local démo)
+    function updateGuildLeaderboard(data) {
+      let lb = getGuildLeaderboard();
+      let idx = lb.findIndex(g=>g.name===data.name);
+      if(idx>=0) lb[idx] = {name:data.name, xp:data.xp||0};
+      else lb.push({name:data.name, xp:data.xp||0});
+      lb = lb.sort((a,b)=>b.xp-a.xp).slice(0,10);
+      setGuildLeaderboard(lb);
+    }
+    function renderGuildLeaderboard() {
+      let lb = getGuildLeaderboard();
+      let div = document.getElementById("guildLeaderboard");
+      div.innerHTML = "";
+      lb.forEach((g,i) => {
+        let row = document.createElement("div");
+        row.className = "guild-leaderboard-row";
+        row.innerHTML = `<span class="guild-leaderboard-rank">${i+1}</span>
+          <span class="guild-leaderboard-name">${g.name}</span>
+          <span class="guild-leaderboard-xp">${g.xp} XP</span>`;
+        div.appendChild(row);
+      });
+    }
+
+    // Initialisation
+    renderGuild();
+    // Synchronisation multi-onglets
+    window.addEventListener('storage', function(event) {
+      if(event.key.startsWith("guild")) renderGuild();
+    });
+  </script>
+</body>
+</html>

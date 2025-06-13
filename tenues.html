@@ -2,180 +2,328 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Tenues - Choix de la couleur</title>
+  <title>Tenues</title>
   <style>
     body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
     .container {
-      min-height: 100vh;
+      max-width: 1100px;
+      margin: 40px auto 0 auto;
+      background: #232b3bcc;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px #000a;
+      padding: 40px 32px;
+      min-height: 620px;
+      display: flex;
+      flex-direction: row;
+    }
+    .sidebar {
+      width: 180px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      gap: 18px;
+      margin-right: 38px;
     }
-    h1 {font-size:38px;margin-bottom:10px;text-align:center;}
-    .center-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-top: 40px;
-    }
-    .main-circle {
-      width: 170px;
-      height: 170px;
-      border-radius: 50%;
-      background: #888;
-      border: 6px solid #fff;
-      box-shadow: 0 8px 32px #0006;
-      margin-bottom: 32px;
-      transition: background 0.2s, border-color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
+    .side-btn {
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 21px;
+      padding: 16px 14px;
+      border-radius: 12px;
       font-weight: bold;
-      color: #232b3b;
-      text-shadow: 0 2px 8px #fff8;
+      color: #ffe066;
+      transition: background 0.15s, color 0.15s;
+      box-shadow: 0 2px 12px #0002;
+      border: 2px solid #ffe066;
+      text-align: left;
     }
-    .colors-row {
+    .side-btn.active {
+      background: #3a6ee8;
+      color: #fff;
+      border: 2px solid #3a6ee8;
+    }
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      text-align: center;
+      font-size: 38px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .section-title {
+      font-size: 26px;
+      color: #ffe066;
+      text-align: center;
+      margin: 18px 0 24px 0;
+    }
+    .skins-list, .familiers-list, .acolytes-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 18px;
+      gap: 32px;
       justify-content: center;
-      margin-top: 12px;
+      margin-bottom: 16px;
     }
-    .color-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 3px solid #fff;
-      cursor: pointer;
-      outline: none;
-      transition: border 0.17s, transform 0.17s;
+    .skin-card, .familier-card, .acolyte-card {
+      background: #232b3b;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px #0007;
+      width: 170px;
+      padding: 18px 12px 16px 12px;
+      text-align: center;
+      border: 3px solid #ffe066;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       margin-bottom: 8px;
+    }
+    .skin-circle, .familier-circle, .acolyte-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      margin-bottom: 12px;
+      border: 4px solid #fff;
+      box-shadow: 0 2px 10px #0006;
+      background: #222 center/cover no-repeat;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
+      font-size: 34px;
     }
-    .color-btn.selected {
-      border: 3px solid #ffe066;
-      box-shadow: 0 2px 16px #ffe06688;
-      transform: scale(1.18);
-    }
-    .color-label {
-      position: absolute;
-      bottom: -22px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 13px;
+    .skin-name, .familier-name, .acolyte-name {
+      font-size: 16px;
+      font-weight: bold;
       color: #ffe066;
-      white-space: nowrap;
-      pointer-events: none;
+      margin-bottom: 8px;
     }
-    .no-colors {
-      color: #ffe066;
-      margin-top: 16px;
-      font-size: 18px;
+    .select-btn {
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 4px;
+      margin-top: 4px;
+      transition: background 0.15s;
+    }
+    .select-btn.selected {
+      background: #43e86e;
+      color: #232b3b;
+      cursor: default;
+    }
+    .no-item {
       text-align: center;
+      color: #888;
+      font-size: 18px;
+      margin: 38px 0 28px 0;
     }
-    .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu {
+      margin: 38px auto 0 auto;
+      display: block;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 22px;
+      padding: 14px 36px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
     .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎨 Choisis ta couleur de tenue</h1>
-    <div class="center-area">
-      <div class="main-circle" id="mainCircle">Aucune couleur</div>
-      <div class="colors-row" id="colorsRow"></div>
-      <div class="no-colors" id="noColorsMsg" style="display:none;">
-        Gagne des couleurs dans la <b>Roue</b> pour personnaliser ta tenue !
-      </div>
+    <div class="sidebar">
+      <button class="side-btn active" id="sideBtnSkin">Skin</button>
+      <button class="side-btn" id="sideBtnFamilier">Familier</button>
+      <button class="side-btn" id="sideBtnAcolyte">Acolyte</button>
     </div>
-    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
+    <div class="main-content">
+      <h1>🎨 Tenues</h1>
+      <!-- Skins -->
+      <div id="tabSkin">
+        <div class="section-title">Sélectionne ton skin</div>
+        <div class="skins-list" id="skinsList"></div>
+      </div>
+      <!-- Familiers -->
+      <div id="tabFamilier" style="display:none;">
+        <div class="section-title">Sélectionne ton familier</div>
+        <div class="familiers-list" id="familiersList"></div>
+      </div>
+      <!-- Acolytes -->
+      <div id="tabAcolyte" style="display:none;">
+        <div class="section-title">Sélectionne ton acolyte</div>
+        <div class="acolytes-list" id="acolytesList"></div>
+      </div>
+      <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
+    </div>
   </div>
   <script>
-    // Palette des couleurs possibles (doit correspondre à roue.html)
-    const colorPalette = [
-      {name:"Rouge", color:"#FF3B30"},
-      {name:"Orange", color:"#FF9500"},
-      {name:"Jaune", color:"#FFCC00"},
-      {name:"Vert", color:"#34C759"},
-      {name:"Bleu", color:"#007AFF"},
-      {name:"Violet", color:"#AF52DE"},
-      {name:"Rose", color:"#FF2D55"},
-      {name:"Turquoise", color:"#5AC8FA"}
+    // Données fictives (à remplacer par tes vraies données/stockage)
+    const ownedSkins = [
+      {name: "Agent Élite", img: "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png"},
+      {name: "Ninja Rose", img: "https://static.wikia.nocookie.net/fortnite_gamepedia/images/2/2f/Outfit_Rose_Team_Leader.png"},
+      {name: "Samouraï", img: "https://static.wikia.nocookie.net/fortnite_gamepedia/images/5/5b/Outfit_Musha.png"}
+    ];
+    const ownedFamiliers = [
+      {name: "Nébula", icon: "🐉"},
+      {name: "Pixel", icon: "🦊"},
+      {name: "Spectra", icon: "🦄"}
+    ];
+    const ownedAcolytes = [
+      {name: "Omega", icon: "🤖"},
+      {name: "Légende Stellaire", icon: "👾"},
+      {name: "Gardien du Temps", icon: "⏳"}
     ];
 
-    function getWonColors() {
-      try {
-        return JSON.parse(localStorage.getItem("wonColors")||"[]");
-      } catch(e) { return []; }
-    }
-    function getSelectedColor() {
-      return localStorage.getItem("selectedColor") || "";
-    }
-    function setSelectedColor(name) {
-      localStorage.setItem("selectedColor", name);
-    }
+    // Sélection actuelle (stockée en localStorage)
+    let selectedSkin = localStorage.getItem("selectedSkin") || ownedSkins[0].name;
+    let selectedFamilier = localStorage.getItem("selectedFamilier") || "";
+    let selectedAcolyte = localStorage.getItem("selectedAcolyte") || "";
 
-    function renderTenues() {
-      const colors = getWonColors();
-      const selected = getSelectedColor();
-      const row = document.getElementById('colorsRow');
-      const mainCircle = document.getElementById('mainCircle');
-      const noColorsMsg = document.getElementById('noColorsMsg');
-      row.innerHTML = "";
-      if(colors.length === 0) {
-        mainCircle.textContent = "Aucune couleur";
-        mainCircle.style.background = "#888";
-        mainCircle.style.borderColor = "#fff";
-        noColorsMsg.style.display = "";
+    function renderSkins() {
+      const list = document.getElementById('skinsList');
+      list.innerHTML = '';
+      if(ownedSkins.length === 0) {
+        list.innerHTML = '<div class="no-item">Aucun skin débloqué.</div>';
         return;
       }
-      noColorsMsg.style.display = "none";
-      // Affiche la couleur sélectionnée
-      let colorObj = colorPalette.find(c => c.name === selected);
-      if(colorObj) {
-        mainCircle.textContent = colorObj.name;
-        mainCircle.style.background = colorObj.color;
-        mainCircle.style.borderColor = "#ffe066";
-        mainCircle.style.color = "#232b3b";
-      } else {
-        mainCircle.textContent = "Choisis une couleur";
-        mainCircle.style.background = "#888";
-        mainCircle.style.borderColor = "#fff";
-        mainCircle.style.color = "#232b3b";
-      }
-      // Affiche les boutons couleurs
-      colors.forEach(name => {
-        let obj = colorPalette.find(c=>c.name===name);
-        if(!obj) return;
-        let btn = document.createElement("button");
-        btn.className = "color-btn" + (selected===name ? " selected" : "");
-        btn.style.background = obj.color;
-        btn.title = name;
-        btn.onclick = () => {
-          setSelectedColor(name);
-          renderTenues();
+      ownedSkins.forEach(skin => {
+        let card = document.createElement('div');
+        card.className = "skin-card";
+        let circle = document.createElement('div');
+        circle.className = "skin-circle";
+        circle.style.backgroundImage = `url('${skin.img}')`;
+        card.appendChild(circle);
+        let name = document.createElement('div');
+        name.className = "skin-name";
+        name.textContent = skin.name;
+        card.appendChild(name);
+        let btn = document.createElement('button');
+        btn.className = "select-btn";
+        btn.textContent = (selectedSkin === skin.name) ? "Sélectionné" : "Sélectionner";
+        if(selectedSkin === skin.name) btn.classList.add("selected");
+        btn.onclick = function() {
+          if(selectedSkin !== skin.name) {
+            selectedSkin = skin.name;
+            localStorage.setItem("selectedSkin", selectedSkin);
+            renderSkins();
+          }
         };
-        let label = document.createElement("span");
-        label.className = "color-label";
-        label.textContent = name;
-        btn.appendChild(label);
-        row.appendChild(btn);
+        card.appendChild(btn);
+        list.appendChild(card);
       });
     }
 
-    // Synchronisation multi-onglets
-    window.addEventListener('storage', function(event) {
-      if(event.key === "wonColors" || event.key === "selectedColor") {
-        renderTenues();
+    function renderFamiliers() {
+      const list = document.getElementById('familiersList');
+      list.innerHTML = '';
+      if(ownedFamiliers.length === 0) {
+        list.innerHTML = '<div class="no-item">Aucun familier débloqué.</div>';
+        return;
       }
-    });
+      ownedFamiliers.forEach(fam => {
+        let card = document.createElement('div');
+        card.className = "familier-card";
+        let circle = document.createElement('div');
+        circle.className = "familier-circle";
+        circle.textContent = fam.icon;
+        card.appendChild(circle);
+        let name = document.createElement('div');
+        name.className = "familier-name";
+        name.textContent = fam.name;
+        card.appendChild(name);
+        let btn = document.createElement('button');
+        btn.className = "select-btn";
+        btn.textContent = (selectedFamilier === fam.name) ? "Sélectionné" : "Sélectionner";
+        if(selectedFamilier === fam.name) btn.classList.add("selected");
+        btn.onclick = function() {
+          if(selectedFamilier !== fam.name) {
+            selectedFamilier = fam.name;
+            localStorage.setItem("selectedFamilier", selectedFamilier);
+            renderFamiliers();
+          }
+        };
+        card.appendChild(btn);
+        list.appendChild(card);
+      });
+    }
 
-    renderTenues();
+    function renderAcolytes() {
+      const list = document.getElementById('acolytesList');
+      list.innerHTML = '';
+      if(ownedAcolytes.length === 0) {
+        list.innerHTML = '<div class="no-item">Aucun acolyte débloqué.</div>';
+        return;
+      }
+      ownedAcolytes.forEach(aco => {
+        let card = document.createElement('div');
+        card.className = "acolyte-card";
+        let circle = document.createElement('div');
+        circle.className = "acolyte-circle";
+        circle.textContent = aco.icon;
+        card.appendChild(circle);
+        let name = document.createElement('div');
+        name.className = "acolyte-name";
+        name.textContent = aco.name;
+        card.appendChild(name);
+        let btn = document.createElement('button');
+        btn.className = "select-btn";
+        btn.textContent = (selectedAcolyte === aco.name) ? "Sélectionné" : "Sélectionner";
+        if(selectedAcolyte === aco.name) btn.classList.add("selected");
+        btn.onclick = function() {
+          if(selectedAcolyte !== aco.name) {
+            selectedAcolyte = aco.name;
+            localStorage.setItem("selectedAcolyte", selectedAcolyte);
+            renderAcolytes();
+          }
+        };
+        card.appendChild(btn);
+        list.appendChild(card);
+      });
+    }
+
+    // Navigation sidebar
+    document.getElementById('sideBtnSkin').onclick = function() {
+      this.classList.add('active');
+      document.getElementById('sideBtnFamilier').classList.remove('active');
+      document.getElementById('sideBtnAcolyte').classList.remove('active');
+      document.getElementById('tabSkin').style.display = "";
+      document.getElementById('tabFamilier').style.display = "none";
+      document.getElementById('tabAcolyte').style.display = "none";
+    };
+    document.getElementById('sideBtnFamilier').onclick = function() {
+      this.classList.add('active');
+      document.getElementById('sideBtnSkin').classList.remove('active');
+      document.getElementById('sideBtnAcolyte').classList.remove('active');
+      document.getElementById('tabSkin').style.display = "none";
+      document.getElementById('tabFamilier').style.display = "";
+      document.getElementById('tabAcolyte').style.display = "none";
+    };
+    document.getElementById('sideBtnAcolyte').onclick = function() {
+      this.classList.add('active');
+      document.getElementById('sideBtnSkin').classList.remove('active');
+      document.getElementById('sideBtnFamilier').classList.remove('active');
+      document.getElementById('tabSkin').style.display = "none";
+      document.getElementById('tabFamilier').style.display = "none";
+      document.getElementById('tabAcolyte').style.display = "";
+    };
+
+    // Initialisation
+    renderSkins();
+    renderFamiliers();
+    renderAcolytes();
   </script>
 </body>
 </html>

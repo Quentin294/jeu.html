@@ -4,207 +4,333 @@
   <meta charset="UTF-8">
   <title>Passe de combat</title>
   <style>
-    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
-    .container {max-width:900px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
-    h1 {text-align:center;font-size:38px;margin-bottom:10px;}
-    .xp-bar-bg {margin:30px auto 40px auto;width:400px;height:22px;background:#111;border-radius:11px;box-shadow:0 2px 8px #0008;}
-    .xp-bar {height:22px;border-radius:11px;background:#3a6ee8;width:0;transition:width 0.4s;}
-    .xp-label {position:relative;text-align:center;top:-28px;font-size:16px;color:#ffe066;}
-    .levels {display:flex;flex-wrap:wrap;gap:30px 24px;justify-content:center;}
-    .level-card {
-      background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
-      width:150px;padding:18px 12px 16px 12px;text-align:center;
-      border:3px solid transparent;transition:border 0.2s,box-shadow 0.2s;
-      position:relative;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #232b3b 0%, #3a6ee8 100%);
+      color: #fff;
     }
-    .level-card.current {border:3px solid #ffe066;box-shadow:0 2px 18px #ffe06688;}
-    .level-card.claimed {border:3px solid #43e86e;}
-    .level-num {font-size:20px;font-weight:bold;margin-bottom:8px;}
-    .reward-img {width:64px;height:64px;border-radius:12px;object-fit:cover;background:#444;margin:0 auto 8px auto;display:block;}
-    .reward-badge {display:inline-block;padding:8px 16px;background:#ffe066;color:#232b3b;border-radius:8px;font-weight:bold;font-size:16px;margin:8px 0;}
-    .reward-diam {font-size:28px;vertical-align:middle;margin-right:6px;}
-    .claim-btn {margin-top:10px;background:#43e86e;color:#fff;font-weight:bold;border:none;border-radius:8px;padding:8px 20px;font-size:17px;cursor:pointer;box-shadow:0 2px 8px #43e86e88;transition:background 0.15s;}
-    .claim-btn:disabled {background:#888;color:#ccc;cursor:not-allowed;box-shadow:none;}
-    .claimed-label {color:#43e86e;font-weight:bold;}
-    .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    h1 {
+      text-align: center;
+      font-size: 44px;
+      margin-top: 36px;
+      margin-bottom: 32px;
+      color: #ffe066;
+      text-shadow: 0 4px 16px #000a;
+      letter-spacing: 2px;
+    }
+    .container {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 60px;
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      align-items: flex-start;
+    }
+    .pass-section {
+      flex: 1 1 45%;
+      background: rgba(35,43,59,0.94);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px #000a;
+      padding: 32px 18px 32px 18px;
+      min-width: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .pass-title {
+      font-size: 30px;
+      color: #ffe066;
+      text-align: center;
+      margin-bottom: 18px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #0008;
+    }
+    .level-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+    .level-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: #232b3b;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px #0008;
+      border: 2px solid #ffe066;
+      padding: 16px 20px;
+      gap: 18px;
+    }
+    .level-num {
+      font-size: 22px;
+      font-weight: bold;
+      color: #ffe066;
+      margin-right: 18px;
+      min-width: 60px;
+      text-align: center;
+    }
+    .reward-icon {
+      font-size: 32px;
+      margin-right: 12px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .reward-label {
+      font-size: 18px;
+      color: #fff;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+    .claimed-label {
+      color: #43e86e;
+      font-weight: bold;
+      font-size: 16px;
+      margin-left: 18px;
+    }
+    .btn-premium {
+      background: linear-gradient(90deg,#ffe066 60%,#3a6ee8 100%);
+      color: #232b3b;
+      border: none;
+      border-radius: 16px;
+      font-size: 22px;
+      padding: 12px 38px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 12px 0 10px 0;
+      letter-spacing:1px;
+      box-shadow: 0 4px 20px #0007;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .btn-premium:disabled {
+      background: #888;
+      color: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .modal-bg {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-bg.active { display: flex; }
+    .modal {
+      background: #232b3b;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px #000b;
+      padding: 40px 32px 32px 32px;
+      min-width: 340px;
+      text-align: center;
+      position: relative;
+      animation: popin 0.2s;
+    }
+    @keyframes popin {from{transform:scale(0.7);}to{transform:scale(1);}}
+    .modal-title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 28px;
+      letter-spacing: 1px;
+      color: #ffe066;
+    }
+    .modal-choice-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .choice-case {
+      background: #ffe066;
+      color: #232b3b;
+      border-radius: 14px;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 14px 38px;
+      margin: 0 0 0 0;
+      box-shadow: 0 2px 12px #0004;
+    }
+    .or-label {
+      color: #fff;
+      font-size: 22px;
+      font-weight: bold;
+      margin: 10px 0 10px 0;
+    }
+    .btn-modal-close {
+      margin-top: 18px;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 20px;
+      padding: 12px 38px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 12px #0007;
+      transition: background 0.2s;
+    }
+    .btn-modal-close:hover { background: #254a9c; }
+    .btn-menu {
+      margin: 44px auto 0 auto;
+      display: block;
+      background: #3a6ee8;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 26px;
+      padding: 18px 48px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow:0 4px 24px #0008;
+      transition: background 0.2s;
+    }
     .btn-menu:hover {background:#254a9c;}
+    @media (max-width: 1100px) {
+      .container {flex-direction:column;align-items:center;gap:30px;}
+      .pass-section {min-width:0;}
+    }
   </style>
 </head>
 <body>
+  <h1>🎫 Passe de combat</h1>
   <div class="container">
-    <h1>🏆 Passe de combat</h1>
-    <div style="text-align:center;color:#ffe066;margin-bottom:12px;">
-      Gagne de l'XP en jouant pour débloquer chaque niveau et ses récompenses !
+    <!-- Pass gratuit -->
+    <div class="pass-section" id="freePass">
+      <div class="pass-title">Pass gratuit</div>
+      <div class="level-list" id="freePassList"></div>
     </div>
-    <div class="xp-bar-bg">
-      <div class="xp-bar" id="xpBar"></div>
-      <div class="xp-label" id="xpLabel"></div>
+    <!-- Pass premium -->
+    <div class="pass-section" id="premiumPass">
+      <div class="pass-title">Pass premium</div>
+      <button class="btn-premium" id="btnObtenirPremium">Obtenir le pass premium</button>
+      <div class="level-list" id="premiumPassList"></div>
     </div>
-    <div class="levels" id="levels"></div>
-    <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
   </div>
+  <!-- Modal premium -->
+  <div class="modal-bg" id="modalPremium">
+    <div class="modal">
+      <div class="modal-title">Débloquer le pass premium</div>
+      <div class="modal-choice-row">
+        <div class="choice-case">1000 💎</div>
+        <div class="or-label">ou</div>
+        <div class="choice-case">9,99€</div>
+      </div>
+      <button class="btn-modal-close" id="closeModalBtn">Retour</button>
+    </div>
+  </div>
+  <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
   <script>
-    // Palette de skins couleurs (doit correspondre à roue/tenues)
-    const skinColors = [
-      {name:"Rouge", color:"#FF3B30"},
-      {name:"Orange", color:"#FF9500"},
-      {name:"Jaune", color:"#FFCC00"},
-      {name:"Vert", color:"#34C759"},
-      {name:"Bleu", color:"#007AFF"},
-      {name:"Violet", color:"#AF52DE"},
-      {name:"Rose", color:"#FF2D55"},
-      {name:"Turquoise", color:"#5AC8FA"}
+    // Définition des récompenses du pass (exemple avec 15 niveaux)
+    const freePass = [
+      {level:1, type:"skin", label:"Skin Bleu", icon:"🎨"},
+      {level:2, type:"diamonds", label:"Diamants x100", icon:"💎"},
+      {level:3, type:"familier", label:"Pixel 🦊", icon:"🦊"},
+      {level:4, type:"skin", label:"Skin Vert", icon:"🎨"},
+      {level:5, type:"diamonds", label:"Diamants x150", icon:"💎"},
+      {level:6, type:"acolyte", label:"Omega 🤖", icon:"🤖"},
+      {level:7, type:"skin", label:"Skin Violet", icon:"🎨"},
+      {level:8, type:"diamonds", label:"Diamants x200", icon:"💎"},
+      {level:9, type:"familier", label:"Nébula 🐉", icon:"🐉"},
+      {level:10, type:"skin", label:"Skin Jaune", icon:"🎨"},
+      {level:11, type:"diamonds", label:"Diamants x300", icon:"💎"},
+      {level:12, type:"acolyte", label:"Gardien ⏳", icon:"⏳"},
+      {level:13, type:"skin", label:"Skin Rouge", icon:"🎨"},
+      {level:14, type:"diamonds", label:"Diamants x500", icon:"💎"},
+      {level:15, type:"familier", label:"Spectra 🦄", icon:"🦄"}
     ];
-
-    // Structure du pass (alternance skin/couleur et diamants)
-    const passLevels = [
-      { type:"skin", skin:skinColors[0] },
-      { type:"diamonds", amount:100 },
-      { type:"skin", skin:skinColors[1] },
-      { type:"diamonds", amount:200 },
-      { type:"skin", skin:skinColors[2] },
-      { type:"diamonds", amount:300 },
-      { type:"skin", skin:skinColors[3] },
-      { type:"diamonds", amount:400 },
-      { type:"skin", skin:skinColors[4] },
-      { type:"diamonds", amount:500 }
+    const premiumPass = [
+      {level:1, type:"skin", label:"Skin Cosmos 🌌", icon:"🌌"},
+      {level:2, type:"diamonds", label:"Diamants x200", icon:"💎"},
+      {level:3, type:"familier", label:"Griffon 🦅", icon:"🦅"},
+      {level:4, type:"skin", label:"Skin Or Royal", icon:"👑"},
+      {level:5, type:"diamonds", label:"Diamants x300", icon:"💎"},
+      {level:6, type:"acolyte", label:"Titan 🦾", icon:"🦾"},
+      {level:7, type:"skin", label:"Skin Arc-en-ciel", icon:"🌈"},
+      {level:8, type:"diamonds", label:"Diamants x400", icon:"💎"},
+      {level:9, type:"familier", label:"Chimère 🦄", icon:"🦄"},
+      {level:10, type:"skin", label:"Skin Turquoise", icon:"🎨"},
+      {level:11, type:"diamonds", label:"Diamants x500", icon:"💎"},
+      {level:12, type:"acolyte", label:"Oracle 🧙‍♂️", icon:"🧙‍♂️"},
+      {level:13, type:"skin", label:"Skin Rose", icon:"🎨"},
+      {level:14, type:"diamonds", label:"Diamants x800", icon:"💎"},
+      {level:15, type:"familier", label:"Cerbère 🐺", icon:"🐺"}
     ];
-    const LEVELS = passLevels.length;
-    const XP_PER_LEVEL = 100;
+    // Pour la démo, on considère que le joueur n'a pas le pass premium
+    let hasPremium = false;
 
-    // Etat du pass (niveau, xp, récompenses réclamées)
-    function getPassState() {
-      try {
-        let s = JSON.parse(localStorage.getItem("passState")||"{}");
-        if(!s.xp) s.xp = 0;
-        if(!s.level) s.level = 0;
-        if(!s.claimed) s.claimed = [];
-        return s;
-      } catch(e){ return {xp:0,level:0,claimed:[]}; }
-    }
-    function savePassState(s) {
-      localStorage.setItem("passState", JSON.stringify(s));
-    }
+    // Pour la démo, on considère que le joueur a atteint le niveau 7
+    let playerLevel = 7;
+    // Pour la démo, on considère les récompenses récupérées jusqu'au niveau 4
+    let claimedFree = [1,2,3,4];
+    let claimedPremium = [1,2];
 
-    // Mise à jour de la barre d'XP et des niveaux
-    function renderPass() {
-      const state = getPassState();
-      // Barre d'XP
-      let xp = state.xp;
-      let level = state.level;
-      let xpBar = document.getElementById('xpBar');
-      let xpLabel = document.getElementById('xpLabel');
-      let percent = Math.min(100, 100 * (xp % XP_PER_LEVEL) / XP_PER_LEVEL);
-      xpBar.style.width = percent + "%";
-      xpLabel.textContent = `Niveau ${level+1}  |  XP : ${xp % XP_PER_LEVEL} / ${XP_PER_LEVEL}`;
-      // Cartes de niveaux
-      const levelsDiv = document.getElementById('levels');
-      levelsDiv.innerHTML = "";
-      for(let i=0;i<LEVELS;i++) {
-        let card = document.createElement("div");
-        card.className = "level-card";
-        if(i === level) card.classList.add("current");
-        if(state.claimed.includes(i)) card.classList.add("claimed");
-        let num = document.createElement("div");
-        num.className = "level-num";
-        num.textContent = "Niveau " + (i+1);
-        card.appendChild(num);
-        let reward = passLevels[i];
-        if(reward.type === "skin") {
-          let img = document.createElement("div");
-          img.className = "reward-img";
-          img.style.background = reward.skin.color;
-          img.style.border = "3px solid #fff";
-          img.title = reward.skin.name;
-          img.innerHTML = `<span style="color:#232b3b;font-weight:bold;font-size:15px;line-height:64px;">${reward.skin.name}</span>`;
-          card.appendChild(img);
-          let badge = document.createElement("div");
-          badge.className = "reward-badge";
-          badge.textContent = "Tenue couleur";
-          card.appendChild(badge);
-        } else if(reward.type === "diamonds") {
-          let badge = document.createElement("div");
-          badge.className = "reward-badge";
-          badge.innerHTML = `<span class="reward-diam">💎</span> +${reward.amount} diamants`;
-          card.appendChild(badge);
+    function renderPass(list, containerId, claimed, isPremium=false) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      list.forEach(reward => {
+        let row = document.createElement("div");
+        row.className = "level-row";
+        let lvl = document.createElement("div");
+        lvl.className = "level-num";
+        lvl.textContent = "Niv. " + reward.level;
+        row.appendChild(lvl);
+        let icon = document.createElement("div");
+        icon.className = "reward-icon";
+        icon.textContent = reward.icon;
+        row.appendChild(icon);
+        let label = document.createElement("div");
+        label.className = "reward-label";
+        label.textContent = reward.label;
+        row.appendChild(label);
+
+        if (reward.level <= playerLevel) {
+          if (claimed.includes(reward.level)) {
+            let lbl = document.createElement("div");
+            lbl.className = "claimed-label";
+            lbl.textContent = "Récupéré";
+            row.appendChild(lbl);
+          } else if (isPremium && !hasPremium) {
+            let lbl = document.createElement("div");
+            lbl.className = "claimed-label";
+            lbl.textContent = "Premium requis";
+            row.appendChild(lbl);
+          } else {
+            let btn = document.createElement("button");
+            btn.className = "btn-premium";
+            btn.textContent = "Récupérer";
+            btn.onclick = function() {
+              claimed.push(reward.level);
+              renderPass(list, containerId, claimed, isPremium);
+              alert("Récompense obtenue !");
+            };
+            row.appendChild(btn);
+          }
         }
-        // Bouton de réclamation
-        if(i < level && !state.claimed.includes(i)) {
-          let btn = document.createElement("button");
-          btn.className = "claim-btn";
-          btn.textContent = "Réclamer";
-          btn.onclick = function() {
-            claimReward(i);
-          };
-          card.appendChild(btn);
-        } else if(state.claimed.includes(i)) {
-          let lbl = document.createElement("div");
-          lbl.className = "claimed-label";
-          lbl.textContent = "Réclamé !";
-          card.appendChild(lbl);
-        }
-        levelsDiv.appendChild(card);
-      }
+        container.appendChild(row);
+      });
     }
 
-    // Réclamer une récompense
-    function claimReward(i) {
-      let state = getPassState();
-      if(state.claimed.includes(i)) return;
-      state.claimed.push(i);
-      // Récompense : ajoute la couleur à wonColors ou les diamants au compteur
-      let reward = passLevels[i];
-      if(reward.type === "skin") {
-        let won = [];
-        try { won = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
-        if(!won.includes(reward.skin.name)) {
-          won.push(reward.skin.name);
-          localStorage.setItem("wonColors", JSON.stringify(won));
-        }
-      } else if(reward.type === "diamonds") {
-        let d = parseInt(localStorage.getItem("diamonds")||"0");
-        d += reward.amount;
-        localStorage.setItem("diamonds", d+"");
-      }
-      savePassState(state);
-      renderPass();
-      alert("Récompense ajoutée à ton compte !");
-    }
-
-    // Fonction à appeler depuis le jeu quand la barre d'XP est remplie
-    // Ex : passGagneNiveau();
-    window.passGagneNiveau = function() {
-      let state = getPassState();
-      if(state.level < LEVELS) {
-        state.level++;
-        state.xp = state.level * XP_PER_LEVEL;
-        savePassState(state);
-        renderPass();
-      }
-    }
-
-    // Fonction à appeler depuis le jeu pour ajouter de l'XP
-    // Ex : passAjouteXP(20);
-    window.passAjouteXP = function(xpGagne) {
-      let state = getPassState();
-      state.xp += xpGagne;
-      let newLevel = Math.floor(state.xp / XP_PER_LEVEL);
-      if(newLevel > state.level && newLevel < LEVELS) {
-        state.level = newLevel;
-      }
-      savePassState(state);
-      renderPass();
-    }
-
-    // Synchronisation multi-onglets
-    window.addEventListener('storage', function(event) {
-      if(event.key === "passState" || event.key === "wonColors" || event.key === "diamonds") {
-        renderPass();
-      }
-    });
+    // Modal premium
+    document.getElementById('btnObtenirPremium').onclick = function() {
+      document.getElementById('modalPremium').classList.add('active');
+    };
+    document.getElementById('closeModalBtn').onclick = function() {
+      document.getElementById('modalPremium').classList.remove('active');
+    };
+    document.getElementById('modalPremium').onclick = function(e) {
+      if(e.target === this) this.classList.remove('active');
+    };
 
     // Initialisation
-    renderPass();
+    renderPass(freePass, "freePassList", claimedFree, false);
+    renderPass(premiumPass, "premiumPassList", claimedPremium, true);
   </script>
 </body>
 </html>

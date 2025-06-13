@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mode Course</title>
+  <style>
+    body {margin:0;padding:0;background:#232b3b;font-family:Arial,sans-serif;}
+    #gameZone {display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+    canvas {background:linear-gradient(#bde0fe 60%,#fff 100%);border-radius:18px;box-shadow:0 4px 24px #0004;}
+    .ui-bar {margin-top:18px;text-align:center;}
+    .score {font-size:24px;color:#3a6ee8;font-weight:bold;}
+    .btn-replay {margin-top:16px;background:#3a6ee8;color:#fff;border:none;border-radius:10px;font-size:20px;padding:10px 34px;font-weight:bold;cursor:pointer;transition:background 0.2s;}
+    .btn-replay:hover {background:#254a9c;}
+    .tip {margin-top:10px;color:#888;}
+  </style>
+</head>
+<body>
+  <div id="gameZone">
+    <canvas id="gameCanvas" width="500" height="600"></canvas>
+    <div class="ui-bar">
+      <div class="score" id="score">Score : 0</div>
+      <button class="btn-replay" id="replayBtn" style="display:none;">Rejouer</button>
+      <div class="tip">Flèches gauche/droite : changer de voie&nbsp;&nbsp;|&nbsp;&nbsp;Haut : sauter&nbsp;&nbsp;|&nbsp;&nbsp;Bas : glisser</div>
+    </div>
+  </div>
+  <script>
+    // Paramètres du jeu
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDiv = document.getElementById('score');
+    const replayBtn = document.getElementById('replayBtn');
+
+    const lanes = [125, 250, 375]; // positions x des 3 voies
+    let player = {lane: 1, y: 480, vy: 0, jumping: false, sliding: false, slideTimer: 0};
+    let obstacles = [];
+    let coins = [];
+    let gameSpeed = 6;
+    let score = 0;
+    let playing = true;
+    let animId = null;
+
+    function resetGame() {
+      player = {lane: 1, y: 480, vy: 0, jumping: false, sliding: false, slideTimer: 0};
+      obstacles = [];
+      coins = [];
+      gameSpeed = 6;
+      score = 0;
+      playing = true;
+      scoreDiv.textContent = "Score : 0";
+      replayBtn.style.display = "none";
+      for(let i=0;i<8;i++) spawnObstacle();
+      for(let i=0;i<5;i++) spawnCoin();
+      draw();
+      animId = requestAnimationFrame(gameLoop);
+    }
+
+    function spawnObstacle() {
+      let lane = Math.floor(Math.random()*3);
+      let y = -Math.random()*400-100;
+      obstacles.push({lane: lane, y: y, type: Math.random()<0.5?"barrier":"low"});
+    }
+    function spawnCoin() {
+      let lane = Math.floor(Math.random()*3);
+      let y = -Math.random()*600-100;
+      coins.push({lane: lane, y: y});
+    }
+
+    function drawPlayer() {
+      let x = lanes[player.lane];
+      // Ombre
+      ctx.save();
+      ctx.globalAlpha = 0.2;
+      ctx.beginPath();
+      ctx.ellipse(x, player.y+38, 22, 8, 0, 0, Math.PI*2);
+      ctx.fillStyle = "#222";
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      // Corps
+      ctx.save();
+      ctx.translate(x, player.y);
+      if(player.sliding) {
+        ctx.rotate(-0.2);
+        ctx.fillStyle = "#ffe066";
+        ctx.fillRect(-20,10,40,18);
+        ctx.fillStyle = "#3a6ee8";
+        ctx.fillRect(-12,0,24,18);
+      } else {
+        ctx.fillStyle = "#ffe066";
+        ctx.fillRect(-18,0,36,38);
+        ctx.fillStyle = "#3a6ee8";
+        ctx.fillRect(-10,8,20,30);
+      }
+      // Tête
+      ctx.beginPath();
+      ctx.arc(0,0,14,0,Math.PI*2);
+      ctx.fillStyle="#fff";
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawObstacles() {
+      for(let obs of obstacles) {
+        let x = lanes[obs.lane];
+        ctx.save();
+        ctx.translate(x, obs.y);
+        if(obs.type === "barrier") {
+          ctx.fillStyle = "#b22222";
+          ctx.fillRect(-22,0,44,18);
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(-10,5,20,8);
+        } else {
+          // low obstacle (à glisser dessous)
+          ctx.fillStyle = "#964B00";
+          ctx.fillRect(-20,10,40,12);
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawCoins() {
+      for(let coin of coins) {
+        let x = lanes[coin.lane];
+        ctx.save();
+        ctx.translate(x, coin.y);
+        ctx.beginPath();
+        ctx.arc(0,0,10,0,Math.PI*2);
+        ctx.fillStyle="#ffe066";
+        ctx.fill();
+        ctx.lineWidth=2;
+        ctx.strokeStyle="#e8b300";
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // Sol
+      ctx.fillStyle = "#93c47d";
+      ctx.fillRect(0, 520, canvas.width, 80);
+      // Lignes de voies
+      ctx.strokeStyle="#fff";
+      ctx.lineWidth=2;
+      for(let i=1;i<3;i++) {
+        ctx.beginPath();
+        ctx.moveTo(lanes[i]-62,0);
+        ctx.lineTo(lanes[i]-62,600);
+        ctx.stroke();
+      }
+      drawCoins();
+      drawObstacles();
+      drawPlayer();
+    }
+
+    function gameLoop() {
+      // Déplacement obstacles et pièces
+      for(let obs of obstacles) obs.y += gameSpeed;
+      for(let coin of coins) coin.y += gameSpeed;
+      // Suppression hors écran et respawn
+      while(obstacles.length && obstacles[0].y > 650) obstacles.shift();
+      while(obstacles.length < 8) spawnObstacle();
+      while(coins.length && coins[0].y > 650) coins.shift();
+      while(coins.length < 5) spawnCoin();
+
+      // Gestion saut
+      if(player.jumping) {
+        player.y += player.vy;
+        player.vy += 0.9;
+        if(player.y >= 480) {
+          player.y = 480;
+          player.jumping = false;
+          player.vy = 0;
+        }
+      }
+      // Gestion slide
+      if(player.sliding) {
+        player.slideTimer--;
+        if(player.slideTimer <= 0) player.sliding = false;
+      }
+
+      // Collisions obstacles
+      for(let obs of obstacles) {
+        if(obs.lane === player.lane && Math.abs(obs.y-player.y)<32) {
+          if(obs.type === "barrier" && !player.jumping && !player.sliding) {
+            endGame();
+            return;
+          }
+          if(obs.type === "low" && !player.sliding) {
+            if(player.jumping) continue;
+            endGame();
+            return;
+          }
+        }
+      }
+      // Collisions pièces
+      for(let i=0;i<coins.length;i++) {
+        let coin = coins[i];
+        if(coin.lane === player.lane && Math.abs(coin.y-player.y)<28) {
+          score += 10;
+          coins.splice(i,1);
+          scoreDiv.textContent = "Score : " + score;
+          break;
+        }
+      }
+
+      // Score augmente avec distance parcourue
+      score += 1;
+      scoreDiv.textContent = "Score : " + score;
+
+      // Vitesse augmente lentement
+      gameSpeed += 0.002;
+
+      draw();
+      if(playing) animId = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      playing = false;
+      cancelAnimationFrame(animId);
+      scoreDiv.textContent = "Perdu ! Score : " + score;
+      replayBtn.style.display = "";
+    }
+
+    // Contrôles clavier
+    window.addEventListener('keydown', function(e){
+      if(!playing) return;
+      if(e.code === "ArrowLeft" && player.lane > 0) player.lane--;
+      if(e.code === "ArrowRight" && player.lane < 2) player.lane++;
+      if(e.code === "ArrowUp" && !player.jumping && !player.sliding) {
+        player.jumping = true;
+        player.vy = -14;
+      }
+      if(e.code === "ArrowDown" && !player.sliding && !player.jumping) {
+        player.sliding = true;
+        player.slideTimer = 28;
+      }
+    });
+
+    replayBtn.onclick = resetGame;
+
+    // Lancement
+    resetGame();
+  </script>
+</body>
+</html>

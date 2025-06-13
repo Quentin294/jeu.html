@@ -5,39 +5,57 @@
   <title>Boutique</title>
   <style>
     body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
-    .container {max-width:700px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    .container {max-width:900px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
     h1 {text-align:center;font-size:38px;margin-bottom:10px;}
-    .skins-shop {display:flex;justify-content:center;gap:38px;margin:40px 0 30px 0;}
-    .skin-card {
+    .tab-icons {display:flex;justify-content:center;gap:26px;margin-bottom:30px;margin-top:10px;}
+    .tab-icon-btn {
+      background:none;border:none;outline:none;cursor:pointer;
+      font-size:38px;padding:8px 22px;border-radius:16px;
+      transition:background 0.15s,box-shadow 0.15s;
+      color:#ffe066;
+      position:relative;
+    }
+    .tab-icon-btn.active {background:#3a6ee8;color:#fff;box-shadow:0 2px 12px #3a6ee888;}
+    .tab-icon-label {font-size:15px;display:block;margin-top:3px;}
+    .section-title {font-size:26px;color:#ffe066;text-align:center;margin:38px 0 18px 0;}
+    .skins-shop, .event-shop, .packs-shop, .offers-row,
+    .familiers-shop, .familiers-event-shop, .familiers-pack-shop,
+    .acolytes-shop, .acolytes-event-shop, .acolytes-pack-shop,
+    .cartes-shop {display:flex;justify-content:center;gap:38px;margin-bottom:10px;}
+    .skin-card, .event-card, .pack-card, .offer-card,
+    .familier-card, .acolyte-card, .carte-card {
       background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
-      width:140px;padding:18px 12px 16px 12px;text-align:center;
+      width:170px;padding:18px 12px 16px 12px;text-align:center;
       border:3px solid #ffe066;position:relative;
       display:flex;flex-direction:column;align-items:center;
+      margin-bottom:16px;
     }
-    .skin-circle {
+    .skin-circle, .event-circle, .pack-circle, .familier-circle, .acolyte-circle, .carte-circle {
       width:64px;height:64px;border-radius:50%;margin-bottom:12px;
       border:4px solid #fff;box-shadow:0 2px 10px #0006;
       display:flex;align-items:center;justify-content:center;
-      font-weight:bold;font-size:15px;color:#232b3b;text-shadow:0 2px 8px #fff8;
+      font-weight:bold;font-size:30px;color:#232b3b;text-shadow:0 2px 8px #fff8;
+      background:#232b3b;
     }
-    .skin-name {font-size:16px;font-weight:bold;color:#ffe066;margin-bottom:8px;}
-    .skin-price {font-size:18px;margin-bottom:8px;}
-    .buy-btn {
+    .carte-circle {border:4px solid #ffe066;box-shadow:0 0 16px #ffe066;}
+    .event-circle {border:4px solid #FFD700;box-shadow:0 0 16px #FFD700;}
+    .pack-circle {border:4px solid #00fff0;box-shadow:0 0 16px #00fff0;}
+    .familier-circle {border:4px solid #ff5ca7;box-shadow:0 0 16px #ff5ca7;}
+    .acolyte-circle {border:4px solid #ffdf00;box-shadow:0 0 18px #ffdf00;}
+    .acolyte-circle.event {border:4px solid #ff00e6;box-shadow:0 0 18px #ff00e6;}
+    .acolyte-circle.pack {border:4px solid #00fff0;box-shadow:0 0 18px #00fff0;}
+    .skin-name, .event-name, .pack-name, .familier-name, .acolyte-name, .carte-name {font-size:16px;font-weight:bold;color:#ffe066;margin-bottom:8px;}
+    .skin-price, .event-price, .pack-price, .familier-price, .acolyte-price, .carte-price {font-size:18px;margin-bottom:8px;}
+    .buy-btn, .buy-event-btn, .buy-pack-btn, .buy-familier-btn, .buy-acolyte-btn, .buy-carte-btn {
       background:#3a6ee8;color:#fff;border:none;border-radius:8px;
       padding:8px 18px;font-size:17px;font-weight:bold;cursor:pointer;
       margin-bottom:4px;
     }
-    .buy-btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
+    .buy-btn[disabled], .buy-event-btn[disabled], .buy-pack-btn[disabled],
+    .buy-familier-btn[disabled], .buy-acolyte-btn[disabled], .buy-carte-btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
     .owned-label {color:#43e86e;font-weight:bold;}
     .refresh-timer {text-align:center;color:#ffe066;font-size:17px;margin-bottom:18px;}
     .offers-title {text-align:center;font-size:23px;margin:38px 0 18px 0;color:#ffe066;}
-    .offers-row {display:flex;justify-content:center;gap:34px;margin-bottom:10px;}
-    .offer-card {
-      background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
-      width:180px;padding:20px 12px 18px 12px;text-align:center;
-      border:3px solid #3a6ee8;position:relative;
-      display:flex;flex-direction:column;align-items:center;
-    }
     .offer-amount {font-size:22px;font-weight:bold;margin-bottom:6px;color:#ffe066;}
     .offer-price {font-size:20px;margin-bottom:10px;}
     .offer-btn {
@@ -46,166 +64,135 @@
       margin-bottom:4px;transition:background 0.15s;
     }
     .offer-btn:hover {background:#fff3a0;}
+    .pack-rewards {font-size:15px;color:#00fff0;margin-bottom:8px;}
     .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
     .btn-menu:hover {background:#254a9c;}
+    @media (max-width: 1000px) {
+      .skins-shop, .event-shop, .packs-shop, .offers-row,
+      .familiers-shop, .familiers-event-shop, .familiers-pack-shop,
+      .acolytes-shop, .acolytes-event-shop, .acolytes-pack-shop,
+      .cartes-shop {flex-direction:column;gap:0;}
+      .skin-card, .event-card, .pack-card, .offer-card,
+      .familier-card, .acolyte-card, .carte-card {margin:0 auto 18px auto;}
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🛒 Boutique</h1>
-    <div class="refresh-timer" id="refreshTimer"></div>
-    <div class="skins-shop" id="skinsShop"></div>
-    <div class="offers-title">Acheter des diamants</div>
-    <div class="offers-row">
-      <div class="offer-card">
-        <div class="offer-amount">💎 500</div>
-        <div class="offer-price">7,99&nbsp;€</div>
-        <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+    <div class="tab-icons">
+      <button class="tab-icon-btn active" id="tabBtnShop">
+        🛒<span class="tab-icon-label">Boutique</span>
+      </button>
+      <button class="tab-icon-btn" id="tabBtnFamiliers">
+        🐾<span class="tab-icon-label">Familiers</span>
+      </button>
+      <button class="tab-icon-btn" id="tabBtnAcolytes">
+        🤖<span class="tab-icon-label">Acolytes</span>
+      </button>
+      <button class="tab-icon-btn" id="tabBtnCartes">
+        🗂️<span class="tab-icon-label">Cartes</span>
+      </button>
+    </div>
+    <!-- Onglet Boutique classique -->
+    <div id="tabShop">
+      <div class="refresh-timer" id="refreshTimer"></div>
+      <div class="section-title">Skins du jour</div>
+      <div class="skins-shop" id="skinsShop"></div>
+      <div class="section-title">Tenues événementielles exclusives</div>
+      <div class="event-shop" id="eventShop"></div>
+      <div class="section-title">Packs exclusifs</div>
+      <div class="packs-shop" id="packsShop"></div>
+      <div class="offers-title">Acheter des diamants</div>
+      <div class="offers-row">
+        <div class="offer-card">
+          <div class="offer-amount">💎 500</div>
+          <div class="offer-price">7,99&nbsp;€</div>
+          <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+        </div>
+        <div class="offer-card">
+          <div class="offer-amount">💎 2500</div>
+          <div class="offer-price">19,99&nbsp;€</div>
+          <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+        </div>
+        <div class="offer-card">
+          <div class="offer-amount">💎 5000</div>
+          <div class="offer-price">49,99&nbsp;€</div>
+          <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+        </div>
       </div>
-      <div class="offer-card">
-        <div class="offer-amount">💎 2500</div>
-        <div class="offer-price">19,99&nbsp;€</div>
-        <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+    </div>
+    <!-- Onglet Familiers -->
+    <div id="tabFamiliers" style="display:none;">
+      <div class="section-title">Familiers légendaires</div>
+      <div class="familiers-shop" id="familiersShop"></div>
+      <div class="section-title">Familiers événementiels exclusifs</div>
+      <div class="familiers-event-shop" id="familiersEventShop"></div>
+      <div class="section-title">Packs familiers exclusifs</div>
+      <div class="familiers-pack-shop" id="familiersPackShop"></div>
+      <div style="text-align:center;color:#ffe066;margin-top:24px;">
+        Les familiers sont des compagnons rares et précieux qui t'accompagnent partout !<br>
+        <span style="color:#ff5ca7;">Les familiers événementiels et packs sont uniques et ne reviendront jamais.</span>
       </div>
-      <div class="offer-card">
-        <div class="offer-amount">💎 5000</div>
-        <div class="offer-price">49,99&nbsp;€</div>
-        <button class="offer-btn" onclick="alert('Paiement non disponible en démo')">Acheter</button>
+    </div>
+    <!-- Onglet Acolytes -->
+    <div id="tabAcolytes" style="display:none;">
+      <div class="section-title">Acolytes ultimes</div>
+      <div class="acolytes-shop" id="acolytesShop"></div>
+      <div class="section-title">Acolytes événementiels exclusifs</div>
+      <div class="acolytes-event-shop" id="acolytesEventShop"></div>
+      <div class="section-title">Packs acolytes exclusifs</div>
+      <div class="acolytes-pack-shop" id="acolytesPackShop"></div>
+      <div style="text-align:center;color:#ffe066;margin-top:24px;">
+        Les acolytes sont les compagnons les plus rares et prestigieux du jeu. Ils coûtent une fortune en diamants et sont de véritables symboles de prestige !<br>
+        <span style="color:#ff00e6;">Les acolytes événementiels et packs sont uniques et ne reviendront jamais.</span>
+      </div>
+    </div>
+    <!-- Onglet Cartes -->
+    <div id="tabCartes" style="display:none;">
+      <div class="section-title">Boosters de cartes à collectionner</div>
+      <div class="cartes-shop">
+        <div class="carte-card">
+          <div class="carte-circle">🗂️</div>
+          <div class="carte-name">Booster x1</div>
+          <div class="carte-price">💎 100</div>
+          <button class="buy-carte-btn">Acheter</button>
+        </div>
+        <div class="carte-card">
+          <div class="carte-circle">🗂️</div>
+          <div class="carte-name">Booster x5</div>
+          <div class="carte-price">💎 450</div>
+          <button class="buy-carte-btn">Acheter</button>
+        </div>
+        <div class="carte-card">
+          <div class="carte-circle">🗂️</div>
+          <div class="carte-name">Booster x10</div>
+          <div class="carte-price">💎 800</div>
+          <button class="buy-carte-btn">Acheter</button>
+        </div>
+      </div>
+      <div style="text-align:center;color:#ffe066;margin-top:24px;">
+        Les boosters contiennent des cartes à collectionner aléatoires pour compléter ton album !
       </div>
     </div>
     <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
   </div>
   <script>
-    // Palette des couleurs possibles
-    const shopColors = [
-      {name:"Rouge", color:"#FF3B30"},
-      {name:"Orange", color:"#FF9500"},
-      {name:"Jaune", color:"#FFCC00"},
-      {name:"Vert", color:"#34C759"},
-      {name:"Bleu", color:"#007AFF"},
-      {name:"Violet", color:"#AF52DE"},
-      {name:"Rose", color:"#FF2D55"},
-      {name:"Turquoise", color:"#5AC8FA"}
+    // Gestion des onglets
+    const tabs = [
+      {btn: "tabBtnShop", tab: "tabShop"},
+      {btn: "tabBtnFamiliers", tab: "tabFamiliers"},
+      {btn: "tabBtnAcolytes", tab: "tabAcolytes"},
+      {btn: "tabBtnCartes", tab: "tabCartes"}
     ];
-    // Prix en diamants
-    const priceDiamonds = 800;
-
-    // Génère la sélection du jour (2 couleurs différentes, change toutes les 24h)
-    function getShopSkins() {
-      let data = localStorage.getItem("shopSkins");
-      let expires = parseInt(localStorage.getItem("shopSkinsExpires")||"0");
-      let now = Date.now();
-      if(!data || now > expires) {
-        // Nouvelle sélection
-        let indices = [];
-        while(indices.length < 2) {
-          let idx = Math.floor(Math.random()*shopColors.length);
-          if(!indices.includes(idx)) indices.push(idx);
-        }
-        let skins = [shopColors[indices[0]], shopColors[indices[1]]];
-        localStorage.setItem("shopSkins", JSON.stringify(skins));
-        // Prochaine réinitialisation dans 24h
-        let tomorrow = now + 24*3600*1000;
-        localStorage.setItem("shopSkinsExpires", tomorrow+"");
-        return skins;
-      }
-      try {
-        return JSON.parse(data);
-      } catch(e) {
-        return [shopColors[0], shopColors[1]];
-      }
-    }
-
-    // Affiche les skins du jour
-    function renderShopSkins() {
-      let skins = getShopSkins();
-      let div = document.getElementById('skinsShop');
-      let owned = [];
-      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
-      div.innerHTML = "";
-      skins.forEach(skin => {
-        let ownedThis = owned.includes(skin.name);
-        let card = document.createElement("div");
-        card.className = "skin-card";
-        let circle = document.createElement("div");
-        circle.className = "skin-circle";
-        circle.style.background = skin.color;
-        circle.textContent = skin.name;
-        card.appendChild(circle);
-        let name = document.createElement("div");
-        name.className = "skin-name";
-        name.textContent = skin.name;
-        card.appendChild(name);
-        let price = document.createElement("div");
-        price.className = "skin-price";
-        price.innerHTML = `💎 ${priceDiamonds}`;
-        card.appendChild(price);
-        if(ownedThis) {
-          let lbl = document.createElement("div");
-          lbl.className = "owned-label";
-          lbl.textContent = "Déjà possédé";
-          card.appendChild(lbl);
-        } else {
-          let btn = document.createElement("button");
-          btn.className = "buy-btn";
-          btn.textContent = "Acheter";
-          btn.onclick = function() {
-            acheterSkin(skin);
-          };
-          card.appendChild(btn);
-        }
-        div.appendChild(card);
-      });
-    }
-
-    // Achat d'un skin couleur
-    function acheterSkin(skin) {
-      let d = parseInt(localStorage.getItem("diamonds")||"0");
-      if(d < priceDiamonds) {
-        alert("Pas assez de diamants !");
-        return;
-      }
-      let owned = [];
-      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
-      if(owned.includes(skin.name)) {
-        alert("Tu possèdes déjà cette couleur !");
-        return;
-      }
-      d -= priceDiamonds;
-      owned.push(skin.name);
-      localStorage.setItem("diamonds", d+"");
-      localStorage.setItem("wonColors", JSON.stringify(owned));
-      alert(`Tu as acheté la couleur ${skin.name} !`);
-      renderShopSkins();
-    }
-
-    // Affiche le timer de refresh
-    function updateRefreshTimer() {
-      let expires = parseInt(localStorage.getItem("shopSkinsExpires")||"0");
-      let now = Date.now();
-      let left = expires-now;
-      let el = document.getElementById('refreshTimer');
-      if(left <= 0) {
-        renderShopSkins();
-        el.textContent = "Boutique réinitialisée !";
-        setTimeout(updateRefreshTimer, 1000);
-        return;
-      }
-      let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
-      el.textContent = `Nouveaux skins dans : ${h}h ${m}m ${s}s`;
-      setTimeout(updateRefreshTimer, 1000);
-    }
-
-    // Synchronisation multi-onglets
-    window.addEventListener('storage', function(event) {
-      if(event.key === "wonColors" || event.key === "diamonds" || event.key === "shopSkins" || event.key === "shopSkinsExpires") {
-        renderShopSkins();
-      }
+    tabs.forEach((t, idx) => {
+      document.getElementById(t.btn).onclick = function() {
+        tabs.forEach((tt, i) => {
+          document.getElementById(tt.tab).style.display = (i === idx) ? "" : "none";
+          document.getElementById(tt.btn).classList.toggle("active", i === idx);
+        });
+      };
     });
-
-    // Initialisation
-    renderShopSkins();
-    updateRefreshTimer();
   </script>
 </body>
 </html>
