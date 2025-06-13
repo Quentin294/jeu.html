@@ -2,181 +2,127 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calendrier Journalier</title>
+  <title>Calendrier de connexion</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #2c3e50, #4ca1af);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px;
-      min-height: 100vh;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    #timer {
-      background: rgba(0,0,0,0.5);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 20px;
-      margin-bottom: 30px;
-    }
-
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      max-width: 600px;
-      width: 100%;
-      margin: auto;
-    }
-
-    .day {
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
-      padding: 20px 0;
-      text-align: center;
-      position: relative;
-    }
-
-    .day.today {
-      border: 2px solid gold;
-    }
-
-    .day.claimed {
-      background: rgba(46, 204, 113, 0.7);
-    }
-
-    .day span {
-      display: block;
-      font-size: 18px;
-    }
-
-    #claimButton {
-      margin-top: 30px;
-      padding: 15px 30px;
-      font-size: 20px;
-      background-color: #e67e22;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-      display: none;
-    }
-
-    #claimButton:hover {
-      background-color: #d35400;
-    }
-
-    #back {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(0,0,0,0.6);
-      padding: 10px 20px;
-      border-radius: 10px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {max-width:700px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    h1 {text-align:center;font-size:38px;margin-bottom:16px;}
+    .chrono {text-align:center;font-size:22px;color:#ffe066;margin-bottom:32px;}
+    .calendar-grid {display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin:0 auto 24px auto;max-width:600px;}
+    .day-cell {background:#232b3b;border-radius:16px;box-shadow:0 2px 8px #0005;padding:18px 8px 18px 8px;text-align:center;position:relative;}
+    .day-title {font-size:20px;font-weight:bold;margin-bottom:8px;}
+    .reward {font-size:17px;color:#ffe066;margin-bottom:10px;}
+    .claimed {color:#43e86e;font-weight:bold;}
+    .reclaim-btn {margin-top:8px;background:#ffe066;color:#232b3b;font-weight:bold;border:none;border-radius:8px;padding:8px 20px;font-size:17px;cursor:pointer;box-shadow:0 2px 8px #ffe06688;transition:background 0.15s;}
+    .reclaim-btn:disabled {background:#888;color:#ccc;cursor:not-allowed;box-shadow:none;}
+    .btn-menu {margin-top:28px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
-
-  <a href="menu.html" id="back">← Retour</a>
-  <h1>Calendrier Journalier</h1>
-  <div id="timer">Prochain jour dans : --:--:--</div>
-  <div class="calendar" id="calendar"></div>
-  <button id="claimButton" onclick="claimToday()">Réclamer la récompense d'aujourd'hui</button>
-
+  <div class="container">
+    <h1>Calendrier de connexion</h1>
+    <div class="chrono" id="calendarChrono"></div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour</button>
+  </div>
   <script>
-    const DAYS = 7;
-    const REWARD = { xp: 100, diamond: 1 };
-    const DAY_MS = 24 * 60 * 60 * 1000;
+    // Configuration du calendrier (exemple 10 jours)
+    const CALENDAR_DAYS = [
+      { label: "Jour 1", reward: "50 XP" },
+      { label: "Jour 2", reward: "100 pièces" },
+      { label: "Jour 3", reward: "Skin surprise" },
+      { label: "Jour 4", reward: "75 XP" },
+      { label: "Jour 5", reward: "200 pièces" },
+      { label: "Jour 6", reward: "Coffre mystère" },
+      { label: "Jour 7", reward: "150 XP" },
+      { label: "Jour 8", reward: "300 pièces" },
+      { label: "Jour 9", reward: "Emote exclusive" },
+      { label: "Jour 10", reward: "Skin rare" }
+    ];
+    const DAY_INTERVAL = 24*3600*1000; // 24h en ms
 
-    function initCalendar() {
-      let data = JSON.parse(localStorage.getItem("dailyCalendar")) || {};
-      const now = new Date().setHours(0,0,0,0);
-
-      if (!data.startDay) {
-        data.startDay = now;
-        data.claimed = Array(DAYS).fill(false);
-        localStorage.setItem('dailyCalendar', JSON.stringify(data));
-      }
-
-      const dayIndex = Math.floor((now - data.startDay) / DAY_MS);
-      renderCalendar(data.claimed, dayIndex);
-      updateTimer(now, dayIndex);
-      handleClaimButton(dayIndex, data.claimed);
+    function getCalendarState() {
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem("calendarState")||"{}"); } catch(e){}
+      if(!state.day) state.day = 0;
+      if(!state.claims) state.claims = [];
+      if(!state.lastClaim) state.lastClaim = 0;
+      return state;
     }
-
-    function renderCalendar(claimed, todayIdx) {
-      const cal = document.getElementById("calendar");
-      cal.innerHTML = "";
-      for (let i = 0; i < DAYS; i++) {
-        const day = document.createElement('div');
-        day.className = 'day';
-        if (i === todayIdx) day.classList.add('today');
-        if (claimed[i]) day.classList.add('claimed');
-        day.innerHTML = `<span>Jour ${i+1}</span>`;
-        if (claimed[i]) day.innerHTML += `<span>✅</span>`;
-        cal.appendChild(day);
-      }
+    function saveCalendarState(state) {
+      localStorage.setItem("calendarState", JSON.stringify(state));
     }
-
-    function updateTimer(now, todayIdx) {
-      const nextDay = now + DAY_MS;
-      function tick() {
-        const diff = nextDay - Date.now();
-        if (diff <= 0) return initCalendar(); 
-        const s = Math.floor(diff / 1000);
-        const h = String(Math.floor(s / 3600)).padStart(2,'0');
-        const m = String(Math.floor((s % 3600)/60)).padStart(2,'0');
-        const sec = String(s % 60).padStart(2,'0');
-        document.getElementById("timer").textContent = `Prochain jour dans : ${h}:${m}:${sec}`;
-      }
-      tick();
-      setInterval(tick, 1000);
+    function canClaim(state) {
+      // Peut réclamer si pas déjà réclamé aujourd'hui et 24h écoulées depuis la dernière réclamation
+      if(state.day >= CALENDAR_DAYS.length) return false;
+      if(state.claims.includes(state.day)) return false;
+      if(state.lastClaim === 0) return true;
+      return (Date.now() - state.lastClaim) >= DAY_INTERVAL;
     }
-
-    function handleClaimButton(todayIdx, claimed) {
-      const btn = document.getElementById("claimButton");
-      if (todayIdx >= 0 && todayIdx < DAYS && !claimed[todayIdx]) {
-        btn.style.display = 'block';
-      } else {
-        btn.style.display = 'none';
+    function renderCalendar() {
+      let state = getCalendarState();
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      for(let i=0; i<CALENDAR_DAYS.length; i++) {
+        let claimed = state.claims.includes(i);
+        let isToday = (i === state.day);
+        grid.innerHTML += `
+          <div class="day-cell">
+            <div class="day-title">${CALENDAR_DAYS[i].label}</div>
+            <div class="reward">${CALENDAR_DAYS[i].reward}</div>
+            ${claimed
+              ? `<div class="claimed">Réclamé</div>`
+              : (isToday && canClaim(state)
+                  ? `<button class="reclaim-btn" onclick="claimReward(${i})">Réclamer</button>`
+                  : (isToday ? `<button class="reclaim-btn" disabled>Réclamer</button>` : ''))}
+          </div>
+        `;
       }
     }
-
-    function claimToday() {
-      let data = JSON.parse(localStorage.getItem("dailyCalendar"));
-      const now = new Date().setHours(0,0,0,0);
-      const todayIdx = Math.floor((now - data.startDay) / DAY_MS);
-      if (todayIdx < 0 || todayIdx >= DAYS) return;
-      if (data.claimed[todayIdx]) return;
-
-      data.claimed[todayIdx] = true;
-      localStorage.setItem("dailyCalendar", JSON.stringify(data));
-      addXP(REWARD.xp);
-      const d = parseInt(localStorage.getItem('diamonds')||0) + REWARD.diamond;
-      localStorage.setItem('diamonds', d);
-      alert(`Récompense : +${REWARD.xp} XP et +${REWARD.diamond} 💎`);
-      initCalendar();
+    function updateChrono() {
+      let state = getCalendarState();
+      let chrono = document.getElementById('calendarChrono');
+      if(state.day >= CALENDAR_DAYS.length) {
+        chrono.textContent = "Calendrier terminé !";
+        return;
+      }
+      if(state.lastClaim === 0 || !state.claims.includes(state.day)) {
+        chrono.textContent = "Cadeau du jour disponible !";
+        return;
+      }
+      let left = Math.max(0, state.lastClaim + DAY_INTERVAL - Date.now());
+      if(left === 0) {
+        // Avancer au jour suivant
+        state.day++;
+        saveCalendarState(state);
+        renderCalendar();
+        updateChrono();
+        return;
+      }
+      let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+      chrono.textContent = `Prochain cadeau dans : ${h}h ${m}m ${s}s`;
+      setTimeout(updateChrono, 1000);
     }
-
-    function addXP(amount) {
-      let xp = parseInt(localStorage.getItem("xp") || "0");
-      localStorage.setItem("xp", xp + amount);
+    window.claimReward = function(dayIdx) {
+      let state = getCalendarState();
+      if(dayIdx !== state.day || state.claims.includes(dayIdx)) return;
+      state.claims.push(dayIdx);
+      state.lastClaim = Date.now();
+      saveCalendarState(state);
+      renderCalendar();
+      updateChrono();
+      // Ici, tu peux ajouter la logique pour donner la récompense réelle (XP, skin, etc)
+      alert(`Récompense obtenue : ${CALENDAR_DAYS[dayIdx].reward}`);
     }
-
-    initCalendar();
+    renderCalendar();
+    updateChrono();
+    window.addEventListener('storage', function(event) {
+      if(event.key === "calendarState") {
+        renderCalendar();
+        updateChrono();
+      }
+    });
   </script>
-
 </body>
 </html>

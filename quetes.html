@@ -2,222 +2,98 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Quêtes Quotidiennes</title>
+  <title>Quêtes du jour</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #1f1c2c, #928dab);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    #timer {
-      font-size: 20px;
-      margin-bottom: 30px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 10px 20px;
-      border-radius: 10px;
-    }
-
-    .quest {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 20px;
-      margin: 15px;
-      width: 80%;
-      max-width: 500px;
-      box-shadow: 0 0 10px #000;
-    }
-
-    .quest h3 {
-      margin-top: 0;
-    }
-
-    .quest button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #2ecc71;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .quest button[disabled] {
-      background-color: #555;
-      cursor: default;
-    }
-
-    #rewardBox {
-      margin-top: 30px;
-      padding: 20px;
-      background-color: #e67e22;
-      color: white;
-      font-size: 22px;
-      border-radius: 12px;
-      display: none;
-      cursor: pointer;
-    }
-
-    #rewardBox.unlocked {
-      display: block;
-    }
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    .container {max-width:600px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:24px;box-shadow:0 8px 32px #000a;padding:40px 32px;}
+    h1 {text-align:center;font-size:38px;margin-bottom:16px;}
+    .chrono {text-align:center;font-size:22px;color:#ffe066;margin-bottom:32px;}
+    .quest-list {margin:0 auto 24px auto;max-width:420px;}
+    .quest-row {display:flex;align-items:center;justify-content:space-between;background:#232b3b;margin-bottom:18px;padding:14px 18px;border-radius:12px;box-shadow:0 2px 8px #0005;}
+    .quest-label {font-size:18px;}
+    .quest-xp {font-size:15px;color:#ffe066;}
+    .quest-status {font-size:15px;font-weight:bold;}
+    .quest-status.done {color:#43e86e;}
+    .quest-status.inprogress {color:#ffe066;}
+    .gift {text-align:center;margin:22px 0;font-size:20px;}
+    .btn-menu {margin-top:28px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
+    .btn-menu:hover {background:#254a9c;}
   </style>
 </head>
 <body>
-
-  <h1>Quêtes Quotidiennes</h1>
-  <div id="timer">Renouvellement dans : --:--:--</div>
-
-  <div id="quests"></div>
-
-  <div id="rewardBox" onclick="claimFinalReward()">🎁 Réclamer le cadeau quotidien</div>
-
+  <div class="container">
+    <h1>Quêtes du jour</h1>
+    <div class="chrono" id="questChrono"></div>
+    <div class="quest-list" id="questList"></div>
+    <div class="gift" id="questGift"></div>
+    <button class="btn-menu" onclick="window.history.back()">&larr; Retour</button>
+  </div>
   <script>
     const QUESTS = [
-      { text: "Collecte 10 pièces", key: "collect_10_coins", goal: 10, xp: 50 },
-      { text: "Tue 3 ennemis", key: "kill_3_enemies", goal: 3, xp: 50 },
-      { text: "Collecte 5 bulles d'XP", key: "collect_5_xp", goal: 5, xp: 50 },
-      { text: "Joue 2 parties", key: "play_2_games", goal: 2, xp: 50 },
-      { text: "Saute 15 fois", key: "jump_15_times", goal: 15, xp: 50 },
-      { text: "Gagne 100 points", key: "score_100", goal: 100, xp: 50 },
+      { id: "collect_10_coins", label: "Ramasse 10 pièces", xp: 50 },
+      { id: "survive_2_min", label: "Survis 2 minutes", xp: 75 },
+      { id: "get_200_score", label: "Atteins 200 de score", xp: 100 }
     ];
-
-    const QUESTS_PER_DAY = 3;
-    const REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24h en ms
-
-    function getTodayQuests() {
-      let saved = JSON.parse(localStorage.getItem("dailyQuests")) || {};
-      let now = Date.now();
-
-      if (!saved.timestamp || now - saved.timestamp > REFRESH_INTERVAL) {
-        const shuffled = QUESTS.sort(() => 0.5 - Math.random()).slice(0, QUESTS_PER_DAY);
-        const quests = shuffled.map(q => ({
-          ...q,
-          progress: 0,
-          done: false,
-          claimed: false
-        }));
-        saved = { timestamp: now, quests: quests, rewardClaimed: false };
-        localStorage.setItem("dailyQuests", JSON.stringify(saved));
+    const QUEST_RESET_HOURS = 24;
+    function getQuestState() {
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem("questState")||"{}"); } catch(e){}
+      if(!state.resetAt || Date.now() > state.resetAt) {
+        state = { resetAt: Date.now() + QUEST_RESET_HOURS*3600*1000 };
+        for(const q of QUESTS) state[q.id] = false;
+        state.gift = false;
+        localStorage.setItem("questState", JSON.stringify(state));
       }
-
-      return saved;
+      for(const q of QUESTS) if(state[q.id]===undefined) state[q.id]=false;
+      if(state.gift===undefined) state.gift=false;
+      return state;
     }
-
-    function saveTodayQuests(data) {
-      localStorage.setItem("dailyQuests", JSON.stringify(data));
+    function saveQuestState(state) {
+      localStorage.setItem("questState", JSON.stringify(state));
     }
-
-    function formatTime(ms) {
-      const s = Math.floor(ms / 1000);
-      const h = String(Math.floor(s / 3600)).padStart(2, "0");
-      const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-      const sec = String(s % 60).padStart(2, "0");
-      return `${h}:${m}:${sec}`;
-    }
-
     function renderQuests() {
-      const container = document.getElementById("quests");
-      container.innerHTML = "";
-      const data = getTodayQuests();
-
-      data.quests.forEach((quest, index) => {
-        const div = document.createElement("div");
-        div.className = "quest";
-
-        const progressText = quest.done ? "✅ Terminé" : `Progression : ${quest.progress}/${quest.goal}`;
-        div.innerHTML = `
-          <h3>${quest.text}</h3>
-          <p>${progressText}</p>
+      let state = getQuestState();
+      const list = document.getElementById('questList');
+      list.innerHTML = '';
+      let allDone = true;
+      for(const q of QUESTS) {
+        const done = !!state[q.id];
+        if(!done) allDone = false;
+        list.innerHTML += `
+          <div class="quest-row">
+            <span class="quest-label">${q.label}</span>
+            <span class="quest-xp">+${q.xp} XP</span>
+            <span class="quest-status ${done ? 'done' : 'inprogress'}">${done ? 'Terminé' : 'En cours'}</span>
+          </div>
         `;
-
-        const button = document.createElement("button");
-        button.textContent = quest.claimed ? "Récompensé" : "Réclamer + " + quest.xp + " XP";
-        button.disabled = !quest.done || quest.claimed;
-        button.onclick = () => {
-          quest.claimed = true;
-          addXP(quest.xp);
-          saveTodayQuests(data);
-          renderQuests();
-          checkFinalReward();
-        };
-
-        div.appendChild(button);
-        container.appendChild(div);
-      });
-    }
-
-    function updateTimer() {
-      const data = getTodayQuests();
-      const now = Date.now();
-      const next = data.timestamp + REFRESH_INTERVAL;
-      const diff = Math.max(0, next - now);
-      document.getElementById("timer").textContent = "Renouvellement dans : " + formatTime(diff);
-
-      if (diff === 0) {
-        localStorage.removeItem("dailyQuests");
-        location.reload();
       }
-    }
-
-    function checkFinalReward() {
-      const data = getTodayQuests();
-      const allClaimed = data.quests.every(q => q.claimed);
-      if (allClaimed && !data.rewardClaimed) {
-        document.getElementById("rewardBox").classList.add("unlocked");
+      // Cadeau si toutes faites
+      const gift = document.getElementById('questGift');
+      if(allDone) {
+        if(!state.gift) {
+          gift.innerHTML = "<b>🎁 Tu as gagné un cadeau du jour !</b>";
+          state.gift = true;
+          saveQuestState(state);
+        } else {
+          gift.innerHTML = "<b>🎁 Cadeau du jour déjà obtenu !</b>";
+        }
       } else {
-        document.getElementById("rewardBox").classList.remove("unlocked");
+        gift.innerHTML = "";
       }
     }
-
-    function claimFinalReward() {
-      const data = getTodayQuests();
-      if (data.rewardClaimed) return;
-      data.rewardClaimed = true;
-
-      // 🎁 Exemple : offrir un diamant
-      const diamonds = parseInt(localStorage.getItem("diamonds") || "0");
-      localStorage.setItem("diamonds", diamonds + 1);
-
-      alert("Bravo ! Tu as gagné 1 💎 !");
-      saveTodayQuests(data);
-      document.getElementById("rewardBox").classList.remove("unlocked");
+    function updateChrono() {
+      let state = getQuestState();
+      let left = Math.max(0, state.resetAt - Date.now());
+      let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+      document.getElementById('questChrono').textContent = `Temps restant : ${h}h ${m}m ${s}s`;
+      if(left <= 0) { renderQuests(); }
+      setTimeout(updateChrono, 1000);
     }
-
-    function addXP(amount) {
-      const xp = parseInt(localStorage.getItem("xp") || "0");
-      localStorage.setItem("xp", xp + amount);
-    }
-
-    function simulateProgressForTest() {
-      const data = getTodayQuests();
-      data.quests.forEach(q => {
-        q.progress = q.goal;
-        q.done = true;
-      });
-      saveTodayQuests(data);
-      renderQuests();
-      checkFinalReward();
-    }
-
-    // Appels initiaux
     renderQuests();
-    checkFinalReward();
-    setInterval(updateTimer, 1000);
-
-    // Pour test rapide :
-    // simulateProgressForTest(); // décommente pour simuler les 3 quêtes accomplies
+    updateChrono();
+    window.addEventListener('storage', function(event) {
+      if(event.key === "questState") renderQuests();
+    });
   </script>
-
 </body>
 </html>

@@ -2,433 +2,63 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Menu complet (Commencer, Succès, Roue)</title>
+  <title>Menu principal</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #222 60%, #3a6ee8 100%);
-      color: #fff;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    .menu-bar {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 40px;
-      z-index: 2;
-    }
-    .menu-btn {
-      background: rgba(30,30,30,0.8);
-      border: none;
-      color: #fff;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-size: 18px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .menu-btn.active, .menu-btn:hover {
-      background: #3a6ee8;
-    }
-    .left-panel {
-      position: absolute;
-      left: 30px;
-      top: 120px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      z-index: 2;
-    }
-    .left-item {
-      background: rgba(40,40,40,0.85);
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      min-width: 120px;
-      text-align: center;
-    }
-    .main-content {
-      position: absolute;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 900px;
-      min-height: 540px;
-      background: rgba(35,43,59,0.98);
-      border-radius: 30px;
-      box-shadow: 0 8px 32px #0008;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      z-index: 1;
-    }
-    .tab-content { display: none; width: 100%; height: 100%; }
-    .tab-content.active { display: block; }
-    .center-skin { /* Style pour l'affichage du skin */
-      display: flex; flex-direction: column; align-items: center; width: 100%;
-    }
-    .skin-img {
-      width: 320px; height: 400px;
-      background: #444;
-      border-radius: 30px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 32px #0008;
-      background-image: url('https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png');
-      background-size: cover;
-      background-position: center;
-      cursor: pointer;
-    }
-    .skin-name {
-      font-size: 24px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      text-shadow: 0 2px 8px #000a;
-    }
-    .start-panel { /* Position du bouton COMMENCER */
-      position: absolute;
-      bottom: 40px;
-      right: 40px;
-      z-index: 2;
-    }
-    .start-btn {
-      background: #3a6ee8;
-      color: #fff;
-      border: none;
-      border-radius: 18px;
-      font-size: 24px;
-      padding: 22px 48px;
-      font-weight: bold;
-      box-shadow: 0 4px 16px #0006;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .start-btn:hover {
-      background: #254a9c;
-    }
-    /* Modals (Choix de mode, Pause, Game Over) */
-    .modal-bg {
-      display: none;
-      position: fixed; /* Fixed pour être au-dessus de tout le reste */
-      z-index: 100;
-      left: 0; top: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-bg.active { display: flex; }
-    .modal {
-      background: #232b3b;
-      border-radius: 24px;
-      box-shadow: 0 8px 32px #000b;
-      padding: 40px 32px 32px 32px;
-      min-width: 320px;
-      text-align: center;
-      position: relative;
-      animation: popin 0.2s;
-    }
-    @keyframes popin { from { transform: scale(0.7);} to { transform: scale(1);} }
-    .modal-title {
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 28px;
-      letter-spacing: 1px;
-    }
-    .mode-btn, .modal-btn {
-      display: block;
-      width: 100%;
-      margin: 16px 0;
-      padding: 18px 0;
-      font-size: 22px;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      background: #3a6ee8;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .mode-btn:hover, .modal-btn:hover { background: #254a9c; }
-    .modal-btn.quit { background: #e83a3a;}
-    .modal-btn.quit:hover { background: #a81a1a;}
-    .modal-btn.gold { background: #ffe066; color: #232b3b;} /* Pour bouton recommencer de Game Over */
-
-    .close-modal {
-      position: absolute;
-      top: 12px;
-      right: 18px;
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 28px;
-      cursor: pointer;
-      opacity: 0.7;
-      transition: opacity 0.15s;
-    }
-    .close-modal:hover { opacity: 1; }
-
-    /* Responsive de base pour les modales */
-    @media (max-width: 900px) {
-      .center-skin .skin-img { width: 180px; height: 220px;}
-      .start-btn { font-size: 18px; padding: 12px 28px;}
-      .modal { min-width: 200px; padding: 20px 8px 16px 8px;}
-      .modal-title { font-size: 20px;}
-      .mode-btn { font-size: 16px; padding: 10px 0;}
-    }
-
-    /* Styles spécifiques au Mode Classique (mini-jeu) */
-    #classicGameArea {
-      position: relative;
-      width: 900px;
-      height: 540px;
-      background: #232b3b;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px #000a;
-      overflow: hidden;
-      margin: 0 auto;
-    }
-    #classicGameArea .player, #classicGameArea .enemy, #classicGameArea .coin, #classicGameArea .xp-bubble {
-      position: absolute; border-radius: 50%;
-      transition: box-shadow 0.1s;
-    }
-    #classicGameArea .player {
-      width: 48px; height: 48px; background: #3a6ee8;
-      border: 3px solid #fff; box-shadow: 0 0 12px #3a6ee8; z-index: 2;
-    }
-    #classicGameArea .enemy {
-      width: 44px; height: 44px; background: #e83a3a;
-      border: 3px solid #fff; box-shadow: 0 0 12px #e83a3a; z-index: 1;
-      animation: enemyMove 1.2s infinite alternate;
-    }
-    @keyframes enemyMove { to { filter:brightness(1.2);} }
-    #classicGameArea .coin {
-      width: 32px; height: 32px; background: gold;
-      border: 2px solid #fff; box-shadow: 0 0 8px #ffe066;
-      background-image: radial-gradient(circle at 60% 40%,#fff7 30%,transparent 70%);
-      z-index: 1;
-    }
-    #classicGameArea .xp-bubble {
-      width: 24px; height: 24px; background: #43e86e;
-      border: 2px solid #fff; box-shadow: 0 0 8px #43e86e;
-      z-index: 1;
-    }
-    #classicGameArea #hud-left {
-      position: absolute; top: 18px; left: 24px; color: #fff; z-index: 10;
-      font-size: 20px; line-height: 1.6;
-      text-shadow: 0 2px 8px #000a;
-    }
-    #classicGameArea #rank { font-size: 16px; margin-top: 8px; color: #ffe066;}
-    #classicGameArea #xp-bar-bg {
-      position: absolute; bottom: 28px; right: 32px; width: 260px; height: 22px;
-      background: #1a2340; border-radius: 12px; border: 1.5px solid #fff5;
-      box-shadow: 0 2px 8px #0006; z-index: 10;
-    }
-    #classicGameArea #xp-bar {
-      height: 100%; border-radius: 12px; background: linear-gradient(90deg,#43e86e,#3a6ee8);
-      width: 0%;
-      transition: width 0.3s;
-    }
-    #classicGameArea #xp-label {
-      position: absolute; bottom: 54px; right: 32px; color: #fff; font-size: 15px; z-index: 10;
-      text-shadow: 0 2px 8px #000a;
-    }
-    #classicGameArea #achievements {
-      position: absolute; top: 18px; right: 28px; z-index: 10; display: flex; align-items: center; gap: 10px;
-    }
-    #classicGameArea .trophy {
-      width: 32px; height: 32px; border-radius: 50%; background: #ccc;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; color: #fff; box-shadow: 0 2px 8px #0006;
-      border: 2px solid #fff8;
-    }
-    #classicGameArea .bronze { background: linear-gradient(135deg,#b87333,#f1c27d);}
-    #classicGameArea .argent { background: linear-gradient(135deg,#bfc1c2,#f6f6f6);}
-    #classicGameArea .or { background: linear-gradient(135deg,#ffde59,#ffe066);}
-    #classicGameArea .modal-bg {
-      display: none; position: absolute; left: 0;top: 0;right: 0;bottom: 0; background: rgba(0,0,0,0.7);
-      z-index: 100; align-items: center; justify-content: center;
-    }
-    #classicGameArea .modal-bg.active { display: flex;}
-    #classicGameArea .modal {
-      background: #232b3b; border-radius: 22px; box-shadow: 0 8px 32px #000b;
-      padding: 38px 28px 30px 28px; min-width: 320px; text-align: center; position: relative;
-      animation: popin 0.2s;
-    }
-    #classicGameArea .modal-title { font-size: 28px; font-weight: bold; margin-bottom: 28px; letter-spacing: 1px;}
-    #classicGameArea .modal-btn {
-      display: block; width: 100%; margin: 16px 0; padding: 16px 0;
-      font-size: 20px; font-weight: bold; border: none; border-radius: 10px;
-      background: #3a6ee8; color: #fff; cursor: pointer; transition: background 0.15s;
-    }
-    #classicGameArea .modal-btn:hover { background: #254a9c;}
-    #classicGameArea .modal-btn.quit { background: #e83a3a;}
-    #classicGameArea .modal-btn.quit:hover { background: #a81a1a;}
-    #classicGameArea .modal-btn.gold { background: #ffe066; color: #232b3b;}
-
-    /* Succès */
-    .achievements-list {
-      margin: 40px auto 0 auto;
-      max-width: 700px;
-    }
-    .achievement-row {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      padding: 18px 0;
-      border-bottom: 1px solid #ffffff18;
-    }
-    .achievement-row:last-child { border-bottom: none; }
-    .achievement-icon {
-      width: 48px; height: 48px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px; color: #fff;
-      background: #3a6ee8;
-      box-shadow: 0 2px 8px #0006;
-      flex-shrink: 0;
-      transition: filter 0.2s;
-    }
-    .achievement-row.locked .achievement-icon {
-      background: #888;
-      filter: grayscale(1) brightness(0.6);
-    }
-    .achievement-row.locked .achievement-title,
-    .achievement-row.locked .achievement-desc {
-      color: #aaa;
-      filter: grayscale(1) brightness(0.7);
-    }
-    .achievement-info {
-      display: flex;
-      flex-direction: column;
-    }
-    .achievement-title {
-      font-size: 20px; font-weight: bold; margin-bottom: 4px;
-    }
-    .achievement-desc {
-      font-size: 15px; color: #fff9;
-    }
-    .progress-bar-bg {
-      width: 90%; height: 26px; margin: 28px auto 0 auto;
-      background: #1a2340; border-radius: 14px; border: 1.5px solid #fff5;
-      box-shadow: 0 2px 8px #0006;
-      position: relative;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%; border-radius: 14px; background: linear-gradient(90deg,#43e86e,#3a6ee8);
-      width: 0%;
-      transition: width 0.5s;
-    }
-    .progress-label {
-      position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-      color: #fff; font-size: 16px; font-weight: bold; text-shadow: 0 2px 8px #000a;
-      z-index: 2;
-    }
-    /* Notification Succès */
-    #achievement-toast {
-      position: fixed;
-      left: 50%; top: 60px;
-      transform: translateX(-50%);
-      background: #232b3b;
-      color: #fff;
-      padding: 18px 38px;
-      border-radius: 18px;
-      box-shadow: 0 4px 16px #000a;
-      font-size: 20px;
-      font-weight: bold;
-      display: none;
-      z-index: 200;
-      border: 2px solid #43e86e;
-      animation: popin 0.2s;
-    }
-
-    /* Roue de la chance */
-    .wheel-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      width: 100%;
-      padding-top: 30px;
-    }
-    .wheel-canvas {
-      margin: 0 auto;
-      display: block;
-      background: #232b3b;
-      border-radius: 50%;
-      box-shadow: 0 4px 24px #0008;
-    }
-    .wheel-btn {
-      margin-top: 30px;
-      padding: 18px 42px;
-      font-size: 22px;
-      background: #3a6ee8;
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 2px 8px #0006;
-      transition: background 0.2s;
-    }
-    .wheel-btn[disabled] {
-      background: #888;
-      cursor: not-allowed;
-    }
-    .wheel-result {
-      margin-top: 30px;
-      font-size: 20px;
-      text-align: center;
-      min-height: 40px;
-    }
-    .wheel-won-skins {
-      margin-top: 20px;
-      font-size: 16px;
-      text-align: center;
-      color: #ffe066;
-      max-width: 90%; /* Pour éviter le dépassement de texte */
-      word-wrap: break-word; /* Pour forcer le retour à la ligne */
-    }
-    /* Notification skin gagné */
-    #wheel-toast {
-      position: fixed;
-      left: 50%; top: 80px;
-      transform: translateX(-50%);
-      background: #232b3b;
-      color: #fff;
-      padding: 18px 38px;
-      border-radius: 18px;
-      box-shadow: 0 4px 16px #000a;
-      font-size: 20px;
-      font-weight: bold;
-      display: none;
-      z-index: 200;
-      border: 2px solid #43e86e;
-      animation: popin 0.2s;
-    }
+    body {margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#222 60%,#3a6ee8 100%);color:#fff;min-height:100vh;}
+    .menu-bar {position:absolute;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:40px;z-index:2;}
+    .menu-btn {background:rgba(30,30,30,0.8);border:none;color:#fff;padding:14px 28px;border-radius:12px;font-size:18px;cursor:pointer;transition:background 0.2s;}
+    .menu-btn.active,.menu-btn:hover {background:#3a6ee8;}
+    .left-panel {position:absolute;left:30px;top:120px;display:flex;flex-direction:column;gap:20px;z-index:2;}
+    .left-item {background:rgba(40,40,40,0.85);border-radius:10px;padding:10px 20px;font-size:16px;min-width:120px;text-align:center;cursor:pointer;transition:background 0.2s;}
+    .left-item:hover {background:#3a6ee8;}
+    .main-content {position:absolute;top:100px;left:50%;transform:translateX(-50%);width:900px;min-height:540px;background:rgba(35,43,59,0.98);border-radius:30px;box-shadow:0 8px 32px #0008;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:1;}
+    .tab-content {display:none;width:100%;height:100%;}
+    .tab-content.active {display:block;}
+    .center-skin {display:flex;flex-direction:column;align-items:center;width:100%;}
+    .skin-img {width:320px;height:400px;background:#444;border-radius:30px;margin-bottom:20px;box-shadow:0 8px 32px #0008;background-size:cover;background-position:center;cursor:pointer;}
+    .skin-name {font-size:24px;font-weight:bold;letter-spacing:2px;text-shadow:0 2px 8px #000a;}
+    .start-panel {position:absolute;bottom:40px;right:40px;z-index:2;}
+    .start-btn {background:#3a6ee8;color:#fff;border:none;border-radius:18px;font-size:24px;padding:22px 48px;font-weight:bold;box-shadow:0 4px 16px #0006;cursor:pointer;transition:background 0.2s;}
+    .start-btn:hover {background:#254a9c;}
+    .modal-bg {display:none;position:fixed;z-index:100;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
+    .modal-bg.active {display:flex;}
+    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:40px 32px 32px 32px;min-width:320px;text-align:center;position:relative;animation:popin 0.2s;}
+    @keyframes popin {from{transform:scale(0.7);}to{transform:scale(1);}}
+    .modal-title {font-size:28px;font-weight:bold;margin-bottom:28px;letter-spacing:1px;}
+    .mode-btn,.modal-btn {display:block;width:100%;margin:16px 0;padding:18px 0;font-size:22px;font-weight:bold;border:none;border-radius:12px;background:#3a6ee8;color:#fff;cursor:pointer;transition:background 0.15s;}
+    .mode-btn:hover,.modal-btn:hover {background:#254a9c;}
+    .close-modal {position:absolute;top:12px;right:18px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:0.7;transition:opacity 0.15s;}
+    .close-modal:hover {opacity:1;}
+    .skins-list {display:flex;flex-wrap:wrap;gap:26px;justify-content:center;margin-top:36px;}
+    .skin-card {background:#232b3b;border-radius:18px;box-shadow:0 2px 12px #0007;padding:18px 18px 10px 18px;text-align:center;cursor:pointer;border:3px solid transparent;transition:border 0.2s,box-shadow 0.2s;width:140px;position:relative;}
+    .skin-card.selected {border:3px solid #ffe066;box-shadow:0 2px 18px #ffe06688;}
+    .skin-card img {width:100px;height:120px;object-fit:cover;border-radius:10px;background:#444;margin-bottom:10px;}
+    .skin-card .skin-name {font-size:16px;font-weight:bold;color:#ffe066;}
+    .wheel-container {display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;padding-top:30px;}
+    .wheel-canvas {margin:0 auto;display:block;background:#232b3b;border-radius:50%;box-shadow:0 4px 24px #0008;}
+    .wheel-btn {margin-top:30px;padding:18px 42px;font-size:22px;background:#3a6ee8;color:#fff;border:none;border-radius:14px;cursor:pointer;font-weight:bold;box-shadow:0 2px 8px #0006;transition:background 0.2s;}
+    .wheel-btn[disabled] {background:#888;cursor:not-allowed;}
+    .wheel-result {margin-top:30px;font-size:20px;text-align:center;min-height:40px;}
+    .wheel-won-skins {margin-top:20px;font-size:16px;text-align:center;color:#ffe066;max-width:90%;word-wrap:break-word;}
+    #wheel-toast {position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#232b3b;color:#fff;padding:18px 38px;border-radius:18px;box-shadow:0 4px 16px #000a;font-size:20px;font-weight:bold;display:none;z-index:200;border:2px solid #43e86e;animation:popin 0.2s;}
   </style>
 </head>
 <body>
-  <!-- Menu du haut -->
   <div class="menu-bar" id="mainMenuBar">
     <button class="menu-btn active" data-tab="commencer">Commencer</button>
-    <button class="menu-btn" data-tab="succes">Succès</button>
+    <button class="menu-btn" onclick="window.location.href='succes.html'">Succès</button>
     <button class="menu-btn" data-tab="roue">Roue</button>
     <button class="menu-btn" data-tab="tenues">Tenues</button>
     <button class="menu-btn" data-tab="passe">Passe de combat</button>
     <button class="menu-btn" data-tab="boutique">Boutique</button>
   </div>
-  <!-- Panneau gauche -->
   <div class="left-panel" id="mainLeftPanel">
     <div class="left-item">💎 Diamants : <span id="diamonds">1500</span></div>
-    <div class="left-item">📜 Quêtes</div>
-    <div class="left-item">📅 Calendrier</div>
+    <div class="left-item" onclick="window.location.href='quetes.html'">📜 Quêtes</div>
+    <div class="left-item" onclick="window.location.href='calendrier.html'">📅 Calendrier</div>
     <div class="left-item">🏆 Classement</div>
+    <div class="left-item" onclick="window.location.href='evenement.html'">🎉 Événement</div>
   </div>
-  <!-- Contenu principal -->
   <div class="main-content" id="mainContent">
     <!-- Onglet Commencer -->
     <div class="tab-content active" id="tab-commencer">
@@ -444,24 +74,11 @@
         <div class="modal">
           <button class="close-modal" id="closeModalBtn" title="Fermer">&times;</button>
           <div class="modal-title">Choisis ton mode</div>
-          <button class="mode-btn" id="classicBtn">Classique</button>
+          <button class="mode-btn" onclick="window.location.href='classique.html'">Classique</button>
           <button class="mode-btn" onclick="alert('Mode Chrono à venir !')">Chrono</button>
           <button class="mode-btn" onclick="alert('Mode Infini à venir !')">Infini</button>
         </div>
       </div>
-      <!-- Jeu classique (masqué par défaut) -->
-      <div id="classicGameArea" style="display:none;"></div>
-    </div>
-    <!-- Onglet Succès -->
-    <div class="tab-content" id="tab-succes">
-      <div style="width:100%;text-align:center;padding:30px 0 0 0;">
-        <h2>Succès</h2>
-        <div class="progress-bar-bg">
-          <div class="progress-bar" id="achvProgressBar"></div>
-          <div class="progress-label" id="achvProgressLabel"></div>
-        </div>
-      </div>
-      <div class="achievements-list" id="achievementsList"></div>
     </div>
     <!-- Onglet Roue -->
     <div class="tab-content" id="tab-roue">
@@ -475,9 +92,10 @@
     </div>
     <!-- Onglet Tenues -->
     <div class="tab-content" id="tab-tenues">
-      <div style="width:100%;text-align:center;padding:60px 0;">
-        <h2>Tenues</h2>
-        <p>Choisis ton skin préféré ici ! (à venir)</p>
+      <div style="width:100%;text-align:center;padding:30px 0 0 0;">
+        <h2>Tenues débloquées</h2>
+        <div class="skins-list" id="skinsList"></div>
+        <div style="margin-top:28px;color:#ffe066;font-size:18px;" id="tenueInfo"></div>
       </div>
     </div>
     <!-- Onglet Passe de combat -->
@@ -495,12 +113,22 @@
       </div>
     </div>
   </div>
-  <!-- Notifications -->
   <div id="wheel-toast"></div>
-  <div id="achievement-toast"></div>
   <script>
-    // --- Navigation entre onglets ---
-    const tabs = document.querySelectorAll('.menu-btn');
+    // Skins de base + mapping images pour la roue
+    const skinImages = {
+      "Agent Élite": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png",
+      "Chevalier Noir": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/4/48/Outfit_Black_Knight.png",
+      "Lapin Futé": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/0/0b/Outfit_Bunny_Brawler.png",
+      "Ninja Rose": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/2/2d/Outfit_Kuno.png",
+      "Pyjama Party": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/9/9a/Outfit_Onesie.png",
+      "Robot Vert": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/39/Outfit_Toy_Trooper.png",
+      "Samouraï": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/8/8d/Outfit_Musha.png",
+      "Vampire": "https://static.wikia.nocookie.net/fortnite_gamepedia/images/0/0d/Outfit_Dusk.png"
+    };
+
+    // --- Onglets et panneau gauche ---
+    const tabs = document.querySelectorAll('.menu-btn[data-tab]');
     const tabContents = document.querySelectorAll('.tab-content');
     tabs.forEach(btn => {
       btn.onclick = () => {
@@ -508,26 +136,172 @@
         btn.classList.add('active');
         tabContents.forEach(tc=>tc.classList.remove('active'));
         document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-        // Masquer panneau gauche dans Succès et Roue
-        if(btn.dataset.tab==="succes" || btn.dataset.tab==="roue") {
+        if(btn.dataset.tab==="roue" || btn.dataset.tab==="tenues") {
           document.getElementById('mainLeftPanel').style.display = "none";
         } else {
           document.getElementById('mainLeftPanel').style.display = "";
         }
+        if(btn.dataset.tab==="tenues") renderTenues();
       }
     });
 
-    // --- Skin de démonstration ---
-    const skins = [
-      {name: "Agent Élite", img: "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png"},
-      {name: "Chevalier Noir", img: "https://static.wikia.nocookie.net/fortnite_gamepedia/images/4/48/Outfit_Black_Knight.png"},
-    ];
-    let currentSkin = 0;
+    // --- Tenues (toujours synchro avec localStorage) ---
+    function renderTenues() {
+      const skins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
+      const selected = localStorage.getItem("selectedSkin") || "Agent Élite";
+      const list = document.getElementById('skinsList');
+      const info = document.getElementById('tenueInfo');
+      if(!list) return;
+      list.innerHTML = "";
+      (skins.length ? skins : ["Agent Élite"]).forEach(skin => {
+        list.innerHTML += `
+          <div class="skin-card${skin===selected ? " selected":""}" data-skin="${skin}">
+            <img src="${skinImages[skin] || skinImages["Agent Élite"]}" alt="${skin}" />
+            <div class="skin-name">${skin}</div>
+          </div>
+        `;
+      });
+      info.innerHTML = "Clique sur une tenue pour l'utiliser en jeu.";
+      Array.from(list.querySelectorAll('.skin-card')).forEach(card => {
+        card.onclick = () => {
+          localStorage.setItem("selectedSkin", card.dataset.skin);
+          renderTenues();
+          updateCommencerSkin();
+        };
+      });
+    }
+    function updateCommencerSkin() {
+      const skin = localStorage.getItem("selectedSkin") || "Agent Élite";
+      document.getElementById('skinImg').style.backgroundImage = `url('${skinImages[skin] || skinImages["Agent Élite"]}')`;
+      document.getElementById('skinName').textContent = skin;
+    }
     document.getElementById('skinImg').onclick = () => {
-      currentSkin = (currentSkin + 1) % skins.length;
-      document.getElementById('skinImg').style.backgroundImage = `url('${skins[currentSkin].img}')`;
-      document.getElementById('skinName').textContent = skins[currentSkin].name;
+      const skins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
+      let arr = (skins.length ? skins : ["Agent Élite"]);
+      let idx = arr.indexOf(localStorage.getItem("selectedSkin") || "Agent Élite");
+      idx = (idx+1)%arr.length;
+      localStorage.setItem("selectedSkin", arr[idx]);
+      updateCommencerSkin();
     };
+    updateCommencerSkin();
+
+    // --- Roue de la chance (inchangé) ---
+    const wheelSkins = [
+      {name:"Agent Élite", color:"#3a6ee8"},
+      {name:"Chevalier Noir", color:"#232b3b"},
+      {name:"Lapin Futé", color:"#e83a3a"},
+      {name:"Ninja Rose", color:"#d72660"},
+      {name:"Pyjama Party", color:"#ffe066"},
+      {name:"Robot Vert", color:"#43e86e"},
+      {name:"Samouraï", color:"#b87333"},
+      {name:"Vampire", color:"#b80000"}
+    ];
+    let wonSkins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
+    function getNextSpinTime() {
+      return parseInt(localStorage.getItem("wheelNextSpin")||"0");
+    }
+    function setNextSpinTime(ts) {
+      localStorage.setItem("wheelNextSpin",ts+"");
+    }
+    function saveWonSkins() {
+      localStorage.setItem("wonSkins",JSON.stringify(wonSkins));
+    }
+    function updateWheelWonSkins() {
+      const el = document.getElementById('wheelWonSkins');
+      if(wonSkins.length===0)
+        el.innerHTML = "Aucun skin gagné pour l’instant.";
+      else
+        el.innerHTML = "Skins gagnés : " + wonSkins.join(", ");
+    }
+    function showWheelToast(msg) {
+      const toast = document.getElementById('wheel-toast');
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(()=>{ toast.style.display = "none"; }, 2500);
+    }
+    function updateWheelCooldown() {
+      const btn = document.getElementById('spinBtn');
+      const now = Date.now();
+      const next = getNextSpinTime();
+      if(now < next) {
+        btn.disabled = true;
+        let sec = Math.ceil((next-now)/1000);
+        let min = Math.floor(sec/60);
+        sec = sec%60;
+        btn.textContent = `Reviens dans ${min}m ${sec}s`;
+        setTimeout(updateWheelCooldown, 1000);
+      } else {
+        btn.disabled = false;
+        btn.textContent = "Tourner la roue";
+      }
+    }
+    function drawWheel(angle=0) {
+      const canvas = document.getElementById('wheelCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const n = wheelSkins.length;
+      const r = 170;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let i=0;i<n;i++) {
+        const start = angle + i*2*Math.PI/n;
+        const end = angle + (i+1)*2*Math.PI/n;
+        ctx.beginPath();
+        ctx.moveTo(175,175);
+        ctx.arc(175,175,r,start,end);
+        ctx.closePath();
+        ctx.fillStyle = wheelSkins[i].color;
+        ctx.fill();
+        ctx.save();
+        ctx.translate(175,175);
+        ctx.rotate((start+end)/2);
+        ctx.textAlign = "right";
+        ctx.font = "bold 18px Arial";
+        ctx.fillStyle = "#fff";
+        ctx.fillText(wheelSkins[i].name, r-10,8);
+        ctx.restore();
+      }
+      ctx.beginPath();
+      ctx.moveTo(175,10); ctx.lineTo(165,40); ctx.lineTo(185,40); ctx.closePath();
+      ctx.fillStyle = "#ffe066"; ctx.fill();
+    }
+    function spinWheel() {
+      const btn = document.getElementById('spinBtn');
+      if(btn.disabled) return;
+      btn.disabled = true;
+      btn.textContent = "Tirage...";
+      let angle = 0;
+      let t = 0, duration = 3500 + Math.random()*600;
+      let targetIndex = Math.floor(Math.random()*wheelSkins.length);
+      let targetAngle = 2*Math.PI*3 + (2*Math.PI/wheelSkins.length)*(wheelSkins.length-targetIndex-0.5);
+      function animate() {
+        t += 16;
+        let progress = Math.min(1, t/duration);
+        let ease = 1-Math.pow(1-progress,3);
+        angle = ease*targetAngle;
+        drawWheel(angle);
+        if(progress<1) requestAnimationFrame(animate);
+        else {
+          const skin = wheelSkins[targetIndex].name;
+          document.getElementById('wheelResult').innerHTML = `<b>Bravo !</b> Tu as gagné le skin <span style="color:#ffe066">${skin}</span> !`;
+          if(!wonSkins.includes(skin)) {
+            wonSkins.push(skin);
+            saveWonSkins();
+            showWheelToast(`Nouveau skin gagné : ${skin} !`);
+          } else {
+            showWheelToast(`Tu as déjà ce skin : ${skin}`);
+          }
+          updateWheelWonSkins();
+          setNextSpinTime(Date.now() + 3600*1000);
+          updateWheelCooldown();
+        }
+      }
+      animate();
+    }
+    document.getElementById('spinBtn').onclick = spinWheel;
+    drawWheel();
+    updateWheelCooldown();
+    updateWheelWonSkins();
+    setInterval(updateWheelCooldown, 1000);
 
     // --- Modal Choix du mode ---
     const modalBg = document.getElementById('modalBg');
@@ -541,556 +315,21 @@
       if (e.target === modalBg) modalBg.classList.remove('active');
     };
 
-    // --- Lancer le mode classique (mini-jeu) ---
-    document.getElementById('classicBtn').onclick = launchClassic;
-    let classicGameInstance = null; // Permet de gérer l'instance du jeu
-    function launchClassic() {
-      modalBg.classList.remove('active');
-      // Masquer les éléments du menu principal pendant le jeu
-      document.getElementById('mainMenuBar').style.display = 'none';
-      document.getElementById('mainLeftPanel').style.display = 'none';
-      document.getElementById('mainContent').style.background = 'transparent'; // Pour que le jeu soit le seul fond
-      tabContents.forEach(tc=>tc.classList.remove('active')); // Masquer tous les onglets
-      document.getElementById('tab-commencer').classList.add('active'); // Garder l'onglet "Commencer" actif pour le jeu
-      document.getElementById('skinPanel').style.display = 'none'; // Masquer l'affichage du skin
-      document.getElementById('startPanel').style.display = 'none'; // Masquer le bouton COMMENCER
-      document.getElementById('classicGameArea').style.display = 'block'; // Afficher la zone de jeu
-
-      resetAchievements(); // Réinitialiser les succès au début de la partie
-      if (classicGameInstance && classicGameInstance.destroy) classicGameInstance.destroy(); // Nettoyer l'ancienne instance si elle existe
-      classicGameInstance = startClassicGame(); // Lancer le nouveau jeu
-    }
-
-    // --- Retour au menu principal depuis le jeu ---
-    function showMainMenu() {
-      // Réafficher les éléments du menu principal
-      document.getElementById('mainMenuBar').style.display = '';
-      document.getElementById('mainLeftPanel').style.display = '';
-      document.getElementById('mainContent').style.background = ''; // Restaurer le fond
-      tabContents.forEach(tc=>tc.classList.remove('active')); // Cacher la zone de jeu
-      document.getElementById('tab-commencer').classList.add('active'); // Retourner sur l'onglet "Commencer"
-      document.getElementById('skinPanel').style.display = ''; // Réafficher l'affichage du skin
-      document.getElementById('startPanel').style.display = ''; // Réafficher le bouton COMMENCER
-      document.getElementById('classicGameArea').style.display = 'none'; // Masquer la zone de jeu
-
-      if (classicGameInstance && classicGameInstance.destroy) classicGameInstance.destroy(); // S'assurer que le jeu est arrêté
-      classicGameInstance = null;
-    }
-
-
-    // --- CODE DU JEU CLASSIQUE (mini-jeu) ---
-    function startClassicGame() {
-      const area = document.getElementById('classicGameArea');
-      // Recréer le contenu HTML du jeu à chaque lancement
-      area.innerHTML = `
-      <div id="hud-left">
-        <div>Score : <span id="score">0</span></div>
-        <div>🪙 Pièces : <span id="coins">0</span></div>
-        <div id="rank">Rang : Débutant</div>
-      </div>
-      <div id="achievements">
-        <div class="trophy bronze" id="trophy" title="Difficulté : Bronze">🏆</div>
-        <span id="achv-label">Succès</span>
-      </div>
-      <div id="xp-bar-bg">
-        <div id="xp-bar"></div>
-      </div>
-      <div id="xp-label">XP : <span id="xp">0</span> / <span id="xp-max">100</span></div>
-      <div class="modal-bg" id="pauseModal">
-        <div class="modal">
-          <div class="modal-title">Pause</div>
-          <button class="modal-btn" id="resumeBtn">Reprendre</button>
-          <button class="modal-btn" id="restartBtn">Recommencer</button>
-          <button class="modal-btn quit" id="quitBtn">Quitter</button>
-        </div>
-      </div>
-      <div class="modal-bg" id="gameOverModal">
-        <div class="modal">
-          <div class="modal-title">GAME OVER</div>
-          <button class="modal-btn gold" id="restartBtnGO">Recommencer</button>
-          <button class="modal-btn quit" id="quitBtnGO">Quitter</button>
-        </div>
-      </div>
-      <div class="player" id="player"></div>
-      <div class="enemy" id="enemy1"></div>
-      <div class="enemy" id="enemy2"></div>
-      <div class="coin" id="coin"></div>
-      <div class="xp-bubble" id="xpBubble"></div>
-      `;
-      // Variables du jeu
-      let width = area.clientWidth, height = area.clientHeight;
-      let px = width/2-24, py = height/2-24, ps = 6;
-      let ex = [100, width-100], ey = [100, height-100], evx = [3, -2.5], evy = [2.5, 3];
-      let coinPos = [200, 200], xpPos = [400, 400];
-      let score = 0, coins = 0, xp = 0, xpMax = 100;
-      let paused = false, gameOver = false;
-      let difficulty = "bronze"; // Utilisé pour le trophée visuel
-      let keys = {};
-      let running = true; // Contrôle la boucle de jeu
-      let frameId = null; // ID pour requestAnimationFrame
-
-      function getRank(n) {
-        if (n >= 30) return "Maître";
-        if (n >= 20) return "Expert";
-        if (n >= 10) return "Pro";
-        if (n >= 5) return "Avancé";
-        return "Débutant";
+    // --- Synchronisation automatique avec le jeu classique ---
+    window.addEventListener('storage', function(event) {
+      if(event.key === "selectedSkin") {
+        renderTenues();
+        updateCommencerSkin();
       }
-      function setDifficulty(diff) {
-        difficulty = diff;
-        const trophy = document.getElementById('trophy');
-        const achvLabel = document.getElementById('achv-label');
-        if(trophy && achvLabel) { // Vérifier si les éléments existent avant de manipuler
-            if(diff==="bronze") { trophy.className="trophy bronze"; trophy.title="Difficulté : Bronze"; achvLabel.textContent="Succès"; }
-            if(diff==="argent") { trophy.className="trophy argent"; trophy.title="Difficulté : Argent"; achvLabel.textContent="Succès"; }
-            if(diff==="or") { trophy.className="trophy or"; trophy.title="Difficulté : Or"; achvLabel.textContent="Succès"; }
-        }
+      if(event.key === "wonSkins") {
+        renderTenues();
+        updateWheelWonSkins();
       }
-      setDifficulty("bronze"); // Difficulté par défaut au lancement du jeu
-      function placeRandom(el, margin=40) {
-        let x = Math.random()*(width-margin*2)+margin;
-        let y = Math.random()*(height-margin*2)+margin;
-        el.style.left = x+"px";
-        el.style.top = y+"px";
-        return [x,y];
-      }
-      function updateEntities() {
-        // Vérifier si les éléments existent avant de manipuler
-        const playerEl = document.getElementById('player');
-        const enemy1El = document.getElementById('enemy1');
-        const enemy2El = document.getElementById('enemy2');
-        const coinEl = document.getElementById('coin');
-        const xpBubbleEl = document.getElementById('xpBubble');
+    });
 
-        if(playerEl) { playerEl.style.left = px+"px"; playerEl.style.top = py+"px"; }
-        if(enemy1El) { enemy1El.style.left = ex[0]+"px"; enemy1El.style.top = ey[0]+"px"; }
-        if(enemy2El) { enemy2El.style.left = ex[1]+"px"; enemy2El.style.top = ey[1]+"px"; }
-        if(coinEl) { coinEl.style.left = coinPos[0]+"px"; coinEl.style.top = coinPos[1]+"px"; }
-        if(xpBubbleEl) { xpBubbleEl.style.left = xpPos[0]+"px"; xpBubbleEl.style.top = xpPos[1]+"px"; }
-      }
-      function updateHUD() {
-        // Vérifier si les éléments existent avant de manipuler
-        const scoreEl = document.getElementById('score');
-        const coinsEl = document.getElementById('coins');
-        const rankEl = document.getElementById('rank');
-        const xpEl = document.getElementById('xp');
-        const xpMaxEl = document.getElementById('xp-max');
-        const xpBar = document.getElementById('xp-bar');
+    // --- Initialisation à l'ouverture ---
+    renderTenues();
 
-        if(scoreEl) scoreEl.textContent = score;
-        if(coinsEl) coinsEl.textContent = coins;
-        if(rankEl) rankEl.textContent = "Rang : "+getRank(coins);
-        if(xpEl) xpEl.textContent = xp;
-        if(xpMaxEl) xpMaxEl.textContent = xpMax;
-        if(xpBar) xpBar.style.width = Math.min(100,100*xp/xpMax)+"%";
-      }
-
-      function unlockAchievement(id) {
-        // Vérifier que achievementsState est bien initialisé pour le succès donné
-        if (achievementsState[id] === undefined) {
-             // Si le succès n'est pas dans la liste des succès reconnus, on ne le traite pas
-             const achvDefinition = ACHIEVEMENTS.find(a => a.id === id);
-             if (!achvDefinition) return; // Si le succès n'est pas défini, on sort
-             achievementsState[id] = false; // Initialiser à false si absent
-        }
-
-        if (!achievementsState[id]) {
-          achievementsState[id] = true;
-          renderAchievements(); // Mettre à jour l'affichage dans l'onglet Succès
-          const achv = ACHIEVEMENTS.find(a=>a.id===id);
-          if(achv) showAchievementToast(achv); // Afficher la notification en jeu
-        }
-      }
-      function checkAchievements() {
-        if(coins >= 1) unlockAchievement("first_coin");
-        if(coins >= 10) unlockAchievement("ten_coins");
-        if(xp >= 100) unlockAchievement("hundred_xp");
-        if(score >= 200) unlockAchievement("survivor");
-        if(coins >= 30) unlockAchievement("master_collector");
-      }
-
-      function resetGame() {
-        px = width/2-24; py = height/2-24;
-        ex[0]=100; ey[0]=100; ex[1]=width-100; ey[1]=height-100;
-        evx=[3, -2.5]; evy=[2.5, 3];
-        score=0; coins=0; xp=0; xpMax=100;
-        gameOver=false; paused=false;
-        // Vérifier l'existence des éléments avant de les placer
-        const coinEl = document.getElementById('coin');
-        const xpBubbleEl = document.getElementById('xpBubble');
-        if(coinEl) coinPos = placeRandom(coinEl);
-        if(xpBubbleEl) xpPos = placeRandom(xpBubbleEl, 30);
-        updateEntities(); updateHUD();
-        // Masquer les modales si elles sont visibles
-        const pauseModal = document.getElementById('pauseModal');
-        const gameOverModal = document.getElementById('gameOverModal');
-        if(pauseModal) pauseModal.classList.remove('active');
-        if(gameOverModal) gameOverModal.classList.remove('active');
-        area.focus(); // Redonner le focus à la zone de jeu
-
-        resetAchievements(); // Réinitialiser les succès pour la nouvelle partie
-        renderAchievements(); // Mettre à jour l'affichage des succès
-      }
-
-      function pauseGame() {
-        const pauseModal = document.getElementById('pauseModal');
-        if(!gameOver && pauseModal){ paused=true; pauseModal.classList.add('active');}
-      }
-      function resumeGame() {
-        const pauseModal = document.getElementById('pauseModal');
-        if(pauseModal) { paused=false; pauseModal.classList.remove('active'); area.focus();}
-      }
-      function quitToMenu() {
-        running = false; // Arrêter la boucle de jeu
-        showMainMenu(); // Retourner au menu principal
-      }
-      function restartGame() {
-        running = false; // Arrêter la boucle actuelle
-        setTimeout(() => { // Donner un petit délai pour s'assurer que l'ancienne boucle est bien terminée
-          running = true;
-          resetGame();
-          frameId = requestAnimationFrame(gameLoop); // Relancer la boucle
-        }, 30);
-      }
-      function showGameOver() {
-        const gameOverModal = document.getElementById('gameOverModal');
-        if(gameOverModal) { gameOver=true; gameOverModal.classList.add('active'); }
-      }
-
-      function rectsCollide(ax,ay,aw,ah,bx,by,bw,bh) {
-        return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
-      }
-
-      // --- Boucle de jeu ---
-      function gameLoop() {
-        if(!running) return; // Si "running" est false, on arrête la boucle
-        if(!paused && !gameOver) {
-          // Déplacement joueur
-          if(keys["ArrowLeft"]||keys["KeyA"]) px=Math.max(0,px-ps);
-          if(keys["ArrowRight"]||keys["KeyD"]) px=Math.min(width-48,px+ps);
-          if(keys["ArrowUp"]||keys["KeyW"]) py=Math.max(0,py-ps);
-          if(keys["ArrowDown"]||keys["KeyS"]) py=Math.min(height-48,py+ps);
-
-          // Déplacement ennemis (rebondissent)
-          for(let i=0;i<2;i++) {
-            ex[i]+=evx[i]; ey[i]+=evy[i];
-            if(ex[i]<0||ex[i]>width-44) evx[i]*=-1;
-            if(ey[i]<0||ey[i]>height-44) evy[i]*=-1;
-          }
-
-          // Collisions joueur/ennemi
-          for(let i=0;i<2;i++) {
-            const enemyEl = document.getElementById(`enemy${i+1}`);
-            if(enemyEl && rectsCollide(px,py,48,48,ex[i],ey[i],44,44)) {
-              showGameOver();
-              return; // Arrête la boucle si Game Over
-            }
-          }
-          // Collisions joueur/pièce
-          const coinEl = document.getElementById('coin');
-          if(coinEl && rectsCollide(px,py,48,48,coinPos[0],coinPos[1],32,32)) {
-            coins++; score+=10;
-            coinPos = placeRandom(coinEl);
-            updateHUD();
-            checkAchievements(); // Vérifier les succès après avoir ramassé une pièce
-          }
-          // Collisions joueur/bulle XP
-          const xpBubbleEl = document.getElementById('xpBubble');
-          if(xpBubbleEl && rectsCollide(px,py,48,48,xpPos[0],xpPos[1],24,24)) {
-            xp+=20; score+=2;
-            if(xp>=xpMax) { xp-=xpMax; xpMax+=50; score+=20; }
-            xpPos = placeRandom(xpBubbleEl, 30);
-            updateHUD();
-            checkAchievements(); // Vérifier les succès après avoir ramassé de l'XP
-          }
-          checkAchievements(); // Vérifier les succès à chaque frame (pour les succès de score, par ex.)
-          updateEntities();
-        }
-        frameId = requestAnimationFrame(gameLoop); // Rappeler la boucle pour la frame suivante
-      }
-
-      // --- Gestion des événements clavier ---
-      area.tabIndex = 1; // Rend la zone de jeu "focusable"
-      area.focus(); // Donne le focus à la zone de jeu au démarrage
-      keys = {}; // Réinitialiser l'état des touches
-      // Fonction pour gérer l'appui sur une touche
-      function keydownHandler(e) {
-        if(e.code==="Space") { // Touche Espace pour pause/reprendre
-          if(!paused && !gameOver) pauseGame();
-          else if(paused) resumeGame();
-        }
-        keys[e.code]=true;
-      }
-      // Fonction pour gérer le relâchement d'une touche
-      function keyupHandler(e){ keys[e.code]=false; }
-
-      // Ajouter les écouteurs d'événements
-      area.addEventListener('keydown', keydownHandler);
-      area.addEventListener('keyup', keyupHandler);
-
-      // --- Attacher les fonctions aux boutons des modales ---
-      const resumeBtn = document.getElementById('resumeBtn');
-      const restartBtn = document.getElementById('restartBtn');
-      const quitBtn = document.getElementById('quitBtn');
-      const restartBtnGO = document.getElementById('restartBtnGO');
-      const quitBtnGO = document.getElementById('quitBtnGO');
-
-      if(resumeBtn) resumeBtn.onclick = resumeGame;
-      if(restartBtn) restartBtn.onclick = restartGame;
-      if(quitBtn) quitBtn.onclick = quitToMenu;
-      if(restartBtnGO) restartBtnGO.onclick = restartGame;
-      if(quitBtnGO) quitBtnGO.onclick = quitToMenu;
-
-
-      // Initialisation du jeu
-      resetGame();
-      running = true; // S'assurer que le jeu peut démarrer
-      frameId = requestAnimationFrame(gameLoop); // Démarrer la boucle de jeu
-
-      // Fonction de nettoyage pour arrêter le jeu quand on quitte
-      return {
-        destroy: function() {
-          running = false; // Indique à la boucle de s'arrêter
-          if (frameId) cancelAnimationFrame(frameId); // Annule le prochain appel de frame
-          // Supprime les écouteurs d'événements pour éviter les fuites de mémoire et les comportements inattendus
-          area.removeEventListener('keydown', keydownHandler);
-          area.removeEventListener('keyup', keyupHandler);
-        }
-      };
-    }
-
-    // --- CODE DES SUCCÈS ---
-    const ACHIEVEMENTS = [
-      { id: "first_coin", icon: "🪙", title: "Première pièce !", desc: "Ramasse ta première pièce." },
-      { id: "ten_coins", icon: "💰", title: "Collectionneur", desc: "Ramasse 10 pièces en une partie." },
-      { id: "hundred_xp", icon: "⚡", title: "XP 100", desc: "Atteins 100 XP en une partie." },
-      { id: "survivor", icon: "🛡️", title: "Survivant", desc: "Atteins 200 de score sans mourir." },
-      { id: "master_collector", icon: "👑", title: "Maître des pièces", desc: "Ramasse 30 pièces en une partie." }
-    ];
-    let achievementsState = {}; // {id: true/false} stocke l'état des succès débloqués
-
-    function resetAchievements() {
-      // Initialise tous les succès à non débloqués
-      achievementsState = {};
-      for(const achv of ACHIEVEMENTS) {
-        achievementsState[achv.id] = false;
-      }
-    }
-
-    function getAchievementsCount() {
-      // Compte le nombre de succès débloqués
-      return Object.values(achievementsState).filter(v=>v).length;
-    }
-
-    function renderAchievements() {
-      const list = document.getElementById('achievementsList');
-      if(!list) return; // S'assurer que l'élément existe (quand l'onglet est visible)
-
-      list.innerHTML = ''; // Vider la liste actuelle
-      for(const achv of ACHIEVEMENTS) {
-        const unlocked = achievementsState[achv.id]; // Vérifier si le succès est débloqué
-        list.innerHTML += `
-          <div class="achievement-row${unlocked ? '' : ' locked'}">
-            <div class="achievement-icon">${achv.icon}</div>
-            <div class="achievement-info">
-              <span class="achievement-title">${achv.title}</span>
-              <span class="achievement-desc">${achv.desc}</span>
-            </div>
-          </div>
-        `;
-      }
-
-      // Mise à jour de la barre de progression
-      const total = ACHIEVEMENTS.length;
-      const unlocked = getAchievementsCount();
-      const percent = Math.round(100*unlocked/total);
-      
-      const achvProgressBar = document.getElementById('achvProgressBar');
-      const achvProgressLabel = document.getElementById('achvProgressLabel');
-
-      if(achvProgressBar && achvProgressLabel) {
-        achvProgressBar.style.width = percent + "%";
-        achvProgressLabel.textContent = `${unlocked} / ${total} succès (${percent}%)`;
-      }
-    }
-
-    // Affiche une notification temporaire en jeu quand un succès est débloqué
-    function showAchievementToast(achv) {
-      const toast = document.getElementById('achievement-toast');
-      if(!toast) return; // S'assurer que l'élément existe
-      toast.innerHTML = `<span style="font-size:28px;margin-right:10px;">${achv.icon}</span> Succès débloqué : <b>${achv.title}</b>`;
-      toast.style.display = "block";
-      setTimeout(()=>{ toast.style.display = "none"; }, 2500); // Masquer après 2.5 secondes
-    }
-
-    // Initialisation des succès au chargement de la page
-    resetAchievements();
-    renderAchievements();
-
-
-    // --- CODE DE LA ROUE DE LA CHANCE ---
-    const wheelSkins = [
-      {name:"Agent Élite", color:"#3a6ee8"},
-      {name:"Chevalier Noir", color:"#232b3b"},
-      {name:"Lapin Futé", color:"#e83a3a"},
-      {name:"Ninja Rose", color:"#d72660"},
-      {name:"Pyjama Party", color:"#ffe066"},
-      {name:"Robot Vert", color:"#43e86e"},
-      {name:"Samouraï", color:"#b87333"},
-      {name:"Vampire", color:"#b80000"}
-    ];
-    // Charge les skins déjà gagnés depuis le stockage local du navigateur
-    let wonSkins = JSON.parse(localStorage.getItem("wonSkins")||"[]");
-
-    // Récupère le timestamp du prochain spin autorisé
-    function getNextSpinTime() {
-      return parseInt(localStorage.getItem("wheelNextSpin")||"0");
-    }
-
-    // Enregistre le timestamp du prochain spin autorisé
-    function setNextSpinTime(ts) {
-      localStorage.setItem("wheelNextSpin",ts+"");
-    }
-
-    // Sauvegarde la liste des skins gagnés
-    function saveWonSkins() {
-      localStorage.setItem("wonSkins",JSON.stringify(wonSkins));
-    }
-
-    // Met à jour l'affichage des skins gagnés sous la roue
-    function updateWheelWonSkins() {
-      const el = document.getElementById('wheelWonSkins');
-      if (!el) return; // S'assurer que l'élément existe
-      if(wonSkins.length===0)
-        el.innerHTML = "Aucun skin gagné pour l’instant.";
-      else
-        el.innerHTML = "Skins gagnés : " + wonSkins.join(", ");
-    }
-
-    // Affiche une notification temporaire pour la roue
-    function showWheelToast(msg) {
-      const toast = document.getElementById('wheel-toast');
-      if (!toast) return; // S'assurer que l'élément existe
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(()=>{ toast.style.display = "none"; }, 2500);
-    }
-
-    // Met à jour l'état du bouton de la roue (désactivé/cooldown)
-    function updateWheelCooldown() {
-      const btn = document.getElementById('spinBtn');
-      if (!btn) return; // S'assurer que le bouton existe
-      const now = Date.now();
-      const next = getNextSpinTime();
-      if(now < next) {
-        btn.disabled = true;
-        let sec = Math.ceil((next-now)/1000);
-        let min = Math.floor(sec/60);
-        sec = sec%60;
-        btn.textContent = `Reviens dans ${min}m ${sec}s`;
-        setTimeout(updateWheelCooldown, 1000); // Réactualise le compte à rebours chaque seconde
-      } else {
-        btn.disabled = false;
-        btn.textContent = "Tourner la roue";
-      }
-    }
-
-    // Dessine la roue sur le canvas
-    function drawWheel(angle=0) {
-      const canvas = document.getElementById('wheelCanvas');
-      if(!canvas) return; // S'assurer que le canvas existe
-      const ctx = canvas.getContext('2d');
-      const n = wheelSkins.length; // Nombre de segments
-      const r = 170; // Rayon de la roue
-
-      ctx.clearRect(0,0,canvas.width,canvas.height); // Nettoie le canvas
-
-      for(let i=0;i<n;i++) {
-        const start = angle + i*2*Math.PI/n; // Angle de début du segment
-        const end = angle + (i+1)*2*Math.PI/n; // Angle de fin du segment
-
-        ctx.beginPath();
-        ctx.moveTo(175,175); // Centre du cercle
-        ctx.arc(175,175,r,start,end); // Dessine l'arc
-        ctx.closePath();
-        ctx.fillStyle = wheelSkins[i].color; // Couleur du segment
-        ctx.fill();
-
-        // Dessine le texte (nom du skin)
-        ctx.save(); // Sauvegarde l'état du canvas
-        ctx.translate(175,175); // Déplace l'origine au centre de la roue
-        ctx.rotate((start+end)/2); // Pivote pour aligner le texte avec le segment
-        ctx.textAlign = "right";
-        ctx.font = "bold 18px Arial";
-        ctx.fillStyle = "#fff";
-        ctx.fillText(wheelSkins[i].name, r-10,8); // Dessine le texte
-        ctx.restore(); // Restaure l'état du canvas
-      }
-
-      // Dessine la flèche indicatrice
-      ctx.beginPath();
-      ctx.moveTo(175,10); ctx.lineTo(165,40); ctx.lineTo(185,40); ctx.closePath();
-      ctx.fillStyle = "#ffe066"; ctx.fill();
-    }
-
-    // Anime et fait tourner la roue
-    function spinWheel() {
-      const btn = document.getElementById('spinBtn');
-      if(btn.disabled) return; // Ne fait rien si le bouton est désactivé
-      btn.disabled = true;
-      btn.textContent = "Tirage...";
-
-      let angle = 0;
-      let t = 0, duration = 3500 + Math.random()*600; // Durée du spin (aléatoire)
-      let targetIndex = Math.floor(Math.random()*wheelSkins.length); // Index du skin gagnant
-      // Calcul de l'angle cible pour que la flèche pointe sur le skin gagnant après quelques tours
-      let targetAngle = 2*Math.PI*3 + (2*Math.PI/wheelSkins.length)*(wheelSkins.length-targetIndex-0.5);
-
-      function animate() {
-        t += 16; // Incrémente le temps (environ 16ms par frame)
-        let progress = Math.min(1, t/duration); // Progression de l'animation (0 à 1)
-        let ease = 1-Math.pow(1-progress,3); // Fonction d'accélération/décélération (easing)
-        angle = ease*targetAngle; // Applique l'easing à l'angle cible
-        drawWheel(angle); // Redessine la roue avec le nouvel angle
-
-        if(progress<1) {
-          requestAnimationFrame(animate); // Continue l'animation
-        } else {
-          // Animation terminée, détermine le gagnant
-          const skin = wheelSkins[targetIndex].name;
-          document.getElementById('wheelResult').innerHTML = `<b>Bravo !</b> Tu as gagné le skin <span style="color:#ffe066">${skin}</span> !`;
-
-          // Ajoute le skin à la liste si c'est un nouveau
-          if(!wonSkins.includes(skin)) {
-            wonSkins.push(skin);
-            saveWonSkins(); // Sauvegarde la liste mise à jour
-            showWheelToast(`Nouveau skin gagné : ${skin} !`);
-          } else {
-            showWheelToast(`Tu as déjà ce skin : ${skin}`);
-          }
-          updateWheelWonSkins(); // Met à jour l'affichage sous la roue
-
-          // Active le cooldown (1 heure = 3600 * 1000 ms)
-          setNextSpinTime(Date.now() + 3600*1000);
-          updateWheelCooldown(); // Met à jour l'affichage du bouton
-        }
-      }
-      animate(); // Lance l'animation
-    }
-
-    // Attache l'événement de clic au bouton de spin
-    const spinButton = document.getElementById('spinBtn');
-    if (spinButton) { // S'assurer que le bouton existe
-        spinButton.onclick = spinWheel;
-    }
-
-    // Initialisation de la roue au chargement de la page
-    drawWheel();
-    updateWheelCooldown(); // Met à jour l'état initial du bouton
-    updateWheelWonSkins(); // Affiche les skins déjà gagnés
-
-    // Met à jour le cooldown chaque seconde pour un affichage précis
-    setInterval(updateWheelCooldown, 1000);
   </script>
 </body>
 </html>

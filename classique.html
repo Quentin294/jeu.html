@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeu Classique</title>
+  <style>
+    body {margin:0;font-family:Arial,sans-serif;background:#232b3b;color:#fff;}
+    #classicGameArea { width: 600px; height: 400px; background: #232b3b; position: relative; margin: 40px auto 0 auto; border-radius: 24px; box-shadow: 0 8px 32px #0008;}
+    .player { width: 48px; height: 48px; position: absolute; border-radius: 50%; background:#3a6ee8;}
+    .enemy { width: 44px; height: 44px; background: #e83a3a; position: absolute; border-radius: 14px; }
+    .coin { width: 32px; height: 32px; background: gold; position: absolute; border-radius: 50%; border:2px solid #ffe066;}
+    .xp-bubble { width: 24px; height: 24px; background: #43e86e; position: absolute; border-radius: 50%; border:2px solid #fff;}
+    #hud-left {position:absolute;left:20px;top:20px;z-index:10;}
+    #rank {margin-top:12px;}
+    #xp-bar-bg {position:absolute;left:20px;bottom:32px;width:300px;height:16px;background:#111;border-radius:8px;}
+    #xp-bar {height:16px;border-radius:8px;background:#3a6ee8;width:0;}
+    #xp-label {position:absolute;left:20px;bottom:10px;}
+    .modal-bg {display:none;position:fixed;z-index:100;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
+    .modal-bg.active {display:flex;}
+    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:40px 32px 32px 32px;min-width:320px;text-align:center;position:relative;}
+    .modal-title {font-size:28px;font-weight:bold;margin-bottom:28px;letter-spacing:1px;}
+    .modal-btn {display:block;width:100%;margin:16px 0;padding:18px 0;font-size:22px;font-weight:bold;border:none;border-radius:12px;background:#3a6ee8;color:#fff;cursor:pointer;transition:background 0.15s;}
+    .modal-btn.quit {background:#e83a3a;}
+    .modal-btn.gold {background:#ffe066;color:#232b3b;}
+    #toast-success {position:fixed;top:30px;right:30px;background:#232b3b;color:#ffe066;padding:18px 38px;border-radius:18px;box-shadow:0 4px 16px #000a;font-size:20px;font-weight:bold;display:none;z-index:200;border:2px solid #ffe066;}
+    .quest-toast {position:fixed;left:30px;top:80px;background:#232b3b;color:#43e86e;padding:18px 32px;border-radius:14px;box-shadow:0 4px 16px #000a;font-size:20px;font-weight:bold;z-index:300;}
+  </style>
+</head>
+<body>
+  <div style="width:100%;text-align:center;margin-top:22px;">
+    <button onclick="window.history.back()" class="modal-btn" style="width:auto;display:inline-block;">&larr; Retour au menu</button>
+    <button onclick="resetAllAchievements()" class="modal-btn" style="width:auto;display:inline-block;margin-left:20px;background:#ffe066;color:#232b3b;">Réinitialiser les succès</button>
+  </div>
+  <div id="classicGameArea" tabindex="1"></div>
+  <div id="toast-success"></div>
+  <div class="modal-bg" id="pauseModal">
+    <div class="modal">
+      <div class="modal-title">Pause</div>
+      <button class="modal-btn" id="resumeBtn">Reprendre</button>
+      <button class="modal-btn" id="questsBtn">Quêtes</button>
+      <button class="modal-btn" id="restartBtn">Recommencer</button>
+      <button class="modal-btn quit" id="quitBtn">Quitter</button>
+    </div>
+  </div>
+  <div class="modal-bg" id="gameOverModal">
+    <div class="modal">
+      <div class="modal-title">GAME OVER</div>
+      <button class="modal-btn gold" id="restartBtnGO">Recommencer</button>
+      <button class="modal-btn quit" id="quitBtnGO">Quitter</button>
+    </div>
+  </div>
+  <script>
+    // Succès (identique à succes.html)
+    const ACHIEVEMENTS = [
+      { id: "first_coin", icon: "🪙", title: "Première pièce !", desc: "Ramasse ta première pièce." },
+      { id: "ten_coins", icon: "💰", title: "Collectionneur", desc: "Ramasse 10 pièces en une partie." },
+      { id: "hundred_xp", icon: "⚡", title: "XP 100", desc: "Atteins 100 XP en une partie." },
+      { id: "survivor", icon: "🛡️", title: "Survivant", desc: "Atteins 200 de score sans mourir." },
+      { id: "master_collector", icon: "👑", title: "Maître des pièces", desc: "Ramasse 30 pièces en une partie." }
+    ];
+
+    // Quêtes du jour
+    const QUESTS = [
+      { id: "collect_10_coins", label: "Ramasse 10 pièces", xp: 50 },
+      { id: "survive_2_min", label: "Survis 2 minutes", xp: 75 },
+      { id: "get_200_score", label: "Atteins 200 de score", xp: 100 }
+    ];
+    function getQuestState() {
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem("questState")||"{}"); } catch(e){}
+      if(!state.resetAt || Date.now() > state.resetAt) {
+        state = { resetAt: Date.now() + 24*3600*1000 };
+        for(const q of QUESTS) state[q.id] = false;
+        state.gift = false;
+        localStorage.setItem("questState", JSON.stringify(state));
+      }
+      for(const q of QUESTS) if(state[q.id]===undefined) state[q.id]=false;
+      if(state.gift===undefined) state.gift=false;
+      return state;
+    }
+    function saveQuestState(state) {
+      localStorage.setItem("questState", JSON.stringify(state));
+    }
+    function checkQuests(coins, score, timeSurvived) {
+      let state = getQuestState();
+      let changed = false;
+      if(!state["collect_10_coins"] && coins >= 10) {
+        state["collect_10_coins"] = true; changed = true; showQuestToast("collect_10_coins");
+      }
+      if(!state["get_200_score"] && score >= 200) {
+        state["get_200_score"] = true; changed = true; showQuestToast("get_200_score");
+      }
+      if(!state["survive_2_min"] && timeSurvived >= 120) {
+        state["survive_2_min"] = true; changed = true; showQuestToast("survive_2_min");
+      }
+      if(changed) saveQuestState(state);
+    }
+    function showQuestToast(qid) {
+      const q = QUESTS.find(x=>x.id===qid);
+      if(!q) return;
+      let toast = document.createElement("div");
+      toast.className = "quest-toast";
+      toast.textContent = `Quête terminée : ${q.label}`;
+      document.body.appendChild(toast);
+      setTimeout(()=>{toast.remove()}, 2200);
+    }
+
+    // Réinitialisation des succès
+    function resetAllAchievements() {
+      let state = {};
+      for(const achv of ACHIEVEMENTS) state[achv.id] = false;
+      localStorage.setItem("achievementsState", JSON.stringify(state));
+      alert("Succès réinitialisés ! Tu peux les regagner.");
+    }
+
+    // Fonction pour débloquer un succès et l'enregistrer dans localStorage
+    function unlockAchievement(id) {
+      let state = {};
+      try {
+        state = JSON.parse(localStorage.getItem("achievementsState") || "{}");
+      } catch(e) {}
+      if (!state[id]) {
+        state[id] = true;
+        localStorage.setItem("achievementsState", JSON.stringify(state));
+        showSuccessToast(id);
+      }
+    }
+
+    // Affichage toast succès
+    function showSuccessToast(id) {
+      const achv = ACHIEVEMENTS.find(a=>a.id===id);
+      if(!achv) return;
+      const toast = document.getElementById('toast-success');
+      toast.innerHTML = `<span style="font-size:28px;margin-right:10px;">${achv.icon}</span> Succès : <b>${achv.title}</b>`;
+      toast.style.display = "block";
+      setTimeout(()=>{ toast.style.display = "none"; }, 2000);
+    }
+
+    // --- Jeu classique avec pause, game over, quêtes ---
+    function startClassicGame() {
+      const area = document.getElementById('classicGameArea');
+      area.innerHTML = `
+        <div id="hud-left">
+          <div>Score : <span id="score">0</span></div>
+          <div>🪙 Pièces : <span id="coins">0</span></div>
+          <div id="rank">Rang : Débutant</div>
+        </div>
+        <div id="xp-bar-bg">
+          <div id="xp-bar"></div>
+        </div>
+        <div id="xp-label">XP : <span id="xp">0</span> / <span id="xp-max">100</span></div>
+        <div class="player" id="player"></div>
+        <div class="enemy" id="enemy1"></div>
+        <div class="enemy" id="enemy2"></div>
+        <div class="coin" id="coin"></div>
+        <div class="xp-bubble" id="xpBubble"></div>
+      `;
+      let width = area.clientWidth, height = area.clientHeight;
+      let px = width/2-24, py = height/2-24, ps = 6;
+      let ex = [100, width-100], ey = [100, height-100], evx = [3, -2.5], evy = [2.5, 3];
+      let coinPos = [200, 200], xpPos = [400, 400];
+      let score = 0, coins = 0, xp = 0, xpMax = 100;
+      let paused = false, gameOver = false;
+      let keys = {};
+      let running = true;
+      let frameId = null;
+      let startTime = Date.now();
+      function getRank(n) {
+        if (n >= 30) return "Maître";
+        if (n >= 20) return "Expert";
+        if (n >= 10) return "Pro";
+        if (n >= 5) return "Avancé";
+        return "Débutant";
+      }
+      function placeRandom(el, margin=40) {
+        let x = Math.random()*(width-margin*2)+margin;
+        let y = Math.random()*(height-margin*2)+margin;
+        el.style.left = x+"px";
+        el.style.top = y+"px";
+        return [x,y];
+      }
+      function updateEntities() {
+        document.getElementById('player').style.left = px+"px";
+        document.getElementById('player').style.top = py+"px";
+        document.getElementById('enemy1').style.left = ex[0]+"px";
+        document.getElementById('enemy1').style.top = ey[0]+"px";
+        document.getElementById('enemy2').style.left = ex[1]+"px";
+        document.getElementById('enemy2').style.top = ey[1]+"px";
+        document.getElementById('coin').style.left = coinPos[0]+"px";
+        document.getElementById('coin').style.top = coinPos[1]+"px";
+        document.getElementById('xpBubble').style.left = xpPos[0]+"px";
+        document.getElementById('xpBubble').style.top = xpPos[1]+"px";
+      }
+      function updateHUD() {
+        document.getElementById('score').textContent = score;
+        document.getElementById('coins').textContent = coins;
+        document.getElementById('rank').textContent = "Rang : "+getRank(coins);
+        document.getElementById('xp').textContent = xp;
+        document.getElementById('xp-max').textContent = xpMax;
+        document.getElementById('xp-bar').style.width = Math.min(100,100*xp/xpMax)+"%";
+      }
+      function checkAchievements() {
+        if(coins === 1) unlockAchievement("first_coin");
+        if(coins === 10) unlockAchievement("ten_coins");
+        if(xp >= 100) unlockAchievement("hundred_xp");
+        if(score >= 200) unlockAchievement("survivor");
+        if(coins === 30) unlockAchievement("master_collector");
+      }
+      function resetGame() {
+        px = width/2-24; py = height/2-24;
+        ex[0]=100; ey[0]=100; ex[1]=width-100; ey[1]=height-100;
+        evx=[3, -2.5]; evy=[2.5, 3];
+        score=0; coins=0; xp=0; xpMax=100;
+        gameOver=false; paused=false;
+        coinPos = placeRandom(document.getElementById('coin'));
+        xpPos = placeRandom(document.getElementById('xpBubble'), 30);
+        updateEntities(); updateHUD();
+        document.getElementById('pauseModal').classList.remove('active');
+        document.getElementById('gameOverModal').classList.remove('active');
+        area.focus();
+        startTime = Date.now();
+      }
+      function pauseGame() {
+        if(!gameOver){ paused=true; document.getElementById('pauseModal').classList.add('active');}
+      }
+      function resumeGame() {
+        paused=false; document.getElementById('pauseModal').classList.remove('active'); area.focus();
+      }
+      function quitToMenu() {
+        running = false;
+        window.history.back();
+      }
+      function restartGame() {
+        running = false;
+        setTimeout(() => {
+          running = true;
+          resetGame();
+          frameId = requestAnimationFrame(gameLoop);
+        }, 30);
+      }
+      function showGameOver() {
+        gameOver=true; document.getElementById('gameOverModal').classList.add('active');
+      }
+      function rectsCollide(ax,ay,aw,ah,bx,by,bw,bh) {
+        return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+      }
+      function gameLoop() {
+        if(!running) return;
+        if(!paused && !gameOver) {
+          if(keys["ArrowLeft"]||keys["KeyA"]) px=Math.max(0,px-ps);
+          if(keys["ArrowRight"]||keys["KeyD"]) px=Math.min(width-48,px+ps);
+          if(keys["ArrowUp"]||keys["KeyW"]) py=Math.max(0,py-ps);
+          if(keys["ArrowDown"]||keys["KeyS"]) py=Math.min(height-48,py+ps);
+          for(let i=0;i<2;i++) {
+            ex[i]+=evx[i]; ey[i]+=evy[i];
+            if(ex[i]<0||ex[i]>width-44) evx[i]*=-1;
+            if(ey[i]<0||ey[i]>height-44) evy[i]*=-1;
+          }
+          for(let i=0;i<2;i++) {
+            if(rectsCollide(px,py,48,48,ex[i],ey[i],44,44)) {
+              showGameOver();
+              return;
+            }
+          }
+          if(rectsCollide(px,py,48,48,coinPos[0],coinPos[1],32,32)) {
+            coins++; score+=10;
+            coinPos = placeRandom(document.getElementById('coin'));
+            updateHUD();
+            checkAchievements();
+          }
+          if(rectsCollide(px,py,48,48,xpPos[0],xpPos[1],24,24)) {
+            xp+=20; score+=2;
+            if(xp>=xpMax) { xp-=xpMax; xpMax+=50; score+=20; }
+            xpPos = placeRandom(document.getElementById('xpBubble'), 30);
+            updateHUD();
+            checkAchievements();
+          }
+          let timeSurvived = Math.floor((Date.now() - startTime)/1000);
+          checkQuests(coins, score, timeSurvived);
+          checkAchievements();
+          updateEntities();
+        }
+        frameId = requestAnimationFrame(gameLoop);
+      }
+      area.tabIndex = 1;
+      area.focus();
+      keys = {};
+      function keydownHandler(e) {
+        if(e.code==="Space") {
+          if(!paused && !gameOver) pauseGame();
+          else if(paused) resumeGame();
+        }
+        keys[e.code]=true;
+      }
+      function keyupHandler(e){ keys[e.code]=false; }
+      area.addEventListener('keydown', keydownHandler);
+      area.addEventListener('keyup', keyupHandler);
+      document.getElementById('resumeBtn').onclick = resumeGame;
+      document.getElementById('restartBtn').onclick = restartGame;
+      document.getElementById('quitBtn').onclick = quitToMenu;
+      document.getElementById('restartBtnGO').onclick = restartGame;
+      document.getElementById('quitBtnGO').onclick = quitToMenu;
+      document.getElementById('questsBtn').onclick = () => { window.location.href = 'quetes.html'; };
+      resetGame();
+      running = true;
+      frameId = requestAnimationFrame(gameLoop);
+    }
+    startClassicGame();
+  </script>
+</body>
+</html>
