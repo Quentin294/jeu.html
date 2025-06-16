@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Super Earth Command</title>
+  <style>
+    body {
+      background: #1a2233;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 20px;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #ffe066;
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px #ffcc00;
+    }
+    #gameArea {
+      background: #2a3350;
+      border-radius: 16px;
+      box-shadow: 0 0 20px #000a;
+      width: 480px;
+      height: 320px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    #defenseZone {
+      position: absolute;
+      bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 80px;
+      background: #3a6ee8;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #3a6ee8aa inset;
+      text-align: center;
+      line-height: 80px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #fff;
+      user-select: none;
+    }
+    .enemy {
+      position: absolute;
+      bottom: 100%;
+      width: 40px; height: 40px;
+      background: #ff3b30;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #ff3b30;
+      text-align: center;
+      font-weight: bold;
+      line-height: 40px;
+      font-size: 24px;
+      color: #fff;
+      user-select: none;
+      transition: bottom 0.1s linear;
+    }
+    #stratagems {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      justify-content: center;
+    }
+    .strat-btn {
+      background: #43e86e;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #232b3b;
+      box-shadow: 0 0 10px #43e86e;
+      transition: background 0.3s;
+      user-select: none;
+    }
+    .strat-btn:disabled {
+      background: #2a4a2a;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #555;
+    }
+    #info {
+      font-size: 16px;
+      margin-bottom: 10px;
+      text-align: center;
+      min-height: 24px;
+      color: #ffe066;
+      text-shadow: 0 0 4px #ffcc00;
+    }
+    #scoreboard {
+      font-size: 18px;
+      font-weight: bold;
+      color: #43e86e;
+      text-align: center;
+      margin-top: 10px;
+      user-select: none;
+    }
+    #restartBtn {
+      background: #3a6ee8;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 16px #3a6ee8;
+      user-select: none;
+      display: none;
+    }
+    #restartBtn:hover {
+      background: #254a9c;
+    }
+  </style>
+</head>
+<body>
+  <h1>Super Earth Command</h1>
+  <div id="gameArea">
+    <div id="defenseZone">Zone de défense</div>
+  </div>
+  <div id="stratagems">
+    <button class="strat-btn" id="strikeBtn">Frappe Aérienne (3)</button>
+    <button class="strat-btn" id="turretBtn">Tourelle Défensive (2)</button>
+    <button class="strat-btn" id="healBtn">Soin d'équipe (2)</button>
+  </div>
+  <div id="info">Prépare-toi à défendre la zone !</div>
+  <div id="scoreboard"></div>
+  <button id="restartBtn">Rejouer</button>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const defenseZone = document.getElementById('defenseZone');
+    const info = document.getElementById('info');
+    const scoreboard = document.getElementById('scoreboard');
+    const restartBtn = document.getElementById('restartBtn');
+
+    const strikeBtn = document.getElementById('strikeBtn');
+    const turretBtn = document.getElementById('turretBtn');
+    const healBtn = document.getElementById('healBtn');
+
+    let enemies = [];
+    let enemySpeed = 0.6; // px per frame
+    let spawnInterval = 2000; // ms
+    let lastSpawn = 0;
+    let gameRunning = false;
+    let score = 0;
+    let health = 100;
+    let stratagems = {
+      strike: 3,
+      turret: 2,
+      heal: 2
+    };
+    let turretActive = false;
+    let turretDuration = 8000; // ms
+    let turretEndTime = 0;
+
+    function createEnemy() {
+      const enemy = document.createElement('div');
+      enemy.classList.add('enemy');
+      enemy.textContent = '👾';
+      enemy.style.left = Math.random() * (gameArea.clientWidth - 40) + 'px';
+      enemy.style.bottom = '100%';
+      gameArea.appendChild(enemy);
+      enemies.push({el: enemy, y: gameArea.clientHeight, alive: true});
+    }
+
+    function updateEnemies() {
+      const zoneRect = defenseZone.getBoundingClientRect();
+      const areaRect = gameArea.getBoundingClientRect();
+      enemies.forEach((enemy, i) => {
+        if (!enemy.alive) return;
+        enemy.y -= enemySpeed;
+        enemy.el.style.bottom = enemy.y + 'px';
+        // Collision avec zone
+        if (enemy.y <= 100) {
+          if (turretActive) {
+            // Turret détruit l'ennemi
+            enemy.alive = false;
+            enemy.el.remove();
+            score += 10;
+            updateScore();
+            info.textContent = 'Tourelle a détruit un ennemi !';
+          } else {
+            // Ennemi attaque la zone
+            enemy.alive = false;
+            enemy.el.remove();
+            health -= 15;
+            updateHealth();
+            info.textContent = 'Un ennemi a attaqué la zone !';
+            if (health <= 0) endGame(false);
+          }
+        }
+      });
+      enemies = enemies.filter(e => e.alive);
+    }
+
+    function updateScore() {
+      scoreboard.textContent = `Score : ${score} | Santé : ${health}%`;
+    }
+
+    function updateHealth() {
+      if (health < 0) health = 0;
+      updateScore();
+    }
+
+    function gameLoop(timestamp) {
+      if (!gameRunning) return;
+      if (!lastSpawn || timestamp - lastSpawn > spawnInterval) {
+        createEnemy();
+        lastSpawn = timestamp;
+        // Accélère progressivement
+        if (spawnInterval > 700) spawnInterval -= 20;
+        if (enemySpeed < 1.5) enemySpeed += 0.005;
+      }
+      updateEnemies();
+
+      // Gérer durée tourelle
+      if (turretActive && Date.now() > turretEndTime) {
+        turretActive = false;
+        info.textContent = 'La tourelle est désactivée.';
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function useStrike() {
+      if (stratagems.strike <= 0) return;
+      stratagems.strike--;
+      strikeBtn.textContent = `Frappe Aérienne (${stratagems.strike})`;
+      // Détruire tous les ennemis à l'écran
+      enemies.forEach(enemy => {
+        if (enemy.alive) {
+          enemy.alive = false;
+          enemy.el.remove();
+          score += 15;
+        }
+      });
+      enemies = [];
+      updateScore();
+      info.textContent = 'Frappe aérienne lancée ! Tous les ennemis détruits.';
+    }
+
+    function useTurret() {
+      if (stratagems.turret <= 0 || turretActive) return;
+      stratagems.turret--;
+      turretBtn.textContent = `Tourelle Défensive (${stratagems.turret})`;
+      turretActive = true;
+      turretEndTime = Date.now() + turretDuration;
+      info.textContent = 'Tourelle activée pour 8 secondes !';
+    }
+
+    function useHeal() {
+      if (stratagems.heal <= 0 || health >= 100) return;
+      stratagems.heal--;
+      healBtn.textContent = `Soin d'équipe (${stratagems.heal})`;
+      health += 30;
+      if (health > 100) health = 100;
+      updateHealth();
+      info.textContent = 'Soin d\'équipe activé ! Santé restaurée.';
+    }
+
+    function endGame(won) {
+      gameRunning = false;
+      info.textContent = won ? 'Mission réussie !' : 'Mission échouée... Zone détruite.';
+      restartBtn.style.display = 'block';
+    }
+
+    restartBtn.onclick = () => {
+      restartBtn.style.display = 'none';
+      score = 0;
+      health = 100;
+      stratagems = {strike:3, turret:2, heal:2};
+      strikeBtn.textContent = `Frappe Aérienne (${stratagems.strike})`;
+      turretBtn.textContent = `Tourelle Défensive (${stratagems.turret})`;
+      healBtn.textContent = `Soin d'équipe (${stratagems.heal})`;
+      info.textContent = 'Prépare-toi à défendre la zone !';
+      updateScore();
+      enemies.forEach(e => e.el.remove());
+      enemies = [];
+      enemySpeed = 0.6;
+      spawnInterval = 2000;
+      turretActive = false;
+      gameRunning = true;
+      lastSpawn = 0;
+      requestAnimationFrame(gameLoop);
+    };
+
+    strikeBtn.onclick = () => { if(gameRunning) useStrike(); };
+    turretBtn.onclick = () => { if(gameRunning) useTurret(); };
+    healBtn.onclick = () => { if(gameRunning) useHeal(); };
+
+    // Démarrage automatique
+    info.textContent = 'Clique sur "Rejouer" pour commencer la mission.';
+    updateScore();
+  </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Night Watch Panic</title>
+  <style>
+    body {background:#181c23;color:#fff;font-family:Arial,sans-serif;margin:0;min-height:100vh;}
+    .fnaf-container {max-width:600px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:20px;box-shadow:0 8px 32px #000a;padding:32px;}
+    h1 {text-align:center;font-size:32px;color:#ffe066;margin-bottom:18px;}
+    .office {position:relative;background:#222 url('https://i.imgur.com/4T0q9qR.jpg') center/cover no-repeat;width:400px;height:180px;margin:0 auto 14px auto;border-radius:12px;box-shadow:0 4px 16px #0008;}
+    .door-btn, .light-btn, .camera-btn {padding:7px 16px;margin:8px 6px 0 0;font-size:16px;border-radius:8px;border:none;cursor:pointer;font-weight:bold;}
+    .door-btn {background:#3a6ee8;color:#fff;}
+    .light-btn {background:#ffe066;color:#232b3b;}
+    .camera-btn {background:#444;color:#fff;}
+    .door-btn.active {background:#ff3b30;}
+    .light-btn.active {background:#fff3a0;color:#232b3b;}
+    .panel-row {display:flex;justify-content:center;gap:12px;margin-bottom:8px;}
+    .energy-bar-bg {width:100%;height:16px;background:#444;border-radius:8px;overflow:hidden;margin-bottom:12px;}
+    .energy-bar {height:100%;background:linear-gradient(90deg,#43e86e,#ffe066);width:100%;transition:width 0.2s;}
+    .clock {font-size:20px;text-align:center;margin-bottom:12px;}
+    .camera-feed {background:#000;border-radius:10px;width:360px;height:120px;margin:12px auto 0 auto;display:flex;align-items:center;justify-content:center;font-size:22px;color:#ffe066;box-shadow:0 2px 8px #0006;}
+    .animatronic {color:#ff3b30;font-size:20px;}
+    .jumpscare {position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000c;display:flex;align-items:center;justify-content:center;z-index:20;}
+    .jumpscare img {width:320px;height:auto;border-radius:18px;box-shadow:0 6px 30px #000;}
+    .jumpscare h2 {color:#fff;font-size:38px;text-align:center;margin-top:18px;}
+    .fnaf-btn {display:block;margin:22px auto 0 auto;background:#3a6ee8;color:#fff;border:none;border-radius:10px;font-size:20px;padding:12px 36px;font-weight:bold;cursor:pointer;}
+    .fnaf-btn:hover {background:#254a9c;}
+    @media (max-width:700px) {
+      .fnaf-container {padding:8px;}
+      .office {width:98vw;height:100px;}
+      .camera-feed {width:94vw;height:70px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="fnaf-container">
+    <h1>Night Watch Panic</h1>
+    <div class="energy-bar-bg"><div class="energy-bar" id="energyBar"></div></div>
+    <div class="clock" id="clock">Heure : 00h00</div>
+    <div class="office" id="office">
+      <!-- Bureau visuel -->
+    </div>
+    <div class="panel-row">
+      <button class="door-btn" id="leftDoorBtn">Porte Gauche</button>
+      <button class="light-btn" id="leftLightBtn">Lumière Gauche</button>
+      <button class="door-btn" id="rightDoorBtn">Porte Droite</button>
+      <button class="light-btn" id="rightLightBtn">Lumière Droite</button>
+    </div>
+    <div class="panel-row">
+      <button class="camera-btn" id="cameraBtn">Caméras</button>
+      <span id="cameraStatus" style="margin-left:10px;"></span>
+    </div>
+    <div class="camera-feed" id="cameraFeed" style="display:none;">
+      <span id="cameraText">CAM 1A - Scène principale</span>
+    </div>
+    <div id="animatronicAlert" style="text-align:center;margin:10px 0 0 0;"></div>
+    <button class="fnaf-btn" id="startBtn">Démarrer la nuit</button>
+    <div id="gameEnd" style="display:none;text-align:center;margin-top:20px;"></div>
+  </div>
+  <div class="jumpscare" id="jumpscare" style="display:none;flex-direction:column;">
+    <img src="https://i.imgur.com/3m5Yw8h.png" alt="Animatronic Jumpscare">
+    <h2>JUMPSCARE !</h2>
+    <button class="fnaf-btn" onclick="location.reload()">Rejouer</button>
+  </div>
+  <script>
+    // --- Configuration ---
+    const NIGHT_DURATION = 180000; // 3 minutes (pour test ; FNaF = 8-9 min)
+    const ENERGY_MAX = 100;
+    const ENERGY_DRAIN = {
+      idle: 0.012,
+      door: 0.09,
+      light: 0.06,
+      camera: 0.045
+    };
+    const ANIMATRONICS = [
+      {name:"Bonnie", position:0, path:[0,1,2,3], side:"left", active:false, timer:0},
+      {name:"Chica", position:0, path:[0,1,2,3], side:"right", active:false, timer:0}
+    ];
+    const CAMERA_NAMES = ["CAM 1A - Scène principale","CAM 1B - Couloir Ouest","CAM 2A - Bureau Ouest","CAM 4A - Couloir Est","CAM 4B - Bureau Est"];
+    // --- État ---
+    let nightRunning = false, startTime = 0, currentTime = 0, clockHour = 0, energy = ENERGY_MAX;
+    let leftDoor = false, rightDoor = false, leftLight = false, rightLight = false, cameraOpen = false, cameraIdx = 0;
+    let animatronics = JSON.parse(JSON.stringify(ANIMATRONICS));
+    let animAlert = document.getElementById('animatronicAlert');
+    let timer = null;
+
+    // --- DOM Elements ---
+    const energyBar = document.getElementById('energyBar');
+    const clock = document.getElementById('clock');
+    const leftDoorBtn = document.getElementById('leftDoorBtn');
+    const rightDoorBtn = document.getElementById('rightDoorBtn');
+    const leftLightBtn = document.getElementById('leftLightBtn');
+    const rightLightBtn = document.getElementById('rightLightBtn');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraFeed = document.getElementById('cameraFeed');
+    const cameraText = document.getElementById('cameraText');
+    const cameraStatus = document.getElementById('cameraStatus');
+    const startBtn = document.getElementById('startBtn');
+    const gameEnd = document.getElementById('gameEnd');
+    const jumpscare = document.getElementById('jumpscare');
+
+    // --- Fonctions ---
+    function resetGame() {
+      nightRunning = false;
+      startTime = 0;
+      currentTime = 0;
+      clockHour = 0;
+      energy = ENERGY_MAX;
+      leftDoor = rightDoor = leftLight = rightLight = cameraOpen = false;
+      cameraIdx = 0;
+      animatronics = JSON.parse(JSON.stringify(ANIMATRONICS));
+      animAlert.textContent = "";
+      energyBar.style.width = "100%";
+      clock.textContent = "Heure : 00h00";
+      leftDoorBtn.classList.remove('active');
+      rightDoorBtn.classList.remove('active');
+      leftLightBtn.classList.remove('active');
+      rightLightBtn.classList.remove('active');
+      cameraFeed.style.display = "none";
+      cameraStatus.textContent = "";
+      gameEnd.style.display = "none";
+      jumpscare.style.display = "none";
+    }
+
+    function updateEnergy() {
+      let drain = ENERGY_DRAIN.idle;
+      if (leftDoor) drain += ENERGY_DRAIN.door;
+      if (rightDoor) drain += ENERGY_DRAIN.door;
+      if (leftLight) drain += ENERGY_DRAIN.light;
+      if (rightLight) drain += ENERGY_DRAIN.light;
+      if (cameraOpen) drain += ENERGY_DRAIN.camera;
+      energy -= drain;
+      if (energy < 0) energy = 0;
+      energyBar.style.width = (energy)+"%";
+    }
+
+    function updateClock() {
+      let elapsed = Date.now() - startTime;
+      let percent = elapsed / NIGHT_DURATION;
+      clockHour = Math.floor(percent * 6); // 6h = victoire
+      let min = Math.floor((percent * 6) * 60);
+      let hour = Math.min(clockHour+12, 6+12);
+      clock.textContent = "Heure : " + (hour<22?"0":"") + hour + "h" + (min%60<10?"0":"") + (min%60);
+    }
+
+    function updateAnimatronics() {
+      animAlert.textContent = "";
+      animatronics.forEach((a,i)=>{
+        if (!a.active && Math.random()<0.005) a.active = true;
+        if (!a.active) return;
+        // Timer pour avancer
+        a.timer -= 1;
+        if (a.timer<=0) {
+          a.position += 1;
+          a.timer = 60+Math.floor(Math.random()*100);
+          if (a.position >= a.path.length) {
+            // Arrivé au bureau
+            if ((a.side==="left" && !leftDoor) || (a.side==="right" && !rightDoor)) {
+              // Jumpscare!
+              nightRunning = false;
+              jumpscare.style.display = "flex";
+              setTimeout(()=>{jumpscare.style.display="flex";},300);
+              cancelAnimationFrame(timer);
+            } else {
+              // Porte fermée, repart
+              a.position = a.path.length-2;
+            }
+          }
+        }
+        // Alertes lumières
+        if (a.position === a.path.length-1) {
+          if ((a.side==="left" && leftLight) || (a.side==="right" && rightLight)) {
+            animAlert.innerHTML += `<span class="animatronic">${a.name} est à la porte ${a.side==="left"?"gauche":"droite"} !</span><br>`;
+          }
+        }
+      });
+    }
+
+    function updateCamera() {
+      if (!cameraOpen) {
+        cameraFeed.style.display = "none";
+        cameraStatus.textContent = "";
+        return;
+      }
+      cameraFeed.style.display = "";
+      cameraText.textContent = CAMERA_NAMES[cameraIdx];
+      let animsHere = animatronics.filter(a=>a.active && a.path[a.position]===cameraIdx);
+      if(animsHere.length) {
+        cameraText.textContent += " | " + animsHere.map(a=>a.name).join(", ") + " repéré(s)";
+      }
+      cameraStatus.textContent = "CAM " + (cameraIdx+1) + "/" + CAMERA_NAMES.length;
+    }
+
+    function updateGame() {
+      if (!nightRunning) return;
+      updateEnergy();
+      updateClock();
+      updateAnimatronics();
+      updateCamera();
+      // Défaite énergie
+      if (energy <= 0) {
+        nightRunning = false;
+        gameEnd.style.display = "";
+        gameEnd.innerHTML = `<h2>Tu as épuisé toute ton énergie !</h2>
+        <button class="fnaf-btn" onclick="location.reload()">Rejouer</button>`;
+        return;
+      }
+      // Victoire
+      if (clockHour >= 6) {
+        nightRunning = false;
+        gameEnd.style.display = "";
+        gameEnd.innerHTML = `<h2>Bravo, tu as survécu jusqu'à 6h !</h2>
+        <button class="fnaf-btn" onclick="location.reload()">Rejouer</button>`;
+        return;
+      }
+      timer = requestAnimationFrame(updateGame);
+    }
+
+    // --- Contrôles ---
+    leftDoorBtn.onclick = function() {
+      leftDoor = !leftDoor;
+      leftDoorBtn.classList.toggle('active', leftDoor);
+    };
+    rightDoorBtn.onclick = function() {
+      rightDoor = !rightDoor;
+      rightDoorBtn.classList.toggle('active', rightDoor);
+    };
+    leftLightBtn.onclick = function() {
+      leftLight = !leftLight;
+      leftLightBtn.classList.toggle('active', leftLight);
+    };
+    rightLightBtn.onclick = function() {
+      rightLight = !rightLight;
+      rightLightBtn.classList.toggle('active', rightLight);
+    };
+    cameraBtn.onclick = function() {
+      cameraOpen = !cameraOpen;
+      updateCamera();
+    };
+    cameraFeed.onclick = function() {
+      if (!cameraOpen) return;
+      cameraIdx = (cameraIdx+1)%CAMERA_NAMES.length;
+      updateCamera();
+    };
+
+    // --- Démarrage ---
+    startBtn.onclick = function() {
+      resetGame();
+      nightRunning = true;
+      startTime = Date.now();
+      animatronics.forEach(a=>{a.active=false;a.position=0;a.timer=60+Math.floor(Math.random()*100);});
+      startBtn.style.display = "none";
+      timer = requestAnimationFrame(updateGame);
+    };
+
+    // --- Init ---
+    resetGame();
+  </script>
+</body>
+</html>

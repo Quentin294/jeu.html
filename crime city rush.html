@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Crime City Rush</title>
+  <style>
+    body {background:#232b3b;color:#fff;font-family:Arial,sans-serif;margin:0;min-height:100vh;}
+    .ccr-container {max-width:520px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:20px;box-shadow:0 8px 32px #000a;padding:32px;}
+    h1 {text-align:center;font-size:32px;color:#ffe066;margin-bottom:18px;}
+    .ccr-stats {display:flex;justify-content:space-between;gap:8px;margin-bottom:18px;}
+    .ccr-stat {background:#1a2233;border-radius:8px;padding:10px 14px;font-size:16px;min-width:90px;text-align:center;}
+    .ccr-bar-bg {width:100%;height:12px;background:#444;border-radius:8px;overflow:hidden;margin-bottom:4px;}
+    .ccr-bar {height:100%;background:linear-gradient(90deg,#ffe066,#ff3b30);width:100%;transition:width 0.2s;}
+    .ccr-actions {display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:18px;}
+    .ccr-btn {
+      background:#3a6ee8;color:#fff;border:none;border-radius:10px;
+      padding:12px 20px;font-size:17px;font-weight:bold;cursor:pointer;
+      box-shadow:0 0 10px #3a6ee8;
+      margin-bottom:6px;
+      transition:background 0.2s;
+    }
+    .ccr-btn:disabled {background:#888;box-shadow:none;cursor:not-allowed;}
+    .ccr-event {background:#1a2233;border-radius:10px;padding:16px;font-size:18px;margin-bottom:10px;text-align:center;min-height:60px;}
+    .ccr-inventory {background:#232b3b;border-radius:8px;padding:10px 14px;margin-bottom:10px;}
+    .ccr-inv-title {font-weight:bold;color:#ffe066;margin-bottom:6px;}
+    .ccr-gameover {text-align:center;color:#ff3b30;font-size:22px;margin-top:20px;}
+    .ccr-mission {text-align:center;color:#ffe066;font-size:20px;margin-bottom:10px;}
+    #ccrRestartBtn {
+      background:#ffe066;color:#232b3b;border:none;border-radius:12px;
+      padding:12px 32px;font-size:18px;font-weight:bold;cursor:pointer;
+      box-shadow:0 0 16px #ffe066;
+      margin:18px auto 0 auto;display:block;
+    }
+    #ccrRestartBtn:hover {background:#fff3a0;}
+    .ccr-stars {font-size:22px;color:#ffe066;}
+    @media (max-width:600px) {
+      .ccr-container {padding:10px;}
+      .ccr-stats {flex-direction:column;gap:4px;}
+      .ccr-actions {flex-direction:column;gap:8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="ccr-container">
+    <h1>Crime City Rush</h1>
+    <div class="ccr-mission" id="ccrMission"></div>
+    <div class="ccr-stats">
+      <div class="ccr-stat">Argent<br>
+        <span id="ccrMoney">$0</span>
+      </div>
+      <div class="ccr-stat">Réputation<br>
+        <span id="ccrReputation">10</span>
+      </div>
+      <div class="ccr-stat">Recherche<br>
+        <span class="ccr-stars" id="ccrStars">☆ ☆ ☆ ☆ ☆</span>
+      </div>
+      <div class="ccr-stat">Missions<br>
+        <span id="ccrMissions">0</span>
+      </div>
+    </div>
+    <div class="ccr-inventory">
+      <div class="ccr-inv-title">Inventaire :</div>
+      <span id="ccrInventory">Pistolet x1, Voiture x1</span>
+    </div>
+    <div class="ccr-event" id="ccrEvent">Bienvenue à Crime City. Prêt à faire ta première mission ?</div>
+    <div class="ccr-actions" id="ccrActions"></div>
+    <div class="ccr-gameover" id="ccrGameOver" style="display:none;"></div>
+    <button id="ccrRestartBtn" style="display:none;">Rejouer</button>
+  </div>
+  <script>
+    // État du joueur
+    let state = {
+      money: 0,
+      rep: 10,
+      stars: 0,
+      missions: 0,
+      inventory: {Pistolet:1, Voiture:1},
+      alive: true
+    };
+
+    // Missions possibles
+    const missions = [
+      {
+        title: "Vol de voiture",
+        options: [
+          {label:"Discrètement", result:()=>tryMission(0.8, 200, 2, 1, 0, "Tu as volé la voiture sans te faire remarquer !"), fail:"Tu t'es fait repérer, la police te recherche !", failStars:1},
+          {label:"En force", result:()=>tryMission(0.5, 350, 3, 2, 1, "Tu as réussi mais la police t'a vu !"), fail:"Échec, la police te poursuit et tu es blessé.", failStars:2, failRep:-2},
+          {label:"Fuir", result:()=>nextMission("Tu as abandonné la mission.")}
+        ]
+      },
+      {
+        title: "Braquage de supérette",
+        options: [
+          {label:"Avec arme", result:()=>tryMission(0.7, 300, 4, 2, 1, "Braquage réussi, mais la police est sur place !"), fail:"Le braquage tourne mal, tu es blessé.", failStars:2, failRep:-3},
+          {label:"Sans arme", result:()=>tryMission(0.4, 500, 5, 3, 2, "Coup de maître ! Personne ne t'a vu."), fail:"Tu t'es fait attraper par le gérant, la police arrive.", failStars:3, failRep:-5},
+          {label:"Fuir", result:()=>nextMission("Tu as abandonné le braquage.")}
+        ]
+      },
+      {
+        title: "Livraison illégale",
+        options: [
+          {label:"Vitesse", result:()=>tryMission(0.6, 250, 3, 1, 1, "Livraison rapide, mais tu as grillé quelques feux !"), fail:"Accident, la police t'arrête.", failStars:2, failRep:-2},
+          {label:"Discrétion", result:()=>tryMission(0.8, 180, 2, 1, 0, "Livraison parfaite, personne ne t'a suivi."), fail:"Un passant t'a dénoncé, la police te cherche.", failStars:1},
+          {label:"Fuir", result:()=>nextMission("Tu as refusé la livraison.")}
+        ]
+      },
+      {
+        title: "Course-poursuite",
+        options: [
+          {label:"Prendre un raccourci", result:()=>tryMission(0.7, 120, 1, 1, 0, "Tu as semé la police !"), fail:"Tu t'es crashé, la police t'arrête.", failStars:3, failRep:-3},
+          {label:"Rouler à fond", result:()=>tryMission(0.5, 200, 2, 2, 1, "Tu t'es échappé de justesse !"), fail:"Tu as perdu le contrôle, voiture détruite.", failStars:2, failRep:-2, loseCar:true},
+          {label:"Se cacher", result:()=>tryMission(0.6, 80, 1, 0, 0, "Tu t'es caché dans une ruelle."), fail:"La police t'a trouvé !", failStars:2}
+        ]
+      },
+      {
+        title: "Taguer un mur",
+        options: [
+          {label:"En plein jour", result:()=>tryMission(0.5, 90, 1, 1, 1, "Ton tag est vu par tous, réputation +."), fail:"Attrapé par la police, tu paies une amende.", failStars:1, failMoney:-50},
+          {label:"De nuit", result:()=>tryMission(0.8, 70, 1, 1, 0, "Tag discret, personne ne t'a vu."), fail:"Un voisin t'a dénoncé.", failStars:1},
+          {label:"Fuir", result:()=>nextMission("Tu as renoncé à taguer.")}
+        ]
+      }
+    ];
+
+    // DOM
+    const ccrMission = document.getElementById('ccrMission');
+    const ccrMoney = document.getElementById('ccrMoney');
+    const ccrReputation = document.getElementById('ccrReputation');
+    const ccrStars = document.getElementById('ccrStars');
+    const ccrMissions = document.getElementById('ccrMissions');
+    const ccrInventory = document.getElementById('ccrInventory');
+    const ccrEvent = document.getElementById('ccrEvent');
+    const ccrActions = document.getElementById('ccrActions');
+    const ccrGameOver = document.getElementById('ccrGameOver');
+    const ccrRestartBtn = document.getElementById('ccrRestartBtn');
+
+    function updateUI() {
+      ccrMoney.textContent = "$" + state.money;
+      ccrReputation.textContent = state.rep;
+      ccrStars.textContent = "★".repeat(state.stars) + "☆".repeat(5-state.stars);
+      ccrMissions.textContent = state.missions;
+      let inv = [];
+      if(state.inventory.Pistolet) inv.push("Pistolet x"+state.inventory.Pistolet);
+      if(state.inventory.Voiture) inv.push("Voiture x"+state.inventory.Voiture);
+      ccrInventory.textContent = inv.length ? inv.join(", ") : "Vide";
+    }
+
+    function nextMission(msg) {
+      if(state.rep<=0) return endGame("Tu as perdu toute ta réputation. Fin de partie !");
+      if(state.stars>=5) return endGame("La police t'a arrêté avec 5 étoiles ! Fin de partie.");
+      state.missions++;
+      updateUI();
+      ccrEvent.textContent = msg || "";
+      // Nouvelle mission aléatoire
+      let m = missions[Math.floor(Math.random()*missions.length)];
+      ccrMission.textContent = m.title;
+      ccrActions.innerHTML = "";
+      m.options.forEach((opt,i)=>{
+        let btn = document.createElement('button');
+        btn.className = "ccr-btn";
+        btn.textContent = opt.label;
+        btn.onclick = ()=>opt.result();
+        ccrActions.appendChild(btn);
+      });
+    }
+
+    function tryMission(successRate, gainMoney, gainRep, gainStars, starsOnSuccess, msg) {
+      let r = Math.random();
+      if(r < successRate) {
+        state.money += gainMoney;
+        state.rep += gainRep;
+        state.stars += starsOnSuccess;
+        if(state.stars>5) state.stars=5;
+        updateUI();
+        nextMission(msg);
+      } else {
+        // Échec, gère les conséquences
+        let fail = arguments.callee.caller.arguments[0];
+        let opt = fail && fail.target ? missions.find(m=>m.title===ccrMission.textContent).options.find(o=>o.label===fail.target.textContent) : null;
+        let failMsg = opt && opt.fail ? opt.fail : "Échec de la mission.";
+        let failStars = opt && opt.failStars ? opt.failStars : 1;
+        let failRep = opt && opt.failRep ? opt.failRep : -1;
+        let failMoney = opt && opt.failMoney ? opt.failMoney : 0;
+        let loseCar = opt && opt.loseCar;
+        state.stars += failStars;
+        if(state.stars>5) state.stars=5;
+        state.rep += failRep;
+        if(state.rep<0) state.rep=0;
+        state.money += failMoney;
+        if(loseCar && state.inventory.Voiture) state.inventory.Voiture--;
+        updateUI();
+        nextMission(failMsg);
+      }
+    }
+
+    function endGame(msg) {
+      state.alive = false;
+      ccrGameOver.textContent = msg + " Missions réussies : " + state.missions + " | Argent : $" + state.money;
+      ccrGameOver.style.display = "";
+      ccrRestartBtn.style.display = "";
+      ccrActions.innerHTML = "";
+      ccrMission.textContent = "";
+    }
+
+    ccrRestartBtn.onclick = function() {
+      state = {
+        money: 0,
+        rep: 10,
+        stars: 0,
+        missions: 0,
+        inventory: {Pistolet:1, Voiture:1},
+        alive: true
+      };
+      ccrGameOver.style.display = "none";
+      ccrRestartBtn.style.display = "none";
+      ccrEvent.textContent = "Bienvenue à Crime City. Prêt à faire ta première mission ?";
+      updateUI();
+      nextMission();
+    };
+
+    // Initialisation
+    updateUI();
+    nextMission();
+  </script>
+</body>
+</html>

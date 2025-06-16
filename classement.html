@@ -129,6 +129,12 @@
     <button class="tab-btn" id="tabBtnInfini">Infini</button>
     <button class="tab-btn" id="tabBtnBaseball">Baseball</button>
     <button class="tab-btn" id="tabBtnCourse">Course</button>
+    <!-- Nouveaux modes -->
+    <button class="tab-btn" id="tabBtnBeatClash">Beat Clash</button>
+    <button class="tab-btn" id="tabBtnNightWatch">Night Watch Panic</button>
+    <button class="tab-btn" id="tabBtnSuperEarth">Super Earth Command</button>
+    <button class="tab-btn" id="tabBtnWasteland">Wasteland Survival</button>
+    <button class="tab-btn" id="tabBtnCrimeCity">Crime City Rush</button>
   </div>
   <div class="timer-row" id="classementTimer"></div>
   <div id="tabGeneral">
@@ -245,6 +251,82 @@
       <tr><td class="rank">10</td><td>GamerX</td><td>3 800</td></tr>
     </table>
   </div>
+  <!-- Nouveaux modes -->
+  <div id="tabBeatClash" style="display:none;">
+    <table class="ranking-table">
+      <tr><th>#</th><th>Joueur</th><th>Meilleur score</th></tr>
+      <tr><td class="rank">1</td><td>SuperAlex</td><td>15700</td></tr>
+      <tr><td class="rank">2</td><td>PixelFox</td><td>15300</td></tr>
+      <tr><td class="rank">3</td><td>Chimère</td><td>15020</td></tr>
+      <tr><td class="rank">4</td><td>Stellaire</td><td>14780</td></tr>
+      <tr><td class="rank">5</td><td>Speedy</td><td>14500</td></tr>
+      <tr><td class="rank">6</td><td>Nova</td><td>14300</td></tr>
+      <tr><td class="rank">7</td><td>GamerX</td><td>14010</td></tr>
+      <tr><td class="rank">8</td><td>Griffon</td><td>13800</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>13500</td></tr>
+      <tr><td class="rank">10</td><td class="me">Moi</td><td class="me" id="rankBeatClash">0</td></tr>
+    </table>
+  </div>
+  <div id="tabNightWatch" style="display:none;">
+    <table class="ranking-table">
+      <tr><th>#</th><th>Joueur</th><th>Meilleure nuit</th></tr>
+      <tr><td class="rank">1</td><td>PixelFox</td><td>7</td></tr>
+      <tr><td class="rank">2</td><td>SuperAlex</td><td>7</td></tr>
+      <tr><td class="rank">3</td><td>Stellaire</td><td>6</td></tr>
+      <tr><td class="rank">4</td><td>Speedy</td><td>6</td></tr>
+      <tr><td class="rank">5</td><td>GamerX</td><td>5</td></tr>
+      <tr><td class="rank">6</td><td>Nova</td><td>5</td></tr>
+      <tr><td class="rank">7</td><td>Griffon</td><td>5</td></tr>
+      <tr><td class="rank">8</td><td>Chimère</td><td>4</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>4</td></tr>
+      <tr><td class="rank">10</td><td class="me">Moi</td><td class="me" id="rankNightWatch">0</td></tr>
+    </table>
+  </div>
+  <div id="tabSuperEarth" style="display:none;">
+    <table class="ranking-table">
+      <tr><th>#</th><th>Joueur</th><th>Meilleur score</th></tr>
+      <tr><td class="rank">1</td><td>Stellaire</td><td>9400</td></tr>
+      <tr><td class="rank">2</td><td>SuperAlex</td><td>9200</td></tr>
+      <tr><td class="rank">3</td><td>Speedy</td><td>9100</td></tr>
+      <tr><td class="rank">4</td><td>PixelFox</td><td>8900</td></tr>
+      <tr><td class="rank">5</td><td>Chimère</td><td>8700</td></tr>
+      <tr><td class="rank">6</td><td>Nova</td><td>8600</td></tr>
+      <tr><td class="rank">7</td><td>GamerX</td><td>8500</td></tr>
+      <tr><td class="rank">8</td><td>Griffon</td><td>8400</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>8300</td></tr>
+      <tr><td class="rank">10</td><td class="me">Moi</td><td class="me" id="rankSuperEarth">0</td></tr>
+    </table>
+  </div>
+  <div id="tabWasteland" style="display:none;">
+    <table class="ranking-table">
+      <tr><th>#</th><th>Joueur</th><th>Jours survécus</th></tr>
+      <tr><td class="rank">1</td><td>Chimère</td><td>23</td></tr>
+      <tr><td class="rank">2</td><td>PixelFox</td><td>22</td></tr>
+      <tr><td class="rank">3</td><td>SuperAlex</td><td>21</td></tr>
+      <tr><td class="rank">4</td><td>Stellaire</td><td>20</td></tr>
+      <tr><td class="rank">5</td><td>Speedy</td><td>19</td></tr>
+      <tr><td class="rank">6</td><td>Nova</td><td>18</td></tr>
+      <tr><td class="rank">7</td><td>GamerX</td><td>17</td></tr>
+      <tr><td class="rank">8</td><td>Griffon</td><td>17</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>16</td></tr>
+      <tr><td class="rank">10</td><td class="me">Moi</td><td class="me" id="rankWasteland">0</td></tr>
+    </table>
+  </div>
+  <div id="tabCrimeCity" style="display:none;">
+    <table class="ranking-table">
+      <tr><th>#</th><th>Joueur</th><th>Missions réussies</th></tr>
+      <tr><td class="rank">1</td><td>Speedy</td><td>38</td></tr>
+      <tr><td class="rank">2</td><td>SuperAlex</td><td>36</td></tr>
+      <tr><td class="rank">3</td><td>PixelFox</td><td>35</td></tr>
+      <tr><td class="rank">4</td><td>Stellaire</td><td>34</td></tr>
+      <tr><td class="rank">5</td><td>Chimère</td><td>32</td></tr>
+      <tr><td class="rank">6</td><td>Nova</td><td>31</td></tr>
+      <tr><td class="rank">7</td><td>GamerX</td><td>30</td></tr>
+      <tr><td class="rank">8</td><td>Griffon</td><td>29</td></tr>
+      <tr><td class="rank">9</td><td>JoueurPro</td><td>28</td></tr>
+      <tr><td class="rank">10</td><td class="me">Moi</td><td class="me" id="rankCrimeCity">0</td></tr>
+    </table>
+  </div>
   <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
   <script>
     // Tabs logic
@@ -254,7 +336,13 @@
       {btn: "tabBtnChrono", tab: "tabChrono"},
       {btn: "tabBtnInfini", tab: "tabInfini"},
       {btn: "tabBtnBaseball", tab: "tabBaseball"},
-      {btn: "tabBtnCourse", tab: "tabCourse"}
+      {btn: "tabBtnCourse", tab: "tabCourse"},
+      // Nouveaux modes
+      {btn: "tabBtnBeatClash", tab: "tabBeatClash"},
+      {btn: "tabBtnNightWatch", tab: "tabNightWatch"},
+      {btn: "tabBtnSuperEarth", tab: "tabSuperEarth"},
+      {btn: "tabBtnWasteland", tab: "tabWasteland"},
+      {btn: "tabBtnCrimeCity", tab: "tabCrimeCity"}
     ];
     tabs.forEach((t, idx) => {
       document.getElementById(t.btn).onclick = function() {
@@ -288,6 +376,13 @@
       setTimeout(updateClassementTimer, 1000);
     }
     updateClassementTimer();
+
+    // Affichage dynamique du score "Moi" pour chaque mode spécial
+    document.getElementById('rankBeatClash').textContent = localStorage.getItem('scoreBeatClash') || 0;
+    document.getElementById('rankNightWatch').textContent = localStorage.getItem('scoreNightWatch') || 0;
+    document.getElementById('rankSuperEarth').textContent = localStorage.getItem('scoreSuperEarth') || 0;
+    document.getElementById('rankWasteland').textContent = localStorage.getItem('scoreWasteland') || 0;
+    document.getElementById('rankCrimeCity').textContent = localStorage.getItem('scoreCrimeCity') || 0;
   </script>
 </body>
 </html>

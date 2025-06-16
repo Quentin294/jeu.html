@@ -29,6 +29,22 @@
     .close-modal:hover {opacity:1;}
     .btn-plus {margin-left:6px;padding:0 8px;background:#ffe066;color:#232b3b;border:none;border-radius:50%;font-size:20px;font-weight:bold;cursor:pointer;line-height:1.2;}
     .btn-plus:hover {background:#fff3a0;}
+    .modes-arrow-btn {
+      background:none;border:none;font-size:32px;cursor:pointer;color:#ffe066;margin-top:10px;
+      transition:color 0.2s;
+    }
+    .modes-arrow-btn:hover {color:#fff;}
+    @media (max-width: 1100px) {
+      .main-content {width:98vw;}
+      .skin-img {width:200px;height:250px;}
+    }
+    @media (max-width: 700px) {
+      .main-content {width:100vw;min-height:400px;}
+      .skin-img {width:120px;height:140px;}
+      .modal {padding:18px 6px 22px 6px;}
+      .modal-title {font-size:18px;}
+      .mode-btn {font-size:16px;padding:12px 0;}
+    }
   </style>
 </head>
 <body>
@@ -52,6 +68,7 @@
     <div class="left-item" onclick="window.location.href='guilde.html'">👑 Guilde</div>
     <div class="left-item" onclick="window.location.href='amis.html'">🤝 Amis</div>
     <div class="left-item" onclick="window.location.href='carte.html'">🗺️ Carte</div>
+     <a href="echange.html"><button class="menu-button">Échange</button></a>
   </div>
   <div class="main-content" id="mainContent">
     <div class="center-skin" id="skinPanel">
@@ -61,16 +78,33 @@
     <div class="start-panel" id="startPanel">
       <button class="start-btn" id="openModalBtn">COMMENCER</button>
     </div>
-    <!-- Modal Choix du mode -->
+    <!-- Modal Choix du mode avec pagination -->
     <div class="modal-bg" id="modalBg">
       <div class="modal">
         <button class="close-modal" id="closeModalBtn" title="Fermer">&times;</button>
         <div class="modal-title">Choisis ton mode</div>
-        <button class="mode-btn" onclick="window.location.href='classique.html'">Classique</button>
-        <button class="mode-btn" onclick="window.location.href='chrono.html'">Chrono</button>
-        <button class="mode-btn" onclick="window.location.href='infini.html'">Infini</button>
-        <button class="mode-btn" onclick="window.location.href='baseball.html'">Baseball</button>
-        <button class="mode-btn" onclick="window.location.href='course.html'">Course</button>
+        <!-- Page 1 -->
+        <div id="modesPage1">
+          <button class="mode-btn" onclick="window.location.href='classique.html'">Classique</button>
+          <button class="mode-btn" onclick="window.location.href='chrono.html'">Chrono</button>
+          <button class="mode-btn" onclick="window.location.href='infini.html'">Infini</button>
+          <button class="mode-btn" onclick="window.location.href='baseball.html'">Baseball</button>
+          <button class="mode-btn" onclick="window.location.href='course.html'">Course</button>
+          <div style="width:100%;text-align:center;">
+            <button id="nextModesBtn" class="modes-arrow-btn" title="Page suivante">➡️</button>
+          </div>
+        </div>
+        <!-- Page 2 -->
+        <div id="modesPage2" style="display:none;">
+          <button class="mode-btn" onclick="window.location.href='beatclash.html'">Beatclash</button>
+          <button class="mode-btn" onclick="window.location.href='NWP.html'">NWP</button>
+          <button class="mode-btn" onclick="window.location.href='super hearth command.html'">SHC</button>
+          <button class="mode-btn" onclick="window.location.href='wasteland survival.html'">wasteland survival</button>
+          <button class="mode-btn" onclick="window.location.href='crime city rush.html'">CCR</button>
+          <div style="width:100%;text-align:center;">
+            <button id="prevModesBtn" class="modes-arrow-btn" title="Page précédente">⬅️</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -91,7 +125,7 @@
       window.location.href = "boutique.html";
     };
 
-    // Modal Commencer
+    // Modal Commencer + pagination modes
     document.addEventListener("DOMContentLoaded", function() {
       var openModalBtn = document.getElementById('openModalBtn');
       var modalBg = document.getElementById('modalBg');
@@ -105,6 +139,21 @@
         };
         modalBg.onclick = function(e) {
           if (e.target === modalBg) modalBg.classList.remove('active');
+        };
+      }
+      // Pagination modes
+      var nextBtn = document.getElementById('nextModesBtn');
+      var prevBtn = document.getElementById('prevModesBtn');
+      var page1 = document.getElementById('modesPage1');
+      var page2 = document.getElementById('modesPage2');
+      if(nextBtn && prevBtn && page1 && page2) {
+        nextBtn.onclick = function() {
+          page1.style.display = "none";
+          page2.style.display = "";
+        };
+        prevBtn.onclick = function() {
+          page2.style.display = "none";
+          page1.style.display = "";
         };
       }
     });

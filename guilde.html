@@ -26,7 +26,6 @@
     .member-row {display:flex;align-items:center;gap:10px;margin-bottom:8px;}
     .member-role {font-size:15px;color:#ffe066;}
     .member-name {font-size:16px;font-weight:bold;}
-    .member-actions button {margin-left:6px;}
     .chat-box {background:#232b3b;border-radius:12px;padding:14px 12px;max-height:180px;overflow-y:auto;}
     .chat-msg {margin-bottom:8px;}
     .chat-author {color:#ffe066;font-weight:bold;}
@@ -50,9 +49,14 @@
     .guild-leaderboard-rank {width:28px;height:28px;border-radius:50%;background:#ffe066;color:#232b3b;display:flex;align-items:center;justify-content:center;font-weight:bold;}
     .guild-leaderboard-name {font-weight:bold;}
     .guild-leaderboard-xp {color:#43e86e;}
+    .boss-section {background:#2b2735;border-radius:12px;padding:14px 12px;margin-bottom:16px;}
+    .boss-title {font-size:20px;color:#f55;margin-bottom:8px;}
+    .boss-bar {width:100%;background:#444;border-radius:8px;overflow:hidden;height:20px;margin-bottom:8px;}
+    .boss-bar-progress {height:100%;background:#f55;width:0;}
+    .boss-btn {background:#f55;color:#fff;border:none;border-radius:8px;padding:6px 16px;font-size:15px;font-weight:bold;cursor:pointer;}
     .modal-bg {display:none;position:fixed;z-index:100;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
     .modal-bg.active {display:flex;}
-    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:36px 32px 32px 32px;min-width:320px;text-align:center;position:relative;}
+    .modal {background:#232b3b;border-radius:24px;box-shadow:0 8px 32px #000b;padding:36px;min-width:320px;text-align:center;position:relative;}
     .modal-title {font-size:24px;font-weight:bold;margin-bottom:18px;letter-spacing:1px;}
     .modal-btn {display:block;width:100%;margin:14px 0;padding:14px 0;font-size:20px;font-weight:bold;border:none;border-radius:12px;background:#3a6ee8;color:#fff;cursor:pointer;transition:background 0.15s;}
     .modal-btn.gold {background:#ffe066;color:#232b3b;}
@@ -91,295 +95,186 @@
     </div>
   </div>
   <script>
-    // Skins exclusifs boutique de guilde
-    const guildShopSkins = [
-      {name:"Émeraude Antique", color:"#19FF8C"},
-      {name:"Saphir Royal", color:"#0099FF"},
-      {name:"Rubis Mystique", color:"#D9004C"},
-      {name:"Topaze Stellaire", color:"#FFD700"},
-      {name:"Onyx Sombre", color:"#232323"},
-      {name:"Aube Polaire", color:"linear-gradient(135deg,#fff,#b2f2ff)"}
-    ];
+    const BOSS_START_DAY = 1, BOSS_END_DAY = 7, BOSS_MAX_PROGRESS = 14;
 
-    // Données de démo (localStorage)
-    function getGuildData() {
-      return JSON.parse(localStorage.getItem("guildData")||"null");
-    }
-    function setGuildData(data) {
-      localStorage.setItem("guildData", JSON.stringify(data));
-    }
-    function getGuildLeaderboard() {
-      return JSON.parse(localStorage.getItem("guildLeaderboard")||"[]");
-    }
-    function setGuildLeaderboard(lb) {
-      localStorage.setItem("guildLeaderboard", JSON.stringify(lb));
-    }
-    function getPlayerName() {
-      return localStorage.getItem("playerName")||"Moi";
+    function getGuildData(){ return JSON.parse(localStorage.getItem("guildData")||"null"); }
+    function setGuildData(d){ localStorage.setItem("guildData", JSON.stringify(d)); }
+    function getGuildLeaderboard() { return JSON.parse(localStorage.getItem("guildLeaderboard")||"[]"); }
+    function setGuildLeaderboard(lb) { localStorage.setItem("guildLeaderboard", JSON.stringify(lb)); }
+    function getPlayerName() { return localStorage.getItem("playerName")||"Moi"; }
+    function todayDay(){ return new Date().getDate(); }
+    function todayKey(){ let d=new Date(); return `boss_lastDay_${d.getFullYear()}-${d.getMonth()}`; }
+    function isBossWeek(){ const d=new Date(); return d.getDate()>=BOSS_START_DAY && d.getDate()<=BOSS_END_DAY; }
+
+    function resetBossDaily(data) {
+      let stored = localStorage.getItem(todayKey());
+      if(stored != todayDay()){
+        data.bossBattlesToday = 0;
+        localStorage.setItem(todayKey(), todayDay());
+        setGuildData(data);
+      }
     }
 
-    // Affichage principal
     function renderGuild() {
-      let data = getGuildData();
-      let main = document.getElementById("guildMain");
-      if(!data) {
+      let data = getGuildData(), main = document.getElementById("guildMain");
+      if(!data){ 
         main.innerHTML = `
           <div class="create-join-row">
             <button class="btn gold" onclick="openModal('modalCreateGuild')">Créer une guilde</button>
             <button class="btn" onclick="openModal('modalJoinGuild')">Rejoindre une guilde</button>
           </div>
           <div style="text-align:center;color:#ffe066;margin-top:30px;">
-            Rejoins ou crée une guilde pour accéder à toutes les fonctionnalités communautaires !
-          </div>
-        `;
+            Rejoins ou crée une guilde pour accéder aux fonctionnalités !
+          </div>`;
         return;
       }
-      // Affichage de la guilde
+      resetBossDaily(data);
+
       main.innerHTML = `
         <div class="guilde-header">
           <div class="blason">${data.icon||"🛡️"}</div>
           <div class="guilde-info">
             <div class="guilde-name">${data.name}</div>
             <div class="guilde-desc">${data.desc||""}</div>
-            <div class="guilde-level">Niveau de guilde : ${data.level||1} | XP : ${data.xp||0} | Jetons : <span id="guildTokens">${data.tokens||0}</span></div>
+            <div class="guilde-level">Niveau: ${data.level||1} | XP: ${data.xp||0} | Jetons: <span id="guildTokens">${data.tokens||0}</span></div>
             <div class="guilde-settings">
-              ${data.role==="chef"?'<button class="btn" onclick="editGuildDesc()">Modifier la description</button>':''}
+              ${data.role==="chef"?'<button class="btn" onclick="editGuildDesc()">Modifier description</button>':''}
               <button class="btn red" onclick="leaveGuild()">Quitter la guilde</button>
             </div>
           </div>
         </div>
         <div class="row">
           <div class="col-main">
-            <div class="section-title">Membres</div>
-            <div class="members-list" id="membersList"></div>
-            <div class="section-title">Chat de guilde</div>
-            <div class="chat-box" id="chatBox"></div>
-            <div class="chat-input-row">
-              <input class="chat-input" id="chatInput" maxlength="80" placeholder="Message...">
-              <button class="btn" onclick="sendGuildMsg()">Envoyer</button>
+            <div class="section-title">Membres</div><div class="members-list" id="membersList"></div>
+            <div class="section-title">Chat de guilde</div><div class="chat-box" id="chatBox"></div>
+            <div class="chat-input-row"><input class="chat-input" id="chatInput" maxlength="80" placeholder="Message..."><button class="btn" onclick="sendGuildMsg()">Envoyer</button></div>
+            <div class="section-title">Quêtes de guilde</div><div class="guild-quests" id="guildQuests"></div>
+
+            <div class="boss-section">
+              <div class="boss-title">⚔️ Boss Mensuel</div>
+              ${isBossWeek() ? `
+                <div class="boss-bar"><div id="bossBarProg" class="boss-bar-progress" style="width:${data.bossProgress/BOSS_MAX_PROGRESS*100}%"></div></div>
+                <p>Batailles aujourd'hui: ${2 - data.bossBattlesToday}/2</p>
+                <button class="boss-btn" ${data.bossBattlesToday>=2 ? 'disabled' : ''} onclick="fightBoss()">Combattre</button>
+              `: `<p>Le boss apparaît du ${BOSS_START_DAY} au ${BOSS_END_DAY} chaque mois.</p>`}
             </div>
-            <div class="section-title">Quêtes de guilde</div>
-            <div class="guild-quests" id="guildQuests"></div>
           </div>
           <div class="col-side">
-            <div class="section-title">Boutique de guilde</div>
-            <div class="guild-shop" id="guildShop"></div>
-            <div class="section-title">Classement des guildes</div>
-            <div class="guild-leaderboard" id="guildLeaderboard"></div>
+            <div class="section-title">Boutique de guilde</div><div class="guild-shop" id="guildShop"></div>
+            <div class="section-title">Classement des guildes</div><div class="guild-leaderboard" id="guildLeaderboard"></div>
           </div>
-        </div>
-      `;
-      renderMembers();
-      renderChat();
-      renderQuests();
-      renderGuildShop();
-      renderGuildLeaderboard();
+        </div>`;
+
+      renderMembers(); renderChat(); renderQuests(); renderGuildShop(); renderGuildLeaderboard();
     }
 
-    // Création et rejoindre
-    function openModal(id) { document.getElementById(id).classList.add("active"); }
-    function closeModal(id) { document.getElementById(id).classList.remove("active"); }
-    function createGuild() {
-      let name = document.getElementById("newGuildName").value.trim();
-      let desc = document.getElementById("newGuildDesc").value.trim();
-      if(!name) return alert("Nom de guilde requis !");
-      let data = {
-        name, desc, icon:"🛡️", level:1, xp:0, tokens:0,
-        members: [{name:getPlayerName(), role:"chef"}],
-        chat:[], quests:[], shop:[], role:"chef"
-      };
-      setGuildData(data);
-      updateGuildLeaderboard(data);
-      closeModal("modalCreateGuild");
-      renderGuild();
-    }
-    function joinGuild() {
-      let name = document.getElementById("joinGuildName").value.trim();
-      if(!name) return alert("Nom de guilde requis !");
-      // Pour la démo, on rejoint une guilde vide
-      let data = {
-        name, desc:"", icon:"🛡️", level:1, xp:0, tokens:0,
-        members: [{name:getPlayerName(), role:"membre"}],
-        chat:[], quests:[], shop:[], role:"membre"
-      };
-      setGuildData(data);
-      updateGuildLeaderboard(data);
-      closeModal("modalJoinGuild");
-      renderGuild();
-    }
-    function leaveGuild() {
-      if(confirm("Quitter la guilde ?")) {
-        localStorage.removeItem("guildData");
-        renderGuild();
-      }
-    }
-    function editGuildDesc() {
-      let data = getGuildData();
-      let desc = prompt("Nouvelle description :", data.desc||"");
-      if(desc!==null) {
-        data.desc = desc;
-        setGuildData(data);
-        renderGuild();
-      }
+    function openModal(id){ document.getElementById(id).classList.add("active"); }
+    function closeModal(id){ document.getElementById(id).classList.remove("active"); }
+
+    function createGuild(){
+      let name = document.getElementById("newGuildName").value.trim(), desc = document.getElementById("newGuildDesc").value.trim();
+      if(!name) return alert("Nom requis !");
+      let data = { name, desc, icon:"🛡️", level:1, xp:0, tokens:0, bossProgress:0, bossBattlesToday:0,
+        members:[{name:getPlayerName(),role:"chef"}], chat:[], quests:[], shop:[], role:"chef" };
+      setGuildData(data); updateGuildLeaderboard(data); closeModal('modalCreateGuild'); renderGuild();
     }
 
-    // Membres
-    function renderMembers() {
-      let data = getGuildData();
-      let div = document.getElementById("membersList");
-      div.innerHTML = "";
-      data.members.forEach(m => {
-        let row = document.createElement("div");
-        row.className = "member-row";
-        row.innerHTML = `<span class="member-role">${m.role==="chef"?"👑":m.role==="officier"?"⭐":"👤"}</span>
-          <span class="member-name">${m.name}</span>`;
-        div.appendChild(row);
-      });
+    function joinGuild(){
+      let name = document.getElementById("joinGuildName").value.trim(); if(!name) return alert("Nom requis !");
+      let data = { name, desc:"", icon:"🛡️", level:1, xp:0, tokens:0, bossProgress:0, bossBattlesToday:0,
+        members:[{name:getPlayerName(),role:"membre"}], chat:[], quests:[], shop:[], role:"membre" };
+      setGuildData(data); updateGuildLeaderboard(data); closeModal('modalJoinGuild'); renderGuild();
     }
 
-    // Chat de guilde (local)
-    function renderChat() {
-      let data = getGuildData();
-      let div = document.getElementById("chatBox");
-      div.innerHTML = "";
-      data.chat.slice(-15).forEach(msg => {
-        let m = document.createElement("div");
-        m.className = "chat-msg";
-        m.innerHTML = `<span class="chat-author">${msg.author} :</span> ${msg.text}`;
-        div.appendChild(m);
-      });
-    }
-    function sendGuildMsg() {
-      let input = document.getElementById("chatInput");
-      let txt = input.value.trim();
-      if(!txt) return;
-      let data = getGuildData();
-      data.chat.push({author:getPlayerName(), text:txt});
-      setGuildData(data);
-      input.value = "";
-      renderChat();
+    function leaveGuild(){ if(confirm("Quitter la guilde ?")){ localStorage.removeItem("guildData"); renderGuild(); } }
+    function editGuildDesc(){ let data=getGuildData(), d=prompt("Nouvelle desc:",data.desc||""); if(d!==null){data.desc=d;setGuildData(data);renderGuild();}}
+
+    function renderMembers(){
+      let data=getGuildData(), div=document.getElementById("membersList"); div.innerHTML="";
+      data.members.forEach(m=>{ let r=document.createElement("div"); r.className="member-row"; r.innerHTML=`<span class="member-role">${m.role==="chef"?"👑":m.role==="officier"?"⭐":"👤"}</span><span class="member-name">${m.name}</span>`; div.appendChild(r); });
     }
 
-    // Quêtes de guilde (démo)
-    function renderQuests() {
-      let data = getGuildData();
-      // Démo : 3 quêtes
-      let quests = [
-        {id:1, name:"Jouer 10 parties", progress:data.quests[0]||0, goal:10, reward:20},
-        {id:2, name:"Gagner 5 000 XP", progress:data.quests[1]||0, goal:5000, reward:30},
-        {id:3, name:"Collecter 100 diamants", progress:data.quests[2]||0, goal:100, reward:40}
-      ];
-      let div = document.getElementById("guildQuests");
-      div.innerHTML = "";
-      quests.forEach((q,i) => {
-        let row = document.createElement("div");
-        row.className = "quest-row";
-        row.innerHTML = `<span>${q.name}</span>
-          <span class="quest-progress">${q.progress}/${q.goal}</span>
-          <button class="quest-btn" onclick="claimQuest(${i})" ${q.progress<q.goal?"disabled":""}>Réclamer +${q.reward} jetons</button>`;
-        div.appendChild(row);
-      });
-    }
-    function claimQuest(i) {
-      let data = getGuildData();
-      if(!data.quests[i] || data.quests[i]<[10,5000,100][i]) return;
-      data.tokens = (data.tokens||0) + [20,30,40][i];
-      data.quests[i] = 0;
-      setGuildData(data);
-      renderQuests();
-      document.getElementById("guildTokens").textContent = data.tokens;
-      alert("Jetons de guilde ajoutés !");
+    function renderChat(){
+      let data=getGuildData(), div=document.getElementById("chatBox"); div.innerHTML="";
+      data.chat.slice(-15).forEach(msg=>{ let m=document.createElement("div"); m.className="chat-msg"; m.innerHTML=`<span class="chat-author">${msg.author} :</span> ${msg.text}`; div.appendChild(m); });
     }
 
-    // Boutique de guilde avec skins exclusifs
-    function renderGuildShop() {
-      let data = getGuildData();
+    function sendGuildMsg(){ let t=document.getElementById("chatInput").value.trim(); if(!t) return;
+      let data=getGuildData(); data.chat.push({author:getPlayerName(), text:t}); setGuildData(data); document.getElementById("chatInput").value=""; renderChat();
+    }
+
+    function renderQuests(){
+      let data=getGuildData(), div=document.getElementById("guildQuests"), qArr=[{id:1,name:"Jouer 10 parties",goal:10,reward:20},{id:2,name:"Gagner 5000 XP",goal:5000,reward:30},{id:3,name:"Collecter 100 diamants",goal:100,reward:40}];
+      div.innerHTML="";
+      qArr.forEach((q,i)=>{ let p=data.quests[i]||0; let r=document.createElement("div"); r.className="quest-row"; r.innerHTML=`<span>${q.name}</span><span class="quest-progress">${p}/${q.goal}</span><button class="quest-btn" onclick="claimQuest(${i})" ${p<q.goal?"disabled":""}>+${q.reward}</button>`; div.appendChild(r); });
+    }
+
+    function claimQuest(i){
+      let data=getGuildData(), goals=[10,5000,100], rewards=[20,30,40];
+      if((data.quests[i]||0)<goals[i]) return;
+      data.tokens=(data.tokens||0)+rewards[i]; data.quests[i]=0; setGuildData(data);
+      document.getElementById("guildTokens").textContent=data.tokens; renderQuests(); alert("Jetons ajoutés!");
+    }
+
+    const guildShopSkins=[{name:"Émeraude Antique",color:"#19FF8C"},{name:"Saphir Royal",color:"#0099FF"},{name:"Rubis Mystique",color:"#D9004C"},{name:"Topaze Stellaire",color:"#FFD700"},{name:"Onyx Sombre",color:"#232323"},{name:"Aube Polaire",color:"linear-gradient(135deg,#fff,#b2f2ff)"}];
+
+    function renderGuildShop(){
+      let data=getGuildData(), div=document.getElementById("guildShop");
       let owned = data.shop||[];
-      let div = document.getElementById("guildShop");
-      div.innerHTML = `<div class="guild-tokens">Jetons de guilde : <b>${data.tokens||0}</b></div>`;
-      guildShopSkins.forEach((skin,idx) => {
-        let ownedThis = owned.includes(skin.name);
-        let row = document.createElement("div");
-        row.className = "shop-row";
-        let circle = document.createElement("div");
-        circle.className = "shop-circle exclu";
-        if(skin.color.startsWith("linear-gradient")) circle.style.background = skin.color;
-        else circle.style.background = skin.color;
-        circle.textContent = "";
-        row.appendChild(circle);
-        let name = document.createElement("div");
-        name.className = "shop-name";
-        name.textContent = skin.name;
-        row.appendChild(name);
-        let price = document.createElement("div");
-        price.className = "shop-price";
-        price.innerHTML = `🎟️ 150 jetons`;
-        row.appendChild(price);
-        if(ownedThis) {
-          let lbl = document.createElement("div");
-          lbl.className = "owned-label";
-          lbl.textContent = "Déjà possédé";
-          row.appendChild(lbl);
-        } else {
-          let btn = document.createElement("button");
-          btn.className = "shop-btn";
-          btn.textContent = "Acheter";
-          btn.onclick = function() { acheterGuildSkin(idx); };
-          row.appendChild(btn);
-        }
+      div.innerHTML=`<div class="guild-tokens">Jetons de guilde: <b>${data.tokens||0}</b></div>`;
+      guildShopSkins.forEach((s,i)=>{ let own=owned.includes(s.name); let row=document.createElement("div"); row.className="shop-row";
+        let c=document.createElement("div"); c.className="shop-circle exclu"; c.style.background=s.color.startsWith("linear-gradient")?s.color:s.color; row.appendChild(c);
+        let nm=document.createElement("div"); nm.className="shop-name"; nm.textContent=s.name; row.appendChild(nm);
+        let pr=document.createElement("div"); pr.className="shop-price"; pr.textContent="🎟️ 150 jetons"; row.appendChild(pr);
+        if(own){ let lbl=document.createElement("div"); lbl.className="owned-label"; lbl.textContent="Déjà possédé"; row.appendChild(lbl);} 
+        else { let btn=document.createElement("button"); btn.className="shop-btn"; btn.textContent="Acheter"; btn.onclick=()=>acheterGuildSkin(i); row.appendChild(btn);}
         div.appendChild(row);
       });
     }
-    function acheterGuildSkin(idx) {
-      let data = getGuildData();
-      if((data.tokens||0) < 150) return alert("Pas assez de jetons !");
-      let owned = data.shop||[];
-      let skin = guildShopSkins[idx];
-      if(owned.includes(skin.name)) return alert("Déjà possédé !");
-      owned.push(skin.name);
-      data.tokens -= 150;
-      data.shop = owned;
-      // Ajoute à la collection globale
-      let won = [];
-      try { won = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
-      if(!won.includes(skin.name)) {
-        won.push(skin.name);
-        localStorage.setItem("wonColors", JSON.stringify(won));
-      }
-      setGuildData(data);
-      renderGuildShop();
-      alert(`Tu as acheté la couleur exclusive ${skin.name} !`);
+
+    function acheterGuildSkin(i){
+      let data=getGuildData();
+      if((data.tokens||0)<150) return alert("Pas assez de jetons!");
+      let owned=data.shop||[], s=guildShopSkins[i];
+      if(owned.includes(s.name)) return alert("Déjà possédé!");
+      owned.push(s.name); data.tokens-=150; data.shop=owned;
+      let colls = JSON.parse(localStorage.getItem("wonColors")||"[]");
+      if(!colls.includes(s.name)) colls.push(s.name);
+      localStorage.setItem("wonColors", JSON.stringify(colls));
+      setGuildData(data); renderGuildShop(); alert(`Tu as acheté ${s.name}!`);
     }
 
-    // Classement des guildes (local démo)
-    function updateGuildLeaderboard(data) {
-      let lb = getGuildLeaderboard();
-      let idx = lb.findIndex(g=>g.name===data.name);
-      if(idx>=0) lb[idx] = {name:data.name, xp:data.xp||0};
-      else lb.push({name:data.name, xp:data.xp||0});
-      lb = lb.sort((a,b)=>b.xp-a.xp).slice(0,10);
+    function updateGuildLeaderboard(d){
+      let lb=getGuildLeaderboard(), idx=lb.findIndex(g=>g.name===d.name);
+      if(idx>=0) lb[idx]={name:d.name, xp:d.xp||0}; else lb.push({name:d.name, xp:d.xp||0});
+      lb=lb.sort((a,b)=>b.xp-a.xp).slice(0,10);
       setGuildLeaderboard(lb);
     }
-    function renderGuildLeaderboard() {
-      let lb = getGuildLeaderboard();
-      let div = document.getElementById("guildLeaderboard");
-      div.innerHTML = "";
-      lb.forEach((g,i) => {
-        let row = document.createElement("div");
-        row.className = "guild-leaderboard-row";
-        row.innerHTML = `<span class="guild-leaderboard-rank">${i+1}</span>
-          <span class="guild-leaderboard-name">${g.name}</span>
-          <span class="guild-leaderboard-xp">${g.xp} XP</span>`;
+
+    function renderGuildLeaderboard(){
+      let lb=getGuildLeaderboard(), div=document.getElementById("guildLeaderboard");
+      div.innerHTML="";
+      lb.forEach((g,i)=>{ let row=document.createElement("div"); row.className="guild-leaderboard-row";
+        row.innerHTML=`<span class="guild-leaderboard-rank">${i+1}</span><span class="guild-leaderboard-name">${g.name}</span><span class="guild-leaderboard-xp">${g.xp} XP</span>`;
         div.appendChild(row);
       });
     }
 
-    // Initialisation
-    renderGuild();
-    // Synchronisation multi-onglets
-    window.addEventListener('storage', function(event) {
-      if(event.key.startsWith("guild")) renderGuild();
+    function fightBoss(){
+      let data=getGuildData();
+      let win=confirm("Victoire contre le boss ? OK = victoire");
+      if(win){ data.bossProgress=(data.bossProgress||0)+1; if(data.bossProgress>=BOSS_MAX_PROGRESS){ alert("🎉 Objectif atteint! +100 jetons"); data.tokens+=(data.tokens||0)+100; data.bossProgress=0;} }
+      data.bossBattlesToday=(data.bossBattlesToday||0)+1;
+      setGuildData(data); renderGuild();
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      let d=getGuildData();
+      if(d){ d.bossProgress=d.bossProgress||0; d.bossBattlesToday=d.bossBattlesToday||0; setGuildData(d);}
+      renderGuild();
     });
+
+    window.addEventListener('storage', e=>{ if(e.key==="guildData") renderGuild(); });
   </script>
 </body>
 </html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Wasteland Survival</title>
+  <style>
+    body {background:#232b3b;color:#fff;font-family:Arial,sans-serif;margin:0;min-height:100vh;}
+    .ws-container {max-width:520px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:20px;box-shadow:0 8px 32px #000a;padding:32px;}
+    h1 {text-align:center;font-size:32px;color:#ffe066;margin-bottom:18px;}
+    .ws-stats {display:flex;justify-content:space-between;gap:8px;margin-bottom:18px;}
+    .ws-stat {background:#1a2233;border-radius:8px;padding:10px 14px;font-size:16px;min-width:90px;text-align:center;}
+    .ws-bar-bg {width:100%;height:12px;background:#444;border-radius:8px;overflow:hidden;margin-bottom:4px;}
+    .ws-bar {height:100%;background:linear-gradient(90deg,#43e86e,#ffe066);width:100%;transition:width 0.2s;}
+    .ws-actions {display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:18px;}
+    .ws-btn {
+      background:#3a6ee8;color:#fff;border:none;border-radius:10px;
+      padding:12px 20px;font-size:17px;font-weight:bold;cursor:pointer;
+      box-shadow:0 0 10px #3a6ee8;
+      margin-bottom:6px;
+      transition:background 0.2s;
+    }
+    .ws-btn:disabled {background:#888;box-shadow:none;cursor:not-allowed;}
+    .ws-event {background:#1a2233;border-radius:10px;padding:16px;font-size:18px;margin-bottom:10px;text-align:center;min-height:60px;}
+    .ws-inventory {background:#232b3b;border-radius:8px;padding:10px 14px;margin-bottom:10px;}
+    .ws-inv-title {font-weight:bold;color:#ffe066;margin-bottom:6px;}
+    .ws-gameover {text-align:center;color:#ff3b30;font-size:22px;margin-top:20px;}
+    .ws-day {text-align:center;color:#ffe066;font-size:20px;margin-bottom:10px;}
+    #wsRestartBtn {
+      background:#ffe066;color:#232b3b;border:none;border-radius:12px;
+      padding:12px 32px;font-size:18px;font-weight:bold;cursor:pointer;
+      box-shadow:0 0 16px #ffe066;
+      margin:18px auto 0 auto;display:block;
+    }
+    #wsRestartBtn:hover {background:#fff3a0;}
+    @media (max-width:600px) {
+      .ws-container {padding:10px;}
+      .ws-stats {flex-direction:column;gap:4px;}
+      .ws-actions {flex-direction:column;gap:8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="ws-container">
+    <h1>Wasteland Survival</h1>
+    <div class="ws-day" id="wsDay"></div>
+    <div class="ws-stats">
+      <div class="ws-stat">Santé
+        <div class="ws-bar-bg"><div class="ws-bar" id="wsHealthBar"></div></div>
+        <span id="wsHealthVal">100</span>/100
+      </div>
+      <div class="ws-stat">Eau
+        <div class="ws-bar-bg"><div class="ws-bar" id="wsWaterBar"></div></div>
+        <span id="wsWaterVal">5</span>
+      </div>
+      <div class="ws-stat">Nourriture
+        <div class="ws-bar-bg"><div class="ws-bar" id="wsFoodBar"></div></div>
+        <span id="wsFoodVal">5</span>
+      </div>
+      <div class="ws-stat">Radiations
+        <div class="ws-bar-bg"><div class="ws-bar" id="wsRadBar"></div></div>
+        <span id="wsRadVal">0</span>/100
+      </div>
+    </div>
+    <div class="ws-inventory">
+      <div class="ws-inv-title">Inventaire :</div>
+      <span id="wsInventory">Stimpack x1, RadAway x1</span>
+    </div>
+    <div class="ws-event" id="wsEvent">Bienvenue dans les terres désolées. Que vas-tu faire aujourd'hui ?</div>
+    <div class="ws-actions">
+      <button class="ws-btn" id="wsExploreBtn">Explorer</button>
+      <button class="ws-btn" id="wsRestBtn">Se reposer</button>
+      <button class="ws-btn" id="wsScavengeBtn">Fouiller</button>
+      <button class="ws-btn" id="wsUseStimBtn">Utiliser Stimpack</button>
+      <button class="ws-btn" id="wsUseRadBtn">Utiliser RadAway</button>
+    </div>
+    <div class="ws-gameover" id="wsGameOver" style="display:none;"></div>
+    <button id="wsRestartBtn" style="display:none;">Rejouer</button>
+  </div>
+  <script>
+    // État du joueur
+    let state = {
+      day: 1,
+      health: 100,
+      water: 5,
+      food: 5,
+      rad: 0,
+      inventory: {Stimpack:1, RadAway:1},
+      alive: true
+    };
+
+    // DOM
+    const wsDay = document.getElementById('wsDay');
+    const wsHealthBar = document.getElementById('wsHealthBar');
+    const wsWaterBar = document.getElementById('wsWaterBar');
+    const wsFoodBar = document.getElementById('wsFoodBar');
+    const wsRadBar = document.getElementById('wsRadBar');
+    const wsHealthVal = document.getElementById('wsHealthVal');
+    const wsWaterVal = document.getElementById('wsWaterVal');
+    const wsFoodVal = document.getElementById('wsFoodVal');
+    const wsRadVal = document.getElementById('wsRadVal');
+    const wsInventory = document.getElementById('wsInventory');
+    const wsEvent = document.getElementById('wsEvent');
+    const wsGameOver = document.getElementById('wsGameOver');
+    const wsRestartBtn = document.getElementById('wsRestartBtn');
+    const wsExploreBtn = document.getElementById('wsExploreBtn');
+    const wsRestBtn = document.getElementById('wsRestBtn');
+    const wsScavengeBtn = document.getElementById('wsScavengeBtn');
+    const wsUseStimBtn = document.getElementById('wsUseStimBtn');
+    const wsUseRadBtn = document.getElementById('wsUseRadBtn');
+
+    function updateUI() {
+      wsDay.textContent = "Jour : " + state.day;
+      wsHealthVal.textContent = state.health;
+      wsWaterVal.textContent = state.water;
+      wsFoodVal.textContent = state.food;
+      wsRadVal.textContent = state.rad;
+      wsHealthBar.style.width = (state.health)+"%";
+      wsWaterBar.style.width = (state.water*20)+"%";
+      wsFoodBar.style.width = (state.food*20)+"%";
+      wsRadBar.style.width = (state.rad)+"%";
+      let inv = [];
+      if(state.inventory.Stimpack) inv.push("Stimpack x"+state.inventory.Stimpack);
+      if(state.inventory.RadAway) inv.push("RadAway x"+state.inventory.RadAway);
+      wsInventory.textContent = inv.length ? inv.join(", ") : "Vide";
+      wsUseStimBtn.disabled = !state.inventory.Stimpack || state.health>=100;
+      wsUseRadBtn.disabled = !state.inventory.RadAway || state.rad===0;
+    }
+
+    function endGame(msg) {
+      state.alive = false;
+      wsGameOver.textContent = msg + " Tu as survécu " + state.day + " jours.";
+      wsGameOver.style.display = "";
+      wsRestartBtn.style.display = "";
+      wsExploreBtn.disabled = wsRestBtn.disabled = wsScavengeBtn.disabled = wsUseStimBtn.disabled = wsUseRadBtn.disabled = true;
+    }
+
+    function nextDay(eventMsg) {
+      state.day++;
+      // Consommation quotidienne
+      state.water--;
+      state.food--;
+      if(state.water<0) state.water=0;
+      if(state.food<0) state.food=0;
+      if(state.water===0 || state.food===0) {
+        state.health -= 18;
+        eventMsg += " Tu souffres de la faim ou de la soif (-18 PV).";
+      }
+      if(state.rad>0) {
+        let radDmg = Math.floor(state.rad/25);
+        if(radDmg>0) {
+          state.health -= radDmg*4;
+          eventMsg += ` Les radiations t'affaiblissent (-${radDmg*4} PV).`;
+        }
+      }
+      if(state.health>100) state.health=100;
+      if(state.health<=0) {
+        updateUI();
+        endGame("Tu es mort de tes blessures.");
+        return;
+      }
+      updateUI();
+      wsEvent.textContent = eventMsg + " Que vas-tu faire aujourd'hui ?";
+    }
+
+    function randomEvent(type) {
+      // type: "explore" | "scavenge"
+      let roll = Math.random();
+      if(type==="explore") {
+        if(roll<0.18) {
+          state.rad += 15;
+          nextDay("Tu explores des ruines irradiées (+15 rad).");
+        } else if(roll<0.33) {
+          state.health -= 16;
+          nextDay("Tu tombes sur des pillards et es blessé (-16 PV).");
+        } else if(roll<0.40) {
+          state.inventory.Stimpack = (state.inventory.Stimpack||0)+1;
+          nextDay("Tu trouves un Stimpack !");
+        } else if(roll<0.47) {
+          state.inventory.RadAway = (state.inventory.RadAway||0)+1;
+          nextDay("Tu trouves un RadAway !");
+        } else if(roll<0.60) {
+          state.water += 2;
+          nextDay("Tu trouves de l'eau potable (+2).");
+        } else if(roll<0.73) {
+          state.food += 2;
+          nextDay("Tu trouves de la nourriture (+2).");
+        } else if(roll<0.80) {
+          nextDay("Tu rencontres un marchand itinérant, mais tu n'as rien à échanger.");
+        } else if(roll<0.87) {
+          state.health -= 10;
+          nextDay("Une tempête radioactive t'affaiblit (-10 PV, +10 rad).");
+          state.rad += 10;
+        } else {
+          nextDay("Rien d'intéressant aujourd'hui.");
+        }
+      } else if(type==="scavenge") {
+        if(roll<0.22) {
+          state.rad += 12;
+          nextDay("Tu fouilles une épave radioactive (+12 rad).");
+        } else if(roll<0.36) {
+          state.health -= 12;
+          nextDay("Une créature mutante t'attaque (-12 PV).");
+        } else if(roll<0.43) {
+          state.inventory.Stimpack = (state.inventory.Stimpack||0)+1;
+          nextDay("Tu trouves un Stimpack !");
+        } else if(roll<0.50) {
+          state.inventory.RadAway = (state.inventory.RadAway||0)+1;
+          nextDay("Tu trouves un RadAway !");
+        } else if(roll<0.70) {
+          state.water += 1;
+          state.food += 1;
+          nextDay("Tu trouves un peu d'eau et de nourriture (+1 chacun).");
+        } else if(roll<0.80) {
+          nextDay("Tu ne trouves rien d'utile.");
+        } else {
+          state.health -= 6;
+          nextDay("Tu te blesses en fouillant (-6 PV).");
+        }
+      }
+      // Clamp values
+      if(state.rad>100) state.rad=100;
+      if(state.water>10) state.water=10;
+      if(state.food>10) state.food=10;
+      if(state.health>100) state.health=100;
+    }
+
+    wsExploreBtn.onclick = function() {
+      if(!state.alive) return;
+      randomEvent("explore");
+    };
+    wsScavengeBtn.onclick = function() {
+      if(!state.alive) return;
+      randomEvent("scavenge");
+    };
+    wsRestBtn.onclick = function() {
+      if(!state.alive) return;
+      let heal = 14;
+      state.health += heal;
+      state.water--;
+      state.food--;
+      if(state.water<0) state.water=0;
+      if(state.food<0) state.food=0;
+      nextDay("Tu te reposes et récupères " + heal + " PV.");
+    };
+    wsUseStimBtn.onclick = function() {
+      if(!state.alive || !state.inventory.Stimpack || state.health>=100) return;
+      state.inventory.Stimpack--;
+      state.health += 30;
+      if(state.health>100) state.health=100;
+      updateUI();
+      wsEvent.textContent = "Tu utilises un Stimpack (+30 PV).";
+    };
+    wsUseRadBtn.onclick = function() {
+      if(!state.alive || !state.inventory.RadAway || state.rad===0) return;
+      state.inventory.RadAway--;
+      let removed = Math.min(30, state.rad);
+      state.rad -= removed;
+      if(state.rad<0) state.rad=0;
+      updateUI();
+      wsEvent.textContent = "Tu utilises un RadAway (-30 rad).";
+    };
+    wsRestartBtn.onclick = function() {
+      state = {
+        day: 1,
+        health: 100,
+        water: 5,
+        food: 5,
+        rad: 0,
+        inventory: {Stimpack:1, RadAway:1},
+        alive: true
+      };
+      wsGameOver.style.display = "none";
+      wsRestartBtn.style.display = "none";
+      wsExploreBtn.disabled = wsRestBtn.disabled = wsScavengeBtn.disabled = wsUseStimBtn.disabled = wsUseRadBtn.disabled = false;
+      wsEvent.textContent = "Bienvenue dans les terres désolées. Que vas-tu faire aujourd'hui ?";
+      updateUI();
+    };
+
+    // Initialisation
+    updateUI();
+  </script>
+</body>
+</html>

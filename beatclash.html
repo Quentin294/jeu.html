@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Beat Clash</title>
+  <style>
+    body {background:#232b3b;color:#fff;font-family:Arial,sans-serif;margin:0;min-height:100vh;}
+    .bc-container {max-width:520px;margin:40px auto 0 auto;background:#232b3bcc;border-radius:20px;box-shadow:0 8px 32px #000a;padding:32px;}
+    h1 {text-align:center;font-size:32px;color:#ffe066;margin-bottom:18px;}
+    .bc-game-area {position:relative;width:320px;height:380px;margin:0 auto 18px auto;background:#1a2233;border-radius:18px;box-shadow:0 4px 16px #0008;overflow:hidden;}
+    .bc-lane {position:absolute;top:0;width:64px;height:100%;left:0;}
+    .bc-lane:nth-child(2) {left:64px;}
+    .bc-lane:nth-child(3) {left:128px;}
+    .bc-lane:nth-child(4) {left:192px;}
+    .bc-lane:nth-child(5) {left:256px;}
+    .bc-arrow {position:absolute;width:56px;height:56px;left:4px;font-size:40px;display:flex;align-items:center;justify-content:center;transition:filter 0.1s;}
+    .bc-arrow.good {filter:drop-shadow(0 0 10px #43e86e);}
+    .bc-arrow.bad {filter:drop-shadow(0 0 12px #ff3b30);}
+    .bc-target-row {position:absolute;top:308px;left:0;width:100%;height:56px;display:flex;}
+    .bc-target {width:64px;height:56px;display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0.3;}
+    .bc-score {font-size:22px;text-align:center;margin-bottom:8px;}
+    .bc-combo {font-size:16px;text-align:center;margin-bottom:8px;color:#43e86e;}
+    .bc-bar-bg {width:100%;height:16px;background:#444;border-radius:8px;overflow:hidden;margin-bottom:12px;}
+    .bc-bar {height:100%;background:linear-gradient(90deg,#43e86e,#ffe066);width:100%;transition:width 0.2s;}
+    .bc-btn {display:block;margin:24px auto 0 auto;background:#3a6ee8;color:#fff;border:none;border-radius:10px;font-size:20px;padding:12px 36px;font-weight:bold;cursor:pointer;}
+    .bc-btn:hover {background:#254a9c;}
+    .bc-end {text-align:center;margin-top:30px;}
+    @media (max-width:600px) {
+      .bc-container {padding:10px;}
+      .bc-game-area {width:240px;height:260px;}
+      .bc-lane {width:40px;}
+      .bc-lane:nth-child(2) {left:40px;}
+      .bc-lane:nth-child(3) {left:80px;}
+      .bc-lane:nth-child(4) {left:120px;}
+      .bc-lane:nth-child(5) {left:160px;}
+      .bc-arrow {width:36px;height:36px;left:2px;font-size:24px;}
+      .bc-target {width:40px;height:36px;font-size:24px;}
+      .bc-target-row {top:172px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="bc-container">
+    <h1>Beat Clash</h1>
+    <div class="bc-bar-bg"><div class="bc-bar" id="bcBar"></div></div>
+    <div class="bc-score" id="bcScore">Score : 0</div>
+    <div class="bc-combo" id="bcCombo"></div>
+    <div class="bc-game-area" id="bcGameArea">
+      <!-- Lignes de jeu et flèches générées en JS -->
+      <div class="bc-target-row">
+        <div class="bc-target">⬆️</div>
+        <div class="bc-target">⬇️</div>
+        <div class="bc-target">⬅️</div>
+        <div class="bc-target">➡️</div>
+      </div>
+    </div>
+    <button class="bc-btn" id="bcStartBtn">Démarrer</button>
+    <div class="bc-end" id="bcEnd" style="display:none;"></div>
+  </div>
+  <script>
+    // Configuration
+    const LANES = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    const EMOJIS = {"ArrowUp":"⬆️","ArrowDown":"⬇️","ArrowLeft":"⬅️","ArrowRight":"➡️"};
+    const SONG_LENGTH = 40; // nombre de notes
+    const NOTE_INTERVAL = 650; // ms entre notes
+    const SPEED = 0.6; // px/ms vitesse de descente des flèches (plus petit = plus lent)
+    const HIT_WINDOW = 40; // px de tolérance
+
+    // État du jeu
+    let gameRunning = false, score = 0, combo = 0, maxCombo = 0, bar = 100, notes = [], nextNoteIdx = 0, timer = null, startTime = 0, endTime = 0;
+
+    const bcGameArea = document.getElementById('bcGameArea');
+    const bcScore = document.getElementById('bcScore');
+    const bcCombo = document.getElementById('bcCombo');
+    const bcBar = document.getElementById('bcBar');
+    const bcStartBtn = document.getElementById('bcStartBtn');
+    const bcEnd = document.getElementById('bcEnd');
+
+    function resetGame() {
+      score = 0; combo = 0; maxCombo = 0; bar = 100; notes = []; nextNoteIdx = 0;
+      bcScore.textContent = "Score : 0";
+      bcCombo.textContent = "";
+      bcBar.style.width = "100%";
+      bcEnd.style.display = "none";
+      Array.from(document.querySelectorAll('.bc-arrow')).forEach(e=>e.remove());
+    }
+
+    function spawnNotes() {
+      notes = [];
+      let t = 0;
+      for(let i=0;i<SONG_LENGTH;i++) {
+        let lane = LANES[Math.floor(Math.random()*LANES.length)];
+        notes.push({lane, time: t, hit: false, y: -60});
+        t += NOTE_INTERVAL;
+      }
+    }
+
+    function renderNotes(now) {
+      Array.from(document.querySelectorAll('.bc-arrow')).forEach(e=>e.remove());
+      let elapsed = now - startTime;
+      notes.forEach((note, idx) => {
+        if(note.hit) return;
+        let y = (elapsed - note.time) * SPEED;
+        note.y = y;
+        if(y > 308 && !note.hit) { // Missed note (cible à 308px)
+          note.hit = true;
+          combo = 0;
+          bar -= 15;
+          if(bar < 0) bar = 0;
+          bcCombo.textContent = "";
+          bcBar.style.width = bar+"%";
+        }
+        if(y >= -60 && y < 380 && !note.hit) {
+          let laneIdx = LANES.indexOf(note.lane);
+          let laneDiv = document.createElement('div');
+          laneDiv.className = 'bc-arrow';
+          laneDiv.style.top = (y)+"px";
+          laneDiv.style.left = (laneIdx*64+4)+"px";
+          laneDiv.textContent = EMOJIS[note.lane];
+          bcGameArea.appendChild(laneDiv);
+        }
+      });
+    }
+
+    function updateGame(now) {
+      if(!gameRunning) return;
+      renderNotes(now);
+      // Fin de la chanson
+      if(now - startTime > notes[notes.length-1].time + 3000 || bar<=0) {
+        endGame();
+        return;
+      }
+      timer = requestAnimationFrame(updateGame);
+    }
+
+    function hitNote(lane) {
+      if(!gameRunning) return;
+      // Cherche la note la plus proche de la cible dans la bonne lane
+      let elapsed = performance.now() - startTime;
+      let found = false;
+      for(let i=0;i<notes.length;i++) {
+        let note = notes[i];
+        if(note.hit || note.lane !== lane) continue;
+        let y = (elapsed - note.time) * SPEED;
+        if(y > 268 && y < 308+HIT_WINDOW) { // cible à 308px (top)
+          note.hit = true;
+          found = true;
+          let diff = Math.abs(y-308);
+          let gain = diff<20 ? 300 : diff<40 ? 200 : 100;
+          score += gain;
+          combo += 1;
+          if(combo > maxCombo) maxCombo = combo;
+          bar += 2;
+          if(bar > 100) bar = 100;
+          bcScore.textContent = "Score : "+score;
+          bcCombo.textContent = combo>1 ? "Combo : "+combo : "";
+          bcBar.style.width = bar+"%";
+          // Animation
+          let laneIdx = LANES.indexOf(lane);
+          let fx = document.createElement('div');
+          fx.className = 'bc-arrow good';
+          fx.style.top = "308px";
+          fx.style.left = (laneIdx*64+4)+"px";
+          fx.textContent = EMOJIS[lane];
+          bcGameArea.appendChild(fx);
+          setTimeout(()=>fx.remove(),180);
+          break;
+        }
+      }
+      if(!found) {
+        // Mauvais timing ou mauvaise touche
+        combo = 0;
+        bar -= 10;
+        if(bar < 0) bar = 0;
+        bcCombo.textContent = "";
+        bcBar.style.width = bar+"%";
+        // Animation
+        let laneIdx = LANES.indexOf(lane);
+        if(laneIdx>=0) {
+          let fx = document.createElement('div');
+          fx.className = 'bc-arrow bad';
+          fx.style.top = "308px";
+          fx.style.left = (laneIdx*64+4)+"px";
+          fx.textContent = EMOJIS[lane];
+          bcGameArea.appendChild(fx);
+          setTimeout(()=>fx.remove(),180);
+        }
+      }
+    }
+
+    function endGame() {
+      gameRunning = false;
+      bcEnd.style.display = "";
+      bcEnd.innerHTML = `<h2>Fin de la partie !</h2>
+        <div style="font-size:20px;color:#ffe066;margin:10px 0;">Score final : <b>${score}</b></div>
+        <div style="font-size:16px;color:#43e86e;">Meilleur combo : ${maxCombo}</div>
+        <button class="bc-btn" onclick="startGame()">Rejouer</button>`;
+      bcStartBtn.style.display = "";
+    }
+
+    function startGame() {
+      resetGame();
+      spawnNotes();
+      gameRunning = true;
+      startTime = performance.now();
+      timer = requestAnimationFrame(updateGame);
+      bcStartBtn.style.display = "none";
+    }
+
+    bcStartBtn.onclick = startGame;
+
+    document.addEventListener('keydown', function(e){
+      if(!gameRunning) return;
+      if(LANES.includes(e.code)) {
+        hitNote(e.code);
+      }
+    });
+  </script>
+</body>
+</html>

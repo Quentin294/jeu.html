@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Échange - Jeu de Plateforme</title>
+  <style>
+    body {
+      background-color: #222;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .inventaire, .offre {
+      margin: 20px auto;
+      max-width: 600px;
+      padding: 15px;
+      background: #333;
+      border-radius: 10px;
+    }
+    .skin {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      border-radius: 8px;
+      border: 2px solid white;
+      cursor: pointer;
+    }
+    .offre .skin {
+      border-color: yellow;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .accepter { background: green; color: white; }
+    .refuser { background: red; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Échange de Skins</h1>
+
+  <div class="inventaire">
+    <h2>Votre inventaire</h2>
+    <div id="inventaireSkins"></div>
+  </div>
+
+  <div class="offre">
+    <h2>Offre d'échange</h2>
+    <p>Ce joueur vous propose :</p>
+    <div id="offreSkin" class="skin"></div>
+    <p>Contre votre :</p>
+    <div id="skinAechanger" class="skin"></div>
+    <div>
+      <button class="accepter" onclick="accepterEchange()">Accepter</button>
+      <button class="refuser" onclick="genererOffre()">Refuser</button>
+    </div>
+  </div>
+
+  <script>
+    const tousLesSkins = [
+      { id: "rouge", couleur: "red" },
+      { id: "bleu", couleur: "blue" },
+      { id: "vert", couleur: "green" },
+      { id: "jaune", couleur: "yellow" },
+      { id: "violet", couleur: "purple" },
+      { id: "orange", couleur: "orange" },
+      { id: "rose", couleur: "pink" }
+    ];
+
+    let skinsDebloques = JSON.parse(localStorage.getItem("skinsDebloques") || "[]");
+
+    function afficherInventaire() {
+      const container = document.getElementById("inventaireSkins");
+      container.innerHTML = "";
+      skinsDebloques.forEach(id => {
+        const skin = tousLesSkins.find(s => s.id === id);
+        if (skin) {
+          const div = document.createElement("div");
+          div.className = "skin";
+          div.style.backgroundColor = skin.couleur;
+          container.appendChild(div);
+        }
+      });
+    }
+
+    let skinPropose, skinDemande;
+
+    function genererOffre() {
+      if (skinsDebloques.length === 0) return alert("Vous n'avez aucun skin à échanger !");
+      
+      // Skin à donner du joueur (choisi aléatoirement)
+      skinDemande = skinsDebloques[Math.floor(Math.random() * skinsDebloques.length)];
+      
+      // Skin proposé (non possédé par le joueur)
+      const nonPossedes = tousLesSkins.filter(s => !skinsDebloques.includes(s.id));
+      if (nonPossedes.length === 0) {
+        document.querySelector(".offre").innerHTML = "<p>Vous possédez déjà tous les skins !</p>";
+        return;
+      }
+      skinPropose = nonPossedes[Math.floor(Math.random() * nonPossedes.length)].id;
+
+      // Affichage
+      const skinA = tousLesSkins.find(s => s.id === skinDemande);
+      const skinB = tousLesSkins.find(s => s.id === skinPropose);
+      document.getElementById("skinAechanger").style.backgroundColor = skinA.couleur;
+      document.getElementById("offreSkin").style.backgroundColor = skinB.couleur;
+    }
+
+    function accepterEchange() {
+      if (!skinDemande || !skinPropose) return;
+
+      // Supprimer l'ancien skin
+      skinsDebloques = skinsDebloques.filter(id => id !== skinDemande);
+      // Ajouter le nouveau skin
+      skinsDebloques.push(skinPropose);
+      localStorage.setItem("skinsDebloques", JSON.stringify(skinsDebloques));
+
+      alert("Échange effectué !");
+      afficherInventaire();
+      genererOffre();
+    }
+
+    // Initialisation
+    afficherInventaire();
+    genererOffre();
+  </script>
+</body>
+</html>

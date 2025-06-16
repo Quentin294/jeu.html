@@ -20,39 +20,40 @@
     .section-title {font-size:26px;color:#ffe066;text-align:center;margin:38px 0 18px 0;}
     .skins-shop, .event-shop, .packs-shop, .offers-row,
     .familiers-shop, .familiers-event-shop, .familiers-pack-shop,
-    .acolytes-shop, .acolytes-event-shop, .acolytes-pack-shop,
-    .cartes-shop {display:flex;justify-content:center;gap:38px;margin-bottom:10px;}
+    .acolytes-shop, .acolytes-event-shop, .acolytes-pack-shop {display:flex;justify-content:center;gap:38px;margin-bottom:10px;}
     .skin-card, .event-card, .pack-card, .offer-card,
-    .familier-card, .acolyte-card, .carte-card {
+    .familier-card, .acolyte-card {
       background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
       width:170px;padding:18px 12px 16px 12px;text-align:center;
       border:3px solid #ffe066;position:relative;
       display:flex;flex-direction:column;align-items:center;
       margin-bottom:16px;
     }
-    .skin-circle, .event-circle, .pack-circle, .familier-circle, .acolyte-circle, .carte-circle {
+    .skin-circle, .event-circle, .pack-circle, .familier-circle, .acolyte-circle {
       width:64px;height:64px;border-radius:50%;margin-bottom:12px;
       border:4px solid #fff;box-shadow:0 2px 10px #0006;
       display:flex;align-items:center;justify-content:center;
       font-weight:bold;font-size:30px;color:#232b3b;text-shadow:0 2px 8px #fff8;
-      background:#232b3b;
+      background:#232b3b; /* pour que les emojis soient bien visibles */
     }
-    .carte-circle {border:4px solid #ffe066;box-shadow:0 0 16px #ffe066;}
+    /* Styles spécifiques pour les bordures et ombres des cercles */
     .event-circle {border:4px solid #FFD700;box-shadow:0 0 16px #FFD700;}
     .pack-circle {border:4px solid #00fff0;box-shadow:0 0 16px #00fff0;}
     .familier-circle {border:4px solid #ff5ca7;box-shadow:0 0 16px #ff5ca7;}
     .acolyte-circle {border:4px solid #ffdf00;box-shadow:0 0 18px #ffdf00;}
+    /* Nouveaux styles pour les acolytes événementiels et packs */
     .acolyte-circle.event {border:4px solid #ff00e6;box-shadow:0 0 18px #ff00e6;}
     .acolyte-circle.pack {border:4px solid #00fff0;box-shadow:0 0 18px #00fff0;}
-    .skin-name, .event-name, .pack-name, .familier-name, .acolyte-name, .carte-name {font-size:16px;font-weight:bold;color:#ffe066;margin-bottom:8px;}
-    .skin-price, .event-price, .pack-price, .familier-price, .acolyte-price, .carte-price {font-size:18px;margin-bottom:8px;}
-    .buy-btn, .buy-event-btn, .buy-pack-btn, .buy-familier-btn, .buy-acolyte-btn, .buy-carte-btn {
+
+    .skin-name, .event-name, .pack-name, .familier-name, .acolyte-name {font-size:16px;font-weight:bold;color:#ffe066;margin-bottom:8px;}
+    .skin-price, .event-price, .pack-price, .familier-price, .acolyte-price {font-size:18px;margin-bottom:8px;}
+    .buy-btn, .buy-event-btn, .buy-pack-btn, .buy-familier-btn, .buy-acolyte-btn {
       background:#3a6ee8;color:#fff;border:none;border-radius:8px;
       padding:8px 18px;font-size:17px;font-weight:bold;cursor:pointer;
       margin-bottom:4px;
     }
     .buy-btn[disabled], .buy-event-btn[disabled], .buy-pack-btn[disabled],
-    .buy-familier-btn[disabled], .buy-acolyte-btn[disabled], .buy-carte-btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
+    .buy-familier-btn[disabled], .buy-acolyte-btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
     .owned-label {color:#43e86e;font-weight:bold;}
     .refresh-timer {text-align:center;color:#ffe066;font-size:17px;margin-bottom:18px;}
     .offers-title {text-align:center;font-size:23px;margin:38px 0 18px 0;color:#ffe066;}
@@ -67,17 +68,65 @@
     .pack-rewards {font-size:15px;color:#00fff0;margin-bottom:8px;}
     .btn-menu {margin-top:38px;display:block;background:#3a6ee8;color:#fff;border:none;border-radius:12px;font-size:22px;padding:14px 36px;font-weight:bold;cursor:pointer;}
     .btn-menu:hover {background:#254a9c;}
-    @media (max-width: 1000px) {
-      .skins-shop, .event-shop, .packs-shop, .offers-row,
-      .familiers-shop, .familiers-event-shop, .familiers-pack-shop,
-      .acolytes-shop, .acolytes-event-shop, .acolytes-pack-shop,
-      .cartes-shop {flex-direction:column;gap:0;}
-      .skin-card, .event-card, .pack-card, .offer-card,
-      .familier-card, .acolyte-card, .carte-card {margin:0 auto 18px auto;}
-    }
+    .cartes-shop {display:flex;justify-content:center;gap:38px;margin-bottom:10px;}
+.carte-card {
+  background:#232b3b;border-radius:16px;box-shadow:0 2px 12px #0007;
+  width:170px;padding:18px 12px 16px 12px;text-align:center;
+  border:3px solid #ffe066;position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  margin-bottom:16px;
+}
+.carte-circle {width:64px;height:64px;border-radius:50%;margin-bottom:12px;
+  border:4px solid #ffe066;box-shadow:0 0 16px #ffe066;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;font-size:30px;color:#232b3b;text-shadow:0 2px 8px #fff8;
+  background:#232b3b;}
+.carte-name {font-size:16px;font-weight:bold;color:#ffe066;margin-bottom:8px;}
+.carte-price {font-size:18px;margin-bottom:8px;}
+.buy-carte-btn {
+  background:#3a6ee8;color:#fff;border:none;border-radius:8px;
+  padding:8px 18px;font-size:17px;font-weight:bold;cursor:pointer;
+  margin-bottom:4px;
+}
+.buy-carte-btn[disabled] {background:#888;color:#ccc;cursor:not-allowed;}
+.main-shop-tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.main-shop-btn {
+  background: #ffe066;
+  color: #232b3b;
+  border: none;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 13px 40px;
+  box-shadow: 0 2px 12px #0004;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+.main-shop-btn.active {
+  background: #3a6ee8;
+  color: #fff;
+  border: 2px solid #ffe066;
+}
+@media (max-width: 700px) {
+  .main-shop-btn {font-size: 15px; padding: 9px 14px;}
+}
   </style>
 </head>
 <body>
+  
+<div class="main-shop-tabs">
+  <button class="main-shop-btn active" id="mainTabClassique">Boutique classique</button>
+  <button class="main-shop-btn" onclick="window.location.href='boutique-chrono.html'">Boutique chrono</button>
+<button class="main-shop-btn" onclick="window.location.href='boutique-infini.html'">Boutique infini</button>
+
+</div>
+
   <div class="container">
     <h1>🛒 Boutique</h1>
     <div class="tab-icons">
@@ -91,8 +140,8 @@
         🤖<span class="tab-icon-label">Acolytes</span>
       </button>
       <button class="tab-icon-btn" id="tabBtnCartes">
-        🗂️<span class="tab-icon-label">Cartes</span>
-      </button>
+  🗂️<span class="tab-icon-label">Cartes</span>
+</button>
     </div>
     <!-- Onglet Boutique classique -->
     <div id="tabShop">
@@ -148,51 +197,844 @@
         <span style="color:#ff00e6;">Les acolytes événementiels et packs sont uniques et ne reviendront jamais.</span>
       </div>
     </div>
-    <!-- Onglet Cartes -->
-    <div id="tabCartes" style="display:none;">
-      <div class="section-title">Boosters de cartes à collectionner</div>
-      <div class="cartes-shop">
-        <div class="carte-card">
-          <div class="carte-circle">🗂️</div>
-          <div class="carte-name">Booster x1</div>
-          <div class="carte-price">💎 100</div>
-          <button class="buy-carte-btn">Acheter</button>
-        </div>
-        <div class="carte-card">
-          <div class="carte-circle">🗂️</div>
-          <div class="carte-name">Booster x5</div>
-          <div class="carte-price">💎 450</div>
-          <button class="buy-carte-btn">Acheter</button>
-        </div>
-        <div class="carte-card">
-          <div class="carte-circle">🗂️</div>
-          <div class="carte-name">Booster x10</div>
-          <div class="carte-price">💎 800</div>
-          <button class="buy-carte-btn">Acheter</button>
-        </div>
-      </div>
-      <div style="text-align:center;color:#ffe066;margin-top:24px;">
-        Les boosters contiennent des cartes à collectionner aléatoires pour compléter ton album !
-      </div>
-    </div>
     <button class="btn-menu" onclick="window.history.back()">&larr; Retour au menu</button>
   </div>
+  <!-- Onglet Cartes -->
+<div id="tabCartes" style="display:none;">
+  <div class="section-title">Boosters de cartes à collectionner</div>
+  <div class="cartes-shop">
+    <div class="carte-card">
+      <div class="carte-circle">🗂️</div>
+      <div class="carte-name">Booster x1</div>
+      <div class="carte-price">💎 100</div>
+      <button class="buy-carte-btn">Acheter</button>
+    </div>
+    <div class="carte-card">
+      <div class="carte-circle">🗂️</div>
+      <div class="carte-name">Booster x5</div>
+      <div class="carte-price">💎 450</div>
+      <button class="buy-carte-btn">Acheter</button>
+    </div>
+    <div class="carte-card">
+      <div class="carte-circle">🗂️</div>
+      <div class="carte-name">Booster x10</div>
+      <div class="carte-price">💎 800</div>
+      <button class="buy-carte-btn">Acheter</button>
+    </div>
+  </div>
+  <div style="text-align:center;color:#ffe066;margin-top:24px;">
+    Les boosters contiennent des cartes à collectionner aléatoires pour compléter ton album !
+  </div>
+</div>
+<!-- Onglets secondaires et contenu BOUTIQUE CHRONO -->
+<div id="mainTabChronoContent" style="display:none;">
+  <div class="tabs-row" id="subTabsChrono">
+    <button class="tab-btn active" id="tabBtnChronoShop">Boutique</button>
+    <!-- ... autres onglets chrono si besoin ... -->
+  </div>
+  <div id="tabChronoShopContent">
+    <!-- ... contenu boutique chrono ... -->
+  </div>
+</div>
   <script>
-    // Gestion des onglets
-    const tabs = [
-      {btn: "tabBtnShop", tab: "tabShop"},
-      {btn: "tabBtnFamiliers", tab: "tabFamiliers"},
-      {btn: "tabBtnAcolytes", tab: "tabAcolytes"},
-      {btn: "tabBtnCartes", tab: "tabCartes"}
+    // Couleurs classiques (skins du jour)
+    const shopColors = [
+      {name:"Rouge", color:"#FF3B30"},
+      {name:"Orange", color:"#FF9500"},
+      {name:"Jaune", color:"#FFCC00"},
+      {name:"Vert", color:"#34C759"},
+      {name:"Bleu", color:"#007AFF"},
+      {name:"Violet", color:"#AF52DE"},
+      {name:"Rose", color:"#FF2D55"},
+      {name:"Turquoise", color:"#5AC8FA"}
     ];
-    tabs.forEach((t, idx) => {
-      document.getElementById(t.btn).onclick = function() {
-        tabs.forEach((tt, i) => {
-          document.getElementById(tt.tab).style.display = (i === idx) ? "" : "none";
-          document.getElementById(tt.btn).classList.toggle("active", i === idx);
-        });
-      };
+    // Couleurs événementielles exclusives (jamais remises)
+    const eventColors = [
+      {name:"Arc-en-ciel Mythique", color:"linear-gradient(135deg, #ff005e 0%, #fffd00 25%, #00ff87 50%, #00cfff 75%, #a259ff 100%)"},
+      {name:"Noir Solaire", color:"#1a0a2d"},
+      {name:"Blanc Polaire", color:"#f2f8ff"},
+      {name:"Rouge Volcanique", color:"#ff2a1a"},
+      {name:"Bleu Boréal", color:"#00e3ff"}
+    ];
+    // Packs exclusifs ultra rares
+    const packs = [
+      {
+        name: "Pack Cosmos",
+        color: "linear-gradient(135deg,#2d00f7 0%,#ff0291 100%)",
+        ultraName: "Cosmos Infini",
+        ultraColor: "linear-gradient(135deg,#2d00f7 0%,#ff0291 100%)",
+        diamonds: 2000,
+        xp: 1000,
+        price: "14,99€"
+      },
+      {
+        name: "Pack Dragon",
+        color: "linear-gradient(135deg,#ffb300 0%,#ff003c 100%)",
+        ultraName: "Dragon Légendaire",
+        ultraColor: "linear-gradient(135deg,#ffb300 0%,#ff003c 100%)",
+        diamonds: 2000,
+        xp: 1000,
+        price: "14,99€"
+      }
+    ];
+    // Familiers légendaires (icône + nom + prix)
+    const familiers = [
+      {name:"Nébula", icon:"🐉", price:10000, desc:"Dragon cosmique légendaire."},
+      {name:"Pixel", icon:"🦊", price:8500, desc:"Renard numérique rusé."},
+      {name:"Spectra", icon:"🦄", price:12000, desc:"Licorne arc-en-ciel magique."},
+      {name:"Roc", icon:"🦅", price:9500, desc:"Aigle mythique majestueux."}
+    ];
+    // Familiers événementiels exclusifs
+    const familiersEvent = [
+      {name:"Phénix Céleste", icon:"🔥", price:20000, desc:"Renaît de ses cendres, exclusif et éternel."},
+      {name:"Cerbère Ombre", icon:"🐺", price:18000, desc:"Gardien des mondes, familier d'élite."}
+    ];
+    // Packs familiers événementiels (ultra rares, bonus inclus)
+    const familiersPacks = [
+      {
+        name:"Pack Griffon Solaire",
+        icon:"🦅",
+        ultraName:"Griffon Solaire",
+        desc:"Légende dorée, familier unique.",
+        price:"24,99€",
+        diamonds:5000,
+        xp:2500
+      },
+      {
+        name:"Pack Chimère Arc-en-ciel",
+        icon:"🦄",
+        ultraName:"Chimère Arc-en-ciel",
+        desc:"Créature mythique multicolore.",
+        price:"24,99€",
+        diamonds:5000,
+        xp:2500
+      }
+    ];
+    // Acolytes ultimes (encore plus rares que les familiers)
+    const acolytes = [
+      {name:"Omega", icon:"🤖", price:100000, desc:"Acolyte robotique ultime, symbole de puissance."},
+      {name:"Légende Stellaire", icon:"👾", price:150000, desc:"Acolyte venu des étoiles, rarissime."},
+      {name:"Gardien du Temps", icon:"⏳", price:200000, desc:"Maîtrise le temps, acolyte unique."}
+    ];
+    // Acolytes événementiels exclusifs
+    const acolytesEvent = [
+      {name:"Pharaon Éternel", icon:"🛡️", price:300000, desc:"Acolyte mythique, gardien des secrets perdus."},
+      {name:"Spectre Galactique", icon:"👻", price:350000, desc:"Acolyte fantomatique venu d'une autre dimension."}
+    ];
+    // Packs acolytes événementiels (ultra rares, bonus inclus)
+    const acolytesPacks = [
+      {
+        name:"Pack Titan Solaire",
+        icon:"🦾",
+        ultraName:"Titan Solaire",
+        desc:"Acolyte colossal, incarnation de la lumière.",
+        price:"34,99€",
+        diamonds:20000,
+        xp:10000
+      },
+      {
+        name:"Pack Oracle Arcane",
+        icon:"🧙‍♂️",
+        ultraName:"Oracle Arcane",
+        desc:"Maître des arcanes, acolyte légendaire.",
+        price:"34,99€",
+        diamonds:20000,
+        xp:10000
+      }
+    ];
+    // Prix des skins du jour
+    const priceDiamonds = 800;
+    // Prix des event exclusifs
+    const priceEvent = 2500;
+
+    // Sélection du jour pour les skins classiques
+    function getShopSkins() {
+      let data = localStorage.getItem("shopSkins");
+      let expires = parseInt(localStorage.getItem("shopSkinsExpires")||"0");
+      let now = Date.now();
+      if(!data || now > expires) {
+        let indices = [];
+        while(indices.length < 2) {
+          let idx = Math.floor(Math.random()*shopColors.length);
+          if(!indices.includes(idx)) indices.push(idx);
+        }
+        let skins = [shopColors[indices[0]], shopColors[indices[1]]];
+        localStorage.setItem("shopSkins", JSON.stringify(skins));
+        let tomorrow = now + 24*3600*1000;
+        localStorage.setItem("shopSkinsExpires", tomorrow+"");
+        return skins;
+      }
+      try {
+        return JSON.parse(data);
+      } catch(e) {
+        return [shopColors[0], shopColors[1]];
+      }
+    }
+
+    // Affiche les skins du jour
+    function renderShopSkins() {
+      let skins = getShopSkins();
+      let div = document.getElementById('skinsShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      skins.forEach(skin => {
+        let ownedThis = owned.includes(skin.name);
+        let card = document.createElement("div");
+        card.className = "skin-card";
+        let circle = document.createElement("div");
+        circle.className = "skin-circle";
+        circle.style.background = skin.color;
+        circle.textContent = skin.name; // Affichage du nom pour les couleurs
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "skin-name";
+        name.textContent = skin.name;
+        card.appendChild(name);
+        let price = document.createElement("div");
+        price.className = "skin-price";
+        price.innerHTML = `💎 ${priceDiamonds}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterSkin(skin); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Section tenues événementielles ultra rares (jamais remises)
+    function renderEventShop() {
+      let div = document.getElementById('eventShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      eventColors.forEach(ev => {
+        let ownedThis = owned.includes(ev.name);
+        let card = document.createElement("div");
+        card.className = "event-card";
+        let circle = document.createElement("div");
+        circle.className = "event-circle";
+        if(ev.color.startsWith("linear-gradient")) {
+          circle.style.background = ev.color;
+        } else {
+          circle.style.background = ev.color;
+        }
+        circle.textContent = ev.name; // Affichage du nom pour les couleurs
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "event-name";
+        name.textContent = ev.name;
+        card.appendChild(name);
+        let price = document.createElement("div");
+        price.className = "event-price";
+        price.innerHTML = `💎 ${priceEvent}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-event-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterEvent(ev); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Packs ultra rares (couleur + diamants + XP)
+    function renderPacksShop() {
+      let div = document.getElementById('packsShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      packs.forEach(pack => {
+        let ownedThis = owned.includes(pack.ultraName);
+        let card = document.createElement("div");
+        card.className = "pack-card";
+        let circle = document.createElement("div");
+        circle.className = "pack-circle";
+        circle.style.background = pack.ultraColor;
+        circle.textContent = pack.icon; // Affichage de l'icône du pack
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "pack-name";
+        name.textContent = pack.ultraName;
+        card.appendChild(name);
+        let rewards = document.createElement("div");
+        rewards.className = "pack-rewards";
+        rewards.innerHTML = `+${pack.diamonds} diamants<br>+${pack.xp} XP`;
+        card.appendChild(rewards);
+        let price = document.createElement("div");
+        price.className = "pack-price";
+        price.innerHTML = `${pack.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-pack-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterPack(pack); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Familiers classiques
+    function renderFamiliersShop() {
+      let div = document.getElementById('familiersShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("familiers")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      familiers.forEach(fam => {
+        let ownedThis = owned.includes(fam.name);
+        let card = document.createElement("div");
+        card.className = "familier-card";
+        let circle = document.createElement("div");
+        circle.className = "familier-circle";
+        circle.textContent = fam.icon;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "familier-name";
+        name.textContent = fam.name;
+        card.appendChild(name);
+        let desc = document.createElement("div");
+        desc.style="font-size:14px;color:#ffe066;margin-bottom:7px;";
+        desc.textContent = fam.desc;
+        card.appendChild(desc);
+        let price = document.createElement("div");
+        price.className = "familier-price";
+        price.innerHTML = `💎 ${fam.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-familier-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterFamilier(fam); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Familiers événementiels
+    function renderFamiliersEventShop() {
+      let div = document.getElementById('familiersEventShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("familiersEvent")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      familiersEvent.forEach(fam => {
+        let ownedThis = owned.includes(fam.name);
+        let card = document.createElement("div");
+        card.className = "familier-card";
+        let circle = document.createElement("div");
+        circle.className = "familier-circle event"; /* Ajout de la classe 'event' pour le style */
+        circle.textContent = fam.icon;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "familier-name";
+        name.textContent = fam.name;
+        card.appendChild(name);
+        let desc = document.createElement("div");
+        desc.style="font-size:14px;color:#ffe066;margin-bottom:7px;";
+        desc.textContent = fam.desc;
+        card.appendChild(desc);
+        let price = document.createElement("div");
+        price.className = "familier-price";
+        price.innerHTML = `💎 ${fam.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-familier-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterFamilierEvent(fam); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Packs familiers événementiels
+    function renderFamiliersPackShop() {
+      let div = document.getElementById('familiersPackShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("familiersPack")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      familiersPacks.forEach(pack => {
+        let ownedThis = owned.includes(pack.ultraName);
+        let card = document.createElement("div");
+        card.className = "familier-card";
+        let circle = document.createElement("div");
+        circle.className = "familier-circle pack"; /* Ajout de la classe 'pack' pour le style */
+        circle.textContent = pack.icon;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "pack-name";
+        name.textContent = pack.ultraName;
+        card.appendChild(name);
+        let desc = document.createElement("div");
+        desc.style="font-size:14px;color:#ffe066;margin-bottom:7px;";
+        desc.textContent = pack.desc;
+        card.appendChild(desc);
+        let rewards = document.createElement("div");
+        rewards.style="font-size:15px;color:#00fff0;margin-bottom:8px;";
+        rewards.innerHTML = `+${pack.diamonds} diamants<br>+${pack.xp} XP`;
+        card.appendChild(rewards);
+        let price = document.createElement("div");
+        price.className = "familier-price";
+        price.innerHTML = `${pack.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-familier-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterFamilierPack(pack); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Acolytes classiques
+    function renderAcolytesShop() {
+      let div = document.getElementById('acolytesShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("acolytes")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      acolytes.forEach(aco => {
+        let ownedThis = owned.includes(aco.name);
+        let card = document.createElement("div");
+        card.className = "acolyte-card";
+        let circle = document.createElement("div");
+        circle.className = "acolyte-circle";
+        circle.textContent = aco.icon;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "acolyte-name";
+        name.textContent = aco.name;
+        card.appendChild(name);
+        let desc = document.createElement("div");
+        desc.style="font-size:14px;color:#ffe066;margin-bottom:7px;";
+        desc.textContent = aco.desc;
+        card.appendChild(desc);
+        let price = document.createElement("div");
+        price.className = "acolyte-price";
+        price.innerHTML = `💎 ${aco.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-acolyte-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterAcolyte(aco); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+    // Acolytes événementiels
+    function renderAcolytesEventShop() {
+      let div = document.getElementById('acolytesEventShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("acolytesEvent")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      acolytesEvent.forEach(aco => {
+        let ownedThis = owned.includes(aco.name);
+        let card = document.createElement("div");
+        card.className = "acolyte-card";
+        let circle = document.createElement("div");
+        circle.className = "acolyte-circle event";
+        circle.textContent = aco.icon;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "acolyte-name";
+        name.textContent = aco.name;
+        card.appendChild(name);
+        let desc = document.createElement("div");
+        desc.style="font-size:14px;color:#ffe066;margin-bottom:7px;";
+        desc.textContent = aco.desc;
+        card.appendChild(desc);
+        let price = document.createElement("div");
+        price.className = "acolyte-price";
+        price.innerHTML = `💎 ${aco.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-acolyte-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterAcolyteEvent(aco); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+    // Packs acolytes événementiels
+    function renderAcolytesPackShop() {
+      let div = document.getElementById('acolytesPackShop');
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("acolytesPack")||"[]"); } catch(e){}
+      div.innerHTML = "";
+      acolytesPacks.forEach(pack => {
+        let ownedThis = owned.includes(pack.ultraName);
+        let card = document.createElement("div");
+        card.className = "acolyte-card";
+        let circle = document.createElement("div");
+        circle.className = "acolyte-circle pack";
+        circle.textContent = pack.icon;
+        card.appendChild(circle);
+        let name = document.createElement("div");
+        name.className = "acolyte-name";
+        name.textContent = pack.ultraName;
+        card.appendChild(name);
+        let desc = document.createElement("div");
+        desc.style="font-size:14px;color:#ffe066;margin-bottom:7px;";
+        desc.textContent = pack.desc;
+        card.appendChild(desc);
+        let rewards = document.createElement("div");
+        rewards.style="font-size:15px;color:#00fff0;margin-bottom:8px;";
+        rewards.innerHTML = `+${pack.diamonds} diamants<br>+${pack.xp} XP`;
+        card.appendChild(rewards);
+        let price = document.createElement("div");
+        price.className = "acolyte-price";
+        price.innerHTML = `${pack.price}`;
+        card.appendChild(price);
+        if(ownedThis) {
+          let lbl = document.createElement("div");
+          lbl.className = "owned-label";
+          lbl.textContent = "Déjà possédé";
+          card.appendChild(lbl);
+        } else {
+          let btn = document.createElement("button");
+          btn.className = "buy-acolyte-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() { acheterAcolytePack(pack); };
+          card.appendChild(btn);
+        }
+        div.appendChild(card);
+      });
+    }
+
+    // Achat d'un skin classique
+    function acheterSkin(skin) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < priceDiamonds) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      if(owned.includes(skin.name)) {
+        alert("Tu possèdes déjà cette couleur !");
+        return;
+      }
+      d -= priceDiamonds;
+      owned.push(skin.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("wonColors", JSON.stringify(owned));
+      alert(`Tu as acheté la couleur ${skin.name} !`);
+      renderShopSkins();
+    }
+
+    // Achat d'une tenue événementielle
+    function acheterEvent(ev) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < priceEvent) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+      if(owned.includes(ev.name)) {
+        alert("Tu possèdes déjà cette couleur !");
+        return;
+      }
+      d -= priceEvent;
+      owned.push(ev.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("wonColors", JSON.stringify(owned));
+      alert(`Tu as acheté la tenue événementielle ${ev.name} !`);
+      renderEventShop();
+    }
+
+    // Achat d'un pack ultra rare (démo, paiement réel non implémenté)
+    function acheterPack(pack) {
+      if(confirm(`Acheter ${pack.ultraName} pour ${pack.price} ?\nTu recevras aussi ${pack.diamonds} diamants et ${pack.xp} XP.`)) {
+        let owned = [];
+        try { owned = JSON.parse(localStorage.getItem("wonColors")||"[]"); } catch(e){}
+        if(owned.includes(pack.ultraName)) {
+          alert("Tu possèdes déjà cette couleur !");
+          return;
+        }
+        owned.push(pack.ultraName);
+        localStorage.setItem("wonColors", JSON.stringify(owned));
+        // Ajoute les diamants
+        let d = parseInt(localStorage.getItem("diamonds")||"0");
+        d += pack.diamonds;
+        localStorage.setItem("diamonds", d+"");
+        // Ajoute l'XP au pass
+        let pass = JSON.parse(localStorage.getItem("passState")||"{}");
+        pass.xp = (pass.xp||0) + pack.xp;
+        localStorage.setItem("passState", JSON.stringify(pass));
+        alert(`Pack ${pack.ultraName} acheté !`);
+        renderPacksShop();
+      }
+    }
+
+    // Achat familier classique
+    function acheterFamilier(fam) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < fam.price) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("familiers")||"[]"); } catch(e){}
+      if(owned.includes(fam.name)) {
+        alert("Tu possèdes déjà ce familier !");
+        return;
+      }
+      d -= fam.price;
+      owned.push(fam.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("familiers", JSON.stringify(owned));
+      alert(`Tu as adopté ${fam.name} !`);
+      renderFamiliersShop();
+    }
+    // Achat familier événementiel
+    function acheterFamilierEvent(fam) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < fam.price) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("familiersEvent")||"[]"); } catch(e){}
+      if(owned.includes(fam.name)) {
+        alert("Tu possèdes déjà ce familier !");
+        return;
+      }
+      d -= fam.price;
+      owned.push(fam.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("familiersEvent", JSON.stringify(owned));
+      alert(`Tu as adopté le familier événementiel ${fam.name} !`);
+      renderFamiliersEventShop();
+    }
+    // Achat pack familier événementiel
+    function acheterFamilierPack(pack) {
+      if(confirm(`Acheter ${pack.ultraName} pour ${pack.price} ?\nTu recevras aussi ${pack.diamonds} diamants et ${pack.xp} XP.`)) {
+        let owned = [];
+        try { owned = JSON.parse(localStorage.getItem("familiersPack")||"[]"); } catch(e){}
+        if(owned.includes(pack.ultraName)) {
+          alert("Tu possèdes déjà ce familier !");
+          return;
+        }
+        owned.push(pack.ultraName);
+        localStorage.setItem("familiersPack", JSON.stringify(owned));
+        // Ajoute les diamants
+        let d = parseInt(localStorage.getItem("diamonds")||"0");
+        d += pack.diamonds;
+        localStorage.setItem("diamonds", d+"");
+        // Ajoute l'XP au pass
+        let pass = JSON.parse(localStorage.getItem("passState")||"{}");
+        pass.xp = (pass.xp||0) + pack.xp;
+        localStorage.setItem("passState", JSON.stringify(pass));
+        alert(`Pack ${pack.ultraName} acheté !`);
+        renderFamiliersPackShop();
+      }
+    }
+    // Achat acolyte ultime
+    function acheterAcolyte(aco) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < aco.price) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("acolytes")||"[]"); } catch(e){}
+      if(owned.includes(aco.name)) {
+        alert("Tu possèdes déjà cet acolyte !");
+        return;
+      }
+      d -= aco.price;
+      owned.push(aco.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("acolytes", JSON.stringify(owned));
+      alert(`Tu as recruté ${aco.name} !`);
+      renderAcolytesShop();
+    }
+    // Achat acolyte événementiel
+    function acheterAcolyteEvent(aco) {
+      let d = parseInt(localStorage.getItem("diamonds")||"0");
+      if(d < aco.price) {
+        alert("Pas assez de diamants !");
+        return;
+      }
+      let owned = [];
+      try { owned = JSON.parse(localStorage.getItem("acolytesEvent")||"[]"); } catch(e){}
+      if(owned.includes(aco.name)) {
+        alert("Tu possèdes déjà cet acolyte !");
+        return;
+      }
+      d -= aco.price;
+      owned.push(aco.name);
+      localStorage.setItem("diamonds", d+"");
+      localStorage.setItem("acolytesEvent", JSON.stringify(owned));
+      alert(`Tu as recruté l'acolyte événementiel ${aco.name} !`);
+      renderAcolytesEventShop();
+    }
+    // Achat pack acolyte événementiel
+    function acheterAcolytePack(pack) {
+      if(confirm(`Acheter ${pack.ultraName} pour ${pack.price} ?\nTu recevras aussi ${pack.diamonds} diamants et ${pack.xp} XP.`)) {
+        let owned = [];
+        try { owned = JSON.parse(localStorage.getItem("acolytesPack")||"[]"); } catch(e){}
+        if(owned.includes(pack.ultraName)) {
+          alert("Tu possèdes déjà cet acolyte !");
+          return;
+        }
+        owned.push(pack.ultraName);
+        localStorage.setItem("acolytesPack", JSON.stringify(owned));
+        // Ajoute les diamants
+        let d = parseInt(localStorage.getItem("diamonds")||"0");
+        d += pack.diamonds;
+        localStorage.setItem("diamonds", d+"");
+        // Ajoute l'XP au pass
+        let pass = JSON.parse(localStorage.getItem("passState")||"{}");
+        pass.xp = (pass.xp||0) + pack.xp;
+        localStorage.setItem("passState", JSON.stringify(pass));
+        alert(`Pack ${pack.ultraName} acheté !`);
+        renderAcolytesPackShop();
+      }
+    }
+
+    // Timer de refresh
+    function updateRefreshTimer() {
+      let expires = parseInt(localStorage.getItem("shopSkinsExpires")||"0");
+      let now = Date.now();
+      let left = expires-now;
+      let el = document.getElementById('refreshTimer');
+      if(left <= 0) {
+        renderShopSkins();
+        el.textContent = "Boutique réinitialisée !";
+        setTimeout(updateRefreshTimer, 1000);
+        return;
+      }
+      let h = Math.floor(left/3600000), m = Math.floor((left%3600000)/60000), s = Math.floor((left%60000)/1000);
+      el.textContent = `Nouveaux skins dans : ${h}h ${m}m ${s}s`;
+      setTimeout(updateRefreshTimer, 1000);
+    }
+
+    // Tabs navigation
+const tabs = [
+  {btn: "tabBtnShop", tab: "tabShop"},
+  {btn: "tabBtnFamiliers", tab: "tabFamiliers"},
+  {btn: "tabBtnAcolytes", tab: "tabAcolytes"},
+  {btn: "tabBtnCartes", tab: "tabCartes"}
+];
+tabs.forEach((t, idx) => {
+  document.getElementById(t.btn).onclick = function() {
+    tabs.forEach((tt, i) => {
+      document.getElementById(tt.tab).style.display = (i === idx) ? "" : "none";
+      document.getElementById(tt.btn).classList.toggle("active", i === idx);
     });
+  };
+});
+    // Synchronisation multi-onglets
+    window.addEventListener('storage', function(event) {
+      if(event.key === "wonColors" || event.key === "diamonds" || event.key === "shopSkins" || event.key === "shopSkinsExpires" || event.key === "passState" ||
+         event.key === "familiers" || event.key === "familiersEvent" || event.key === "familiersPack" ||
+         event.key === "acolytes" || event.key === "acolytesEvent" || event.key === "acolytesPack") {
+        renderShopSkins();
+        renderEventShop();
+        renderPacksShop();
+        renderFamiliersShop();
+        renderFamiliersEventShop();
+        renderFamiliersPackShop();
+        renderAcolytesShop();
+        renderAcolytesEventShop();
+        renderAcolytesPackShop();
+      }
+    });
+
+    // Initialisation
+    renderShopSkins();
+    renderEventShop();
+    renderPacksShop();
+    renderFamiliersShop();
+    renderFamiliersEventShop();
+    renderFamiliersPackShop();
+    renderAcolytesShop();
+    renderAcolytesEventShop();
+    renderAcolytesPackShop();
+    updateRefreshTimer();
   </script>
+  <script>
+document.getElementById('mainTabClassique').onclick = function() {
+  this.classList.add('active');
+  document.getElementById('mainTabChrono').classList.remove('active');
+  // Affiche la boutique classique
+  document.getElementById('tabShop').style.display = '';
+  document.getElementById('tabFamiliers').style.display = '';
+  document.getElementById('tabAcolytes').style.display = '';
+  document.getElementById('tabCartes').style.display = '';
+  // Cache la boutique chrono
+  document.getElementById('subTabsChrono').style.display = 'none';
+  document.getElementById('tabChronoShopContent').style.display = 'none';
+};
+document.getElementById('mainTabChrono').onclick = function() {
+  this.classList.add('active');
+  document.getElementById('mainTabClassique').classList.remove('active');
+  // Cache la boutique classique
+  document.getElementById('tabShop').style.display = 'none';
+  document.getElementById('tabFamiliers').style.display = 'none';
+  document.getElementById('tabAcolytes').style.display = 'none';
+  document.getElementById('tabCartes').style.display = 'none';
+  // Affiche la boutique chrono
+  document.getElementById('subTabsChrono').style.display = '';
+  document.getElementById('tabChronoShopContent').style.display = '';
+};
+</script>
+
 </body>
 </html>
