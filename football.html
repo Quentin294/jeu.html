@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tournoi Coupe du Monde des Clubs - Bracket</title>
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(#0f0f0f, #1a1a1a);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    h1 {
+      color: #00fff7;
+      text-shadow: 0 0 10px #00fff7;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .team-control {
+      background: rgba(255,255,255,0.05);
+      padding: 10px;
+      border-radius: 8px;
+      width: 180px;
+      text-align: left;
+      border: 1px solid rgba(0,255,255,0.1);
+    }
+
+    .team-control label {
+      font-weight: bold;
+    }
+
+    input[type=number] {
+      width: 60px;
+      padding: 4px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1em;
+    }
+
+    button {
+      margin: 20px auto;
+      padding: 12px 20px;
+      font-size: 1.1em;
+      background: linear-gradient(45deg, #00fff7, #0088ff);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #00fff7;
+    }
+
+    .bracket {
+      display: flex;
+      justify-content: flex-start;
+      gap: 30px;
+      overflow-x: auto;
+    }
+
+    .round {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .match {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,255,255,0.2);
+      border-radius: 10px;
+      padding: 8px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .highlight {
+      color: #00fff7;
+      font-weight: bold;
+    }
+
+    .score {
+      font-weight: bold;
+      color: #fffb00;
+    }
+
+    .victory-glow {
+      animation: glow 2s ease-in-out;
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 0px #00fff7; }
+      50% { text-shadow: 0 0 15px #00fff7; }
+      100% { text-shadow: 0 0 0px #00fff7; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🏆 Coupe du Monde des Clubs - Bracket</h1>
+
+  <h2>⚙️ Personnalise la puissance de chaque équipe (%)</h2>
+  <div class="controls" id="powerControls"></div>
+
+  <button onclick="startTournament()">🎮 Lancer le tournoi</button>
+
+  <div class="bracket" id="bracketContainer"></div>
+
+  <audio id="goalSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <audio id="victorySound" src="https://www.fesliyanstudios.com/play-mp3/438" preload="auto"></audio>
+
+  <script>
+    const teams = [
+      "Al Ahly", "Porto", "Palmeiras", "Inter Miami", "PSG", "Botafogo", "Seattle Sounders", "Atletico de Madrid",
+      "Bayern", "Benfica", "Boca Juniors", "Auckland City", "Flamengo", "Chelsea", "LAFC", "ES Tunis"
+    ];
+
+    const teamStrength = {};
+    const goalSound = document.getElementById('goalSound');
+    const victorySound = document.getElementById('victorySound');
+
+    function generatePowerInputs() {
+      const container = document.getElementById('powerControls');
+      teams.forEach(team => {
+        const div = document.createElement('div');
+        div.className = 'team-control';
+        div.innerHTML = `
+          <label for="power-${team}">${team}</label><br>
+          <input type="number" class="power-input" data-team="${team}" id="power-${team}" value="75" min="0" max="100"> %
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function simulateMatch(teamA, teamB) {
+      const strengthA = teamStrength[teamA];
+      const strengthB = teamStrength[teamB];
+      let scoreA = 0, scoreB = 0;
+
+      for (let i = 0; i < 2; i++) {
+        if (Math.random() < strengthA / 100) { scoreA++; goalSound.play(); }
+        if (Math.random() < strengthB / 100) { scoreB++; goalSound.play(); }
+      }
+
+      if (scoreA === scoreB) {
+        Math.random() < 0.5 ? scoreA++ : scoreB++;
+      }
+
+      const winner = scoreA > scoreB ? teamA : teamB;
+      return { teamA, teamB, scoreA, scoreB, winner };
+    }
+
+    function startTournament() {
+      document.getElementById("bracketContainer").innerHTML = "";
+
+      const inputs = document.querySelectorAll('.power-input');
+      inputs.forEach(input => {
+        const team = input.dataset.team;
+        const value = parseFloat(input.value);
+        teamStrength[team] = isNaN(value) ? 70 : Math.min(100, Math.max(0, value));
+      });
+
+      let currentTeams = shuffle(teams.slice());
+      const rounds = [];
+      while (currentTeams.length > 1) {
+        const matches = [];
+        for (let i = 0; i < currentTeams.length; i += 2) {
+          matches.push([currentTeams[i], currentTeams[i + 1]]);
+        }
+        rounds.push(matches);
+        currentTeams = matches.map(([a, b]) => simulateMatch(a, b).winner);
+      }
+
+      const bracket = document.getElementById("bracketContainer");
+
+      rounds.forEach((roundMatches, rIndex) => {
+        const roundCol = document.createElement("div");
+        roundCol.className = "round";
+        roundMatches.forEach(([teamA, teamB]) => {
+          const result = simulateMatch(teamA, teamB);
+          const matchDiv = document.createElement("div");
+          matchDiv.className = "match";
+          matchDiv.innerHTML = `
+            <div class="${result.winner === result.teamA ? 'highlight victory-glow' : ''}">
+              ${result.teamA} <span class="score">${result.scoreA}</span>
+            </div>
+            <div class="${result.winner === result.teamB ? 'highlight victory-glow' : ''}">
+              ${result.teamB} <span class="score">${result.scoreB}</span>
+            </div>
+          `;
+          roundCol.appendChild(matchDiv);
+        });
+        bracket.appendChild(roundCol);
+        victorySound.play();
+      });
+
+      const winner = currentTeams[0];
+      const winnerDiv = document.createElement("div");
+      winnerDiv.className = "round";
+      winnerDiv.innerHTML = `
+        <h2>🏆</h2>
+        <div class="match highlight victory-glow">${winner}</div>
+      `;
+      bracket.appendChild(winnerDiv);
+    }
+
+    generatePowerInputs();
+  </script>
+</body>

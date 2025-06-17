@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Marché Noir</title>
+  <style>
+    body {
+      background: #18141a;
+      color: #ffe066;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .header {
+      background: #222;
+      padding: 32px 0 16px 0;
+      text-align: center;
+      font-size: 40px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      border-bottom: 2px solid #ffe066;
+    }
+    .currency-bar {
+      margin: 24px auto 32px auto;
+      padding: 18px 30px;
+      background: #232b3b;
+      border-radius: 15px;
+      width: fit-content;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 12px #0007;
+    }
+    .currency-icon {
+      width: 32px;
+      height: 32px;
+      background: url('https://cdn-icons-png.flaticon.com/512/616/616490.png') no-repeat center/cover;
+      display: inline-block;
+      vertical-align: middle;
+      filter: brightness(1.2) sepia(1) hue-rotate(45deg);
+    }
+    .shop-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 36px;
+      justify-content: center;
+      margin: 0 0 40px 0;
+    }
+    .item-card {
+      background: #232b3b;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px #000a;
+      padding: 22px 30px 28px 30px;
+      width: 320px;
+      text-align: center;
+      position: relative;
+      transition: transform 0.15s;
+    }
+    .item-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 8px 32px #000c;
+    }
+    .item-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      background: #444;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 2px 8px #0007;
+      border: 2px solid #ffe066;
+      display: inline-block;
+    }
+    .item-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .item-desc {
+      font-size: 15px;
+      color: #ffe066;
+      margin-bottom: 18px;
+      min-height: 48px;
+    }
+    .item-price {
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: #ffe066;
+      font-weight: bold;
+    }
+    .buy-btn {
+      background: linear-gradient(90deg,#ffe066 60%,#f8b400 100%);
+      color: #232b3b;
+      font-weight: bold;
+      font-size: 18px;
+      border: none;
+      border-radius: 9px;
+      padding: 12px 38px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      margin-top: 8px;
+      box-shadow: 0 2px 8px #0005;
+    }
+    .buy-btn:active {
+      background: #fff3a0;
+      color: #18141a;
+    }
+    .sold-out {
+      color: #ff4d4d;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 12px;
+    }
+    /* Boutons fixes */
+    .fixed-btn {
+      position: fixed;
+      bottom: 28px;
+      padding: 16px 32px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #ffe066 60%, #f8b400 100%);
+      color: #232b3b;
+      box-shadow: 0 2px 12px #0007;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 0.2s, color 0.2s, transform 0.15s;
+    }
+    .fixed-btn:hover {
+      background: #fff3a0;
+      color: #18141a;
+      transform: scale(1.06);
+    }
+    .btn-menu {
+      left: 28px;
+    }
+    .btn-seigneurs {
+      right: 28px;
+    }
+    @media (max-width: 700px) {
+      .shop-grid {flex-direction: column;gap: 20px;}
+      .item-card {width:90vw;}
+      .header {font-size: 26px;}
+      .currency-bar {font-size: 16px;}
+      .fixed-btn {font-size: 15px;padding: 10px 16px;}
+      .btn-menu {left: 8px;}
+      .btn-seigneurs {right: 8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">Marché Noir</div>
+  <div class="currency-bar">
+    <span class="currency-icon"></span>
+    Pierres sacrés : <span id="pierresSacres">0</span>
+    <button class="buy-btn" onclick="acheterPierresSacres()">Acheter</button>
+  </div>
+  <div class="shop-grid" id="shopGrid"></div>
+  <!-- Bouton Retour au menu -->
+  <button class="fixed-btn btn-menu" onclick="window.location.href='menu.html'">← Retour au menu</button>
+  <!-- Bouton Menu des Seigneurs -->
+  <button class="fixed-btn btn-seigneurs" onclick="window.location.href='menu-seigneurs.html'">Menu des Seigneurs →</button>
+  <script>
+    // --- Configuration des objets exclusifs ---
+    const items = [
+      {
+        id: "skin_dragon",
+        title: "Skin Dragon Céleste",
+        desc: "Skin animé légendaire. Effet de flammes et traînée exclusive.",
+        price: 120,
+        img: "https://static.wikia.nocookie.net/fortnite_gamepedia/images/3/3e/Outfit_Default_-_Style_1.png"
+      },
+      {
+        id: "mount_neon",
+        title: "Moto Néon Spectrale",
+        desc: "Monture ultra-rapide avec effets lumineux rares.",
+        price: 90,
+        img: "https://cdn.pixabay.com/photo/2016/04/01/09/29/motorcycle-1293903_1280.png"
+      },
+      {
+        id: "pet_phoenix",
+        title: "Mascotte Phénix",
+        desc: "Compagnon mythique, animation de renaissance.",
+        price: 70,
+        img: "https://cdn.pixabay.com/photo/2017/01/31/13/14/animal-2023924_1280.png"
+      },
+      {
+        id: "emote_ombre",
+        title: "Emote Danse de l'Ombre",
+        desc: "Danse unique, effets visuels noirs et dorés.",
+        price: 45,
+        img: "https://cdn.pixabay.com/photo/2016/03/31/20/11/dance-1293394_1280.png"
+      },
+      {
+        id: "aura_eclairs",
+        title: "Aura Éclairs Obscurs",
+        desc: "Effet visuel autour du personnage, réservé au marché noir.",
+        price: 60,
+        img: "https://cdn.pixabay.com/photo/2014/04/03/11/51/lightning-312048_1280.png"
+      }
+    ];
+
+    // --- Gestion de la monnaie premium ---
+    function getPierresSacres() {
+      return parseInt(localStorage.getItem("pierresSacres") || "0");
+    }
+    function setPierresSacres(val) {
+      localStorage.setItem("pierresSacres", val);
+      document.getElementById('pierresSacres').textContent = val;
+    }
+
+    // --- Achat fictif de Pierres sacrés (à remplacer par ton système de paiement) ---
+    function acheterPierresSacres() {
+      let ajout = prompt("Combien de Pierres sacrés veux-tu acheter ? (test)");
+      let n = parseInt(ajout);
+      if (!isNaN(n) && n > 0) setPierresSacres(getPierresSacres() + n);
+    }
+
+    // --- Affichage des objets du marché noir ---
+    function afficherShop() {
+      const grid = document.getElementById('shopGrid');
+      grid.innerHTML = "";
+      let owned = JSON.parse(localStorage.getItem("marcheNoirOwned") || "{}");
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+          <div class="item-img" style="background-image:url('${item.img}')"></div>
+          <div class="item-title">${item.title}</div>
+          <div class="item-desc">${item.desc}</div>
+          <div class="item-price">${item.price} <span class="currency-icon" style="width:20px;height:20px;vertical-align:middle;"></span></div>
+        `;
+        if (owned[item.id]) {
+          card.innerHTML += `<div class="sold-out">Déjà acheté</div>`;
+        } else {
+          const btn = document.createElement("button");
+          btn.className = "buy-btn";
+          btn.textContent = "Acheter";
+          btn.onclick = function() {
+            acheterObjet(item);
+          };
+          card.appendChild(btn);
+        }
+        grid.appendChild(card);
+      });
+    }
+
+    // --- Achat d'un objet du marché noir ---
+    function acheterObjet(item) {
+      if (getPierresSacres() < item.price) {
+        alert("Tu n'as pas assez de Pierres sacrés !");
+        return;
+      }
+      if (!confirm(`Acheter "${item.title}" pour ${item.price} Pierres sacrés ?`)) return;
+      setPierresSacres(getPierresSacres() - item.price);
+      let owned = JSON.parse(localStorage.getItem("marcheNoirOwned") || "{}");
+      owned[item.id] = true;
+      localStorage.setItem("marcheNoirOwned", JSON.stringify(owned));
+      afficherShop();
+      alert(`Félicitations ! Tu as acheté : ${item.title}`);
+    }
+
+    // --- Initialisation ---
+    setPierresSacres(getPierresSacres());
+    afficherShop();
+  </script>
+</body>
+</html>
