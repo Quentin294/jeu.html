@@ -29,7 +29,7 @@
       padding: 20px;
       overflow: hidden;
     }
-    .friends-list, .chat-section, .requests-section {
+    .friends-list, .chat-section, .requests-section, .tournament-section {
       background: #232b3bcc;
       border-radius: 16px;
       box-shadow: 0 8px 32px #000a;
@@ -37,7 +37,7 @@
       display: flex;
       flex-direction: column;
     }
-    .friends-list, .requests-section {
+    .friends-list, .requests-section, .tournament-section {
       width: 280px;
       overflow-y: auto;
     }
@@ -52,7 +52,7 @@
       color: #ffe066;
       text-align: center;
     }
-    .friend, .request {
+    .friend, .request, .tournament-item {
       padding: 10px;
       margin-bottom: 10px;
       background: #3a6ee8;
@@ -63,7 +63,7 @@
       align-items: center;
       transition: background 0.2s;
     }
-    .friend:hover, .request:hover {
+    .friend:hover, .request:hover, .tournament-item:hover {
       background: #254a9c;
     }
     .friend.online::after {
@@ -144,7 +144,7 @@
     .btn-add-friend:hover {
       background: #2fae4f;
     }
-    .no-friends, .no-requests, .no-chat {
+    .no-friends, .no-requests, .no-chat, .no-tournaments {
       text-align: center;
       color: #888;
       margin-top: 20px;
@@ -164,6 +164,130 @@
       transition: background 0.2s;
     }
     .btn-menu:hover {background:#254a9c;}
+    .btn-defier, .btn-cadeau, .btn-capsule {
+      background: #ffe066;
+      color: #232b3b;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-left: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-defier { font-size: 0.95rem; padding: 5px 14px; }
+    .btn-defier:hover, .btn-cadeau:hover, .btn-capsule:hover {
+      background: #3a6ee8;
+      color: #fff;
+    }
+    .btn-cadeau:hover { background: #f8b400; }
+    .btn-defier:hover { background: #f8b400; }
+    /* Styles pour les tournois */
+    .tournament-form {
+      background: #1e2740;
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 15px;
+      display: none;
+    }
+    .tournament-form.active {
+      display: block;
+    }
+    .tournament-form input, .tournament-form select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+    .tournament-form label {
+      display: block;
+      margin-bottom: 5px;
+      color: #ffe066;
+    }
+    .tournament-form button {
+      background: #43e86e;
+      color: #232b3b;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .tournament-form button:hover {
+      background: #2fae4f;
+    }
+    .btn-create-tournament {
+      background: #ffe066;
+      color: #232b3b;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .btn-create-tournament:hover {
+      background: #f8b400;
+    }
+    .tournament-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .tournament-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    .tournament-info {
+      font-size: 12px;
+      color: #ddd;
+    }
+    .tournament-participants {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #ffe066;
+    }
+    .tournament-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .tournament-actions button {
+      flex: 1;
+      padding: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-join {
+      background: #43e86e;
+      color: #232b3b;
+    }
+    .btn-join:hover {
+      background: #2fae4f;
+    }
+    .btn-details {
+      background: #3a6ee8;
+      color: white;
+    }
+    .btn-details:hover {
+      background: #254a9c;
+    }
+    .friend-checkbox {
+      margin-right: 10px;
+    }
+    .selected-friends {
+      margin-top: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -197,13 +321,80 @@
         <div class="no-requests">Aucune demande en attente.</div>
       </div>
     </section>
+
+    <!-- Nouvelle section pour les tournois -->
+    <section class="tournament-section">
+      <h2>Tournois</h2>
+      <div id="tournamentsContainer">
+        <div class="no-tournaments">Aucun tournoi en cours.</div>
+      </div>
+      <button id="btnCreateTournament" class="btn-create-tournament">Créer un tournoi</button>
+      <div id="tournamentForm" class="tournament-form">
+        <label for="tournamentName">Nom du tournoi:</label>
+        <input type="text" id="tournamentName" placeholder="Ex: Tournoi Mario Kart">
+        <label for="tournamentGame">Jeu:</label>
+        <input type="text" id="tournamentGame" placeholder="Ex: Mario Kart 8">
+        <label for="tournamentDate">Date:</label>
+        <input type="date" id="tournamentDate">
+        <label for="tournamentTime">Heure:</label>
+        <input type="time" id="tournamentTime">
+        <label for="tournamentMaxPlayers">Nombre max de joueurs:</label>
+        <select id="tournamentMaxPlayers">
+          <option value="4">4 joueurs</option>
+          <option value="8">8 joueurs</option>
+          <option value="16">16 joueurs</option>
+        </select>
+        <label>Inviter des amis:</label>
+        <div id="friendsList"></div>
+        <div class="selected-friends">Amis sélectionnés: <span id="selectedCount">0</span></div>
+        <button id="btnSubmitTournament">Créer le tournoi</button>
+        <button id="btnCancelTournament" style="background:#ff6b6b;margin-top:5px;">Annuler</button>
+      </div>
+    </section>
   </main>
   <button class="btn-menu" onclick="window.location.href='menu.html'">&larr; Retour au menu</button>
+
+  <!-- Fenêtre modale pour offrir un cadeau -->
+  <div id="cadeau-modal" style="display:none;position:fixed;z-index:10000;top:0;left:0;right:0;bottom:0;background:rgba(44,62,80,0.85);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:14px;padding:28px 22px;min-width:250px;max-width:90vw;box-shadow:0 8px 32px #000b;position:relative;text-align:center;">
+      <button onclick="fermerCadeauModal()" style="position:absolute;top:8px;right:12px;background:none;border:none;font-size:2rem;color:#1abc9c;cursor:pointer;">&times;</button>
+      <div style="font-weight:bold;font-size:1.2rem;margin-bottom:15px;">Offrir un cadeau à <span id="cadeau-ami"></span></div>
+      <select id="cadeau-type" style="padding:8px;border-radius:8px;font-size:1rem;">
+        <option value="Sticker">Sticker rigolo</option>
+        <option value="Skin">Skin exclusif</option>
+        <option value="Bonus">Petit bonus</option>
+      </select>
+      <button onclick="validerCadeau()" style="margin-top:18px;background:#ffe066;color:#232b3b;border:none;border-radius:8px;padding:8px 20px;font-weight:bold;font-size:1rem;cursor:pointer;">Envoyer</button>
+    </div>
+  </div>
+
+  <!-- Fenêtre modale Capsule temporelle -->
+  <div id="capsule-modal" style="display:none;position:fixed;z-index:10001;top:0;left:0;right:0;bottom:0;background:rgba(44,62,80,0.9);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:14px;padding:28px 22px;min-width:280px;max-width:90vw;box-shadow:0 8px 32px #000b;position:relative;text-align:center;">
+      <button onclick="fermerCapsuleModal()" style="position:absolute;top:8px;right:12px;background:none;border:none;font-size:2rem;color:#1abc9c;cursor:pointer;">&times;</button>
+      <div style="font-weight:bold;font-size:1.2rem;margin-bottom:15px;">
+        Capsule temporelle avec <span id="capsule-ami"></span>
+      </div>
+      <div id="capsule-content-form">
+        <textarea id="capsule-message" style="width:90%;height:60px;border-radius:8px;padding:8px;margin-bottom:12px;" placeholder="Message secret..."></textarea>
+        <input type="date" id="capsule-date" style="padding:8px;border-radius:8px;margin-bottom:12px;">
+        <br>
+        <button onclick="validerCapsule()" style="background:#ffe066;color:#232b3b;border:none;border-radius:8px;padding:8px 20px;font-weight:bold;font-size:1rem;cursor:pointer;">Sceller la capsule</button>
+      </div>
+      <div id="capsule-content-view" style="display:none;">
+        <div id="capsule-view-message" style="margin-bottom:18px;color:#232b3b;font-size:1.1rem;"></div>
+        <div id="capsule-view-date" style="color:#888;"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Données simulées stockées localement
     let friends = JSON.parse(localStorage.getItem('friends')) || [];
     let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || [];
     let chats = JSON.parse(localStorage.getItem('chats')) || {}; // {friendName: [{author:'Moi', text:'...'}, ...]}
+    let tournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+    let capsules = JSON.parse(localStorage.getItem('capsules')) || [];
     let currentChatFriend = null;
 
     const friendsContainer = document.getElementById('friendsContainer');
@@ -213,11 +404,18 @@
     const btnSend = document.getElementById('btnSend');
     const addFriendInput = document.getElementById('addFriendInput');
     const btnAddFriend = document.getElementById('btnAddFriend');
+    const tournamentsContainer = document.getElementById('tournamentsContainer');
+    const btnCreateTournament = document.getElementById('btnCreateTournament');
+    const tournamentForm = document.getElementById('tournamentForm');
+    const btnSubmitTournament = document.getElementById('btnSubmitTournament');
+    const btnCancelTournament = document.getElementById('btnCancelTournament');
 
     function saveData() {
       localStorage.setItem('friends', JSON.stringify(friends));
       localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
       localStorage.setItem('chats', JSON.stringify(chats));
+      localStorage.setItem('tournaments', JSON.stringify(tournaments));
+      localStorage.setItem('capsules', JSON.stringify(capsules));
     }
 
     function renderFriends() {
@@ -229,10 +427,133 @@
       friends.forEach(friend => {
         let div = document.createElement('div');
         div.className = 'friend ' + (friend.online ? 'online' : 'offline');
-        div.textContent = friend.name;
+        // Nom de l'ami
+        let nameSpan = document.createElement('span');
+        nameSpan.textContent = friend.name;
+        nameSpan.style.flex = "1";
+        nameSpan.onclick = () => openChat(friend.name);
+
+        // Bouton Défier
+        let defierBtn = document.createElement('button');
+        defierBtn.textContent = 'Défier';
+        defierBtn.className = 'btn-defier';
+        defierBtn.onclick = function(e) {
+          e.stopPropagation();
+          defierAmi(friend.name);
+        };
+
+        // Bouton Cadeau
+        let cadeauBtn = document.createElement('button');
+        cadeauBtn.textContent = '🎁';
+        cadeauBtn.title = 'Offrir un cadeau';
+        cadeauBtn.className = 'btn-cadeau';
+        cadeauBtn.onclick = function(e) {
+          e.stopPropagation();
+          offrirCadeau(friend.name);
+        };
+
+        // Bouton Capsule
+        let capsuleBtn = document.createElement('button');
+        capsuleBtn.textContent = '⏳';
+        capsuleBtn.title = 'Créer une capsule temporelle';
+        capsuleBtn.className = 'btn-capsule';
+        capsuleBtn.onclick = function(e) {
+          e.stopPropagation();
+          ouvrirCapsuleModal(friend.name);
+        };
+
+        div.appendChild(nameSpan);
+        div.appendChild(defierBtn);
+        div.appendChild(cadeauBtn);
+        div.appendChild(capsuleBtn);
         div.onclick = () => openChat(friend.name);
+
         friendsContainer.appendChild(div);
       });
+    }
+
+    function defierAmi(name) {
+      alert('Tu as défié ' + name + ' ! (fonctionnalité à compléter)');
+    }
+
+    // Cadeau
+    function offrirCadeau(friendName) {
+      document.getElementById('cadeau-modal').style.display = 'flex';
+      document.getElementById('cadeau-ami').textContent = friendName;
+      document.getElementById('cadeau-type').selectedIndex = 0;
+      window.cadeauCible = friendName;
+    }
+    function fermerCadeauModal() {
+      document.getElementById('cadeau-modal').style.display = 'none';
+      window.cadeauCible = null;
+    }
+    function validerCadeau() {
+      const ami = window.cadeauCible;
+      const type = document.getElementById('cadeau-type').value;
+      if (!ami) return fermerCadeauModal();
+      if (!chats[ami]) chats[ami] = [];
+      chats[ami].push({author: 'Moi', text: `🎁 J'ai offert un cadeau (${type}) !`});
+      saveData();
+      fermerCadeauModal();
+      alert(`Cadeau "${type}" envoyé à ${ami} !`);
+      if (currentChatFriend === ami) renderChat();
+    }
+
+    // Capsules temporelles
+    function saveCapsules() {
+      localStorage.setItem('capsules', JSON.stringify(capsules));
+    }
+    function ouvrirCapsuleModal(friendName) {
+      document.getElementById('capsule-modal').style.display = 'flex';
+      document.getElementById('capsule-ami').textContent = friendName;
+      const now = new Date();
+      const capsule = capsules.find(c => c.ami === friendName && !c.opened);
+      const form = document.getElementById('capsule-content-form');
+      const view = document.getElementById('capsule-content-view');
+      if (capsule) {
+        const openDate = new Date(capsule.date);
+        if (now >= openDate) {
+          form.style.display = 'none';
+          view.style.display = '';
+          document.getElementById('capsule-view-message').textContent = capsule.message;
+          document.getElementById('capsule-view-date').textContent = 'Capsule ouverte le ' + openDate.toLocaleDateString();
+          capsule.opened = true;
+          saveCapsules();
+          saveData();
+        } else {
+          form.style.display = 'none';
+          view.style.display = '';
+          document.getElementById('capsule-view-message').textContent = '⏳ Capsule scellée jusqu\'au ' + openDate.toLocaleDateString();
+          document.getElementById('capsule-view-date').textContent = '';
+        }
+      } else {
+        form.style.display = '';
+        view.style.display = 'none';
+        document.getElementById('capsule-message').value = '';
+        document.getElementById('capsule-date').value = '';
+      }
+    }
+    function fermerCapsuleModal() {
+      document.getElementById('capsule-modal').style.display = 'none';
+    }
+    function validerCapsule() {
+      const ami = document.getElementById('capsule-ami').textContent;
+      const message = document.getElementById('capsule-message').value.trim();
+      const date = document.getElementById('capsule-date').value;
+      if (!message || !date) {
+        alert('Message et date obligatoires !');
+        return;
+      }
+      const openDate = new Date(date);
+      if (openDate <= new Date()) {
+        alert('La date doit être dans le futur !');
+        return;
+      }
+      capsules.push({ami, message, date, opened: false});
+      saveCapsules();
+      saveData();
+      fermerCapsuleModal();
+      alert('Capsule scellée ! Elle sera accessible le ' + openDate.toLocaleDateString());
     }
 
     function renderRequests() {
@@ -305,7 +626,6 @@
         alert('Cet ami est déjà dans ta liste ou en demande.');
         return;
       }
-      // Simule l'envoi d'une demande (ici on l'ajoute directement en demande reçue)
       friendRequests.push(name);
       saveData();
       renderRequests();
@@ -315,7 +635,7 @@
 
     function acceptRequest(name) {
       friendRequests = friendRequests.filter(r => r !== name);
-      friends.push({name, online: Math.random() < 0.5}); // statut aléatoire pour démo
+      friends.push({name, online: Math.random() < 0.5});
       saveData();
       renderRequests();
       renderFriends();
@@ -328,10 +648,160 @@
       alert('Tu as refusé la demande d\'ami de ' + name + '.');
     }
 
+    // Fonctions pour les tournois
+    function renderTournaments() {
+      tournamentsContainer.innerHTML = '';
+      if(tournaments.length === 0) {
+        tournamentsContainer.innerHTML = '<div class="no-tournaments">Aucun tournoi en cours.</div>';
+        return;
+      }
+      tournaments.forEach(tournament => {
+        let div = document.createElement('div');
+        div.className = 'tournament-item';
+        let title = document.createElement('div');
+        title.className = 'tournament-title';
+        title.textContent = tournament.name;
+        let info = document.createElement('div');
+        info.className = 'tournament-info';
+        info.textContent = `${tournament.game} • ${formatDate(tournament.date)} • ${tournament.time}`;
+        let participants = document.createElement('div');
+        participants.className = 'tournament-participants';
+        participants.textContent = `${tournament.participants.length}/${tournament.maxPlayers} participants`;
+        let actions = document.createElement('div');
+        actions.className = 'tournament-actions';
+        let joinBtn = document.createElement('button');
+        joinBtn.className = 'btn-join';
+        const isParticipant = tournament.participants.includes('Moi');
+        joinBtn.textContent = isParticipant ? 'Inscrit' : 'Rejoindre';
+        joinBtn.disabled = isParticipant;
+        joinBtn.style.opacity = isParticipant ? '0.7' : '1';
+        joinBtn.onclick = (e) => {
+          e.stopPropagation();
+          joinTournament(tournament.id);
+        };
+        let detailsBtn = document.createElement('button');
+        detailsBtn.className = 'btn-details';
+        detailsBtn.textContent = 'Détails';
+        detailsBtn.onclick = (e) => {
+          e.stopPropagation();
+          showTournamentDetails(tournament.id);
+        };
+        actions.appendChild(joinBtn);
+        actions.appendChild(detailsBtn);
+        div.appendChild(title);
+        div.appendChild(info);
+        div.appendChild(participants);
+        div.appendChild(actions);
+        tournamentsContainer.appendChild(div);
+      });
+    }
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    function joinTournament(tournamentId) {
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) return;
+      if (tournament.participants.length >= tournament.maxPlayers) {
+        alert('Ce tournoi est complet !');
+        return;
+      }
+      if (!tournament.participants.includes('Moi')) {
+        tournament.participants.push('Moi');
+        saveData();
+        renderTournaments();
+        alert(`Tu t'es inscrit au tournoi "${tournament.name}" !`);
+      }
+    }
+    function showTournamentDetails(tournamentId) {
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) return;
+      let message = `📅 Tournoi: ${tournament.name}\n`;
+      message += `🎮 Jeu: ${tournament.game}\n`;
+      message += `📆 Date: ${formatDate(tournament.date)}\n`;
+      message += `🕒 Heure: ${tournament.time}\n`;
+      message += `👥 Participants (${tournament.participants.length}/${tournament.maxPlayers}):\n`;
+      tournament.participants.forEach((participant, index) => {
+        message += `   ${index + 1}. ${participant}\n`;
+      });
+      alert(message);
+    }
+    btnCreateTournament.onclick = () => {
+      tournamentForm.classList.add('active');
+      btnCreateTournament.style.display = 'none';
+      const friendsList = document.getElementById('friendsList');
+      friendsList.innerHTML = '';
+      if (friends.length === 0) {
+        friendsList.innerHTML = '<div>Aucun ami à inviter.</div>';
+      } else {
+        friends.forEach(friend => {
+          const label = document.createElement('label');
+          label.style.display = 'block';
+          label.style.marginBottom = '5px';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'friend-checkbox';
+          checkbox.value = friend.name;
+          checkbox.onchange = updateSelectedCount;
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(friend.name));
+          friendsList.appendChild(label);
+        });
+      }
+    };
+    function updateSelectedCount() {
+      const checkboxes = document.querySelectorAll('.friend-checkbox:checked');
+      document.getElementById('selectedCount').textContent = checkboxes.length;
+    }
+    btnCancelTournament.onclick = () => {
+      tournamentForm.classList.remove('active');
+      btnCreateTournament.style.display = 'block';
+      document.getElementById('tournamentName').value = '';
+      document.getElementById('tournamentGame').value = '';
+      document.getElementById('tournamentDate').value = '';
+      document.getElementById('tournamentTime').value = '';
+    };
+    btnSubmitTournament.onclick = () => {
+      const name = document.getElementById('tournamentName').value.trim();
+      const game = document.getElementById('tournamentGame').value.trim();
+      const date = document.getElementById('tournamentDate').value;
+      const time = document.getElementById('tournamentTime').value;
+      const maxPlayers = parseInt(document.getElementById('tournamentMaxPlayers').value);
+      if (!name || !game || !date || !time) {
+        alert('Tous les champs sont obligatoires !');
+        return;
+      }
+      const invitedFriends = [];
+      document.querySelectorAll('.friend-checkbox:checked').forEach(checkbox => {
+        invitedFriends.push(checkbox.value);
+      });
+      const newTournament = {
+        id: Date.now().toString(),
+        name,
+        game,
+        date,
+        time,
+        maxPlayers,
+        participants: ['Moi', ...invitedFriends],
+        creator: 'Moi'
+      };
+      tournaments.push(newTournament);
+      saveData();
+      renderTournaments();
+      tournamentForm.classList.remove('active');
+      btnCreateTournament.style.display = 'block';
+      document.getElementById('tournamentName').value = '';
+      document.getElementById('tournamentGame').value = '';
+      document.getElementById('tournamentDate').value = '';
+      document.getElementById('tournamentTime').value = '';
+      alert(`Tournoi "${name}" créé avec succès !`);
+    };
+
     // Initialisation
     renderFriends();
     renderRequests();
     renderChat();
+    renderTournaments();
   </script>
 </body>
 </html>
